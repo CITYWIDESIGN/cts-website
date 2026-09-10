@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MAX_FILE_BYTES, formatBytes } from "@/components/resources/resource-fields";
+import { formatBytes } from "@/lib/format";
+import { MB } from "@/lib/validators/limits";
+import { useLimits } from "@/components/limits-provider";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +45,7 @@ export function ResourceAdminActions({
   const ta = useTranslations("admin.resources");
   const common = useTranslations("common");
   const router = useRouter();
+  const limits = useLimits();
 
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -52,8 +55,8 @@ export function ResourceAdminActions({
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
-    if (f && f.size > MAX_FILE_BYTES) {
-      toast.error(t("errors.fileTooLarge", { max: 5 }));
+    if (f && f.size > limits.maxFileMb * MB) {
+      toast.error(t("errors.fileTooLarge", { max: limits.maxFileMb }));
       e.target.value = "";
       return;
     }
@@ -174,7 +177,7 @@ export function ResourceAdminActions({
               <input type="file" className="hidden" onChange={onPickFile} />
             </label>
             <p className="text-xs text-muted-foreground">
-              {t("fields.replaceFileHint", { max: 5 })}
+              {t("fields.replaceFileHint", { max: limits.maxFileMb })}
             </p>
           </div>
 

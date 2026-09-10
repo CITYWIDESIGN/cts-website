@@ -4,12 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { hasAvatarFrame } from "@/lib/frame";
 import { displayName } from "@/lib/display-name";
 import { isAllowedCoverDataUrl } from "@/lib/image-types";
+import { getLimits } from "@/server/settings";
+import { limitsToBytes } from "@/lib/validators/limits";
 import { Prisma, type Resource } from "@prisma/client";
 
-/** 附件大小上限：5MB（与前端校验保持一致） */
-export const MAX_FILE_BYTES = 5 * 1024 * 1024;
-/** 封面图上限：1MB */
-export const MAX_IMAGE_BYTES = 1024 * 1024;
+/**
+ * 附件与封面图的大小上限由管理员在后台「限额设置」里调整
+ * （见 @/lib/validators/limits 与 @/server/settings），这里只负责执行。
+ * 前端也有一份同样的校验用于即时反馈，但**服务端这一份才是准的** ——
+ * 客户端校验不可信，请求可以被伪造。
+ */
 /** 资源列表每页条数 */
 export const RESOURCES_PAGE_SIZE = 12;
 
@@ -251,15 +255,16 @@ export async function createResource(input: {
 }) {
   const title = input.title?.trim();
   const description = input.description?.trim();
+  const { maxFileBytes, maxImageBytes } = limitsToBytes(await getLimits());
 
   if (!title) throw new ResourceError("Title is required.", "TITLE_REQUIRED");
   if (!description)
     throw new ResourceError("Description is required.", "DESCRIPTION_REQUIRED");
   if (input.data.byteLength === 0)
     throw new ResourceError("File is required.", "FILE_REQUIRED");
-  if (input.data.byteLength > MAX_FILE_BYTES)
+  if (input.data.byteLength > maxFileBytes)
     throw new ResourceError(
-      `File exceeds ${Math.round(MAX_FILE_BYTES / 1024 / 1024)}MB.`,
+      `File exceeds ${Math.round(maxFileBytes / 1024 / 1024)}MB.`,
       "FILE_TOO_LARGE"
     );
   if (input.imageUrl) {
@@ -268,7 +273,7 @@ export async function createResource(input: {
       throw new ResourceError("Unsupported cover image type.", "IMAGE_TYPE");
     }
     // data URL 是 base64，长度约为原文件的 1.37 倍
-    if (input.imageUrl.length > MAX_IMAGE_BYTES * 1.4) {
+    if (input.imageUrl.length > maxImageBytes * 1.4) {
       throw new ResourceError("Cover image is too large.", "IMAGE_TOO_LARGE");
     }
   }
@@ -305,6 +310,7 @@ export async function updateResource(
   },
   editor: { id: string; name: string | null; isAdmin: boolean }
 ) {
+  const { maxFileBytes, maxImageBytes } = limitsToBytes(await getLimits());
   const existing = await prisma.resource.findUnique({
     where: { id },
     // 只取"有没有封面"，不取 data URL 本体
@@ -354,7 +360,7 @@ export async function updateResource(
       if (!isAllowedCoverDataUrl(input.imageUrl)) {
         throw new ResourceError("Unsupported cover image type.", "IMAGE_TYPE");
       }
-      if (input.imageUrl.length > MAX_IMAGE_BYTES * 1.4) {
+      if (input.imageUrl.length > maxImageBytes * 1.4) {
         throw new ResourceError("Cover image is too large.", "IMAGE_TOO_LARGE");
       }
     }
@@ -380,9 +386,9 @@ export async function updateResource(
     if (bytes === 0) {
       throw new ResourceError("File is required.", "FILE_REQUIRED");
     }
-    if (bytes > MAX_FILE_BYTES) {
+    if (bytes > maxFileBytes) {
       throw new ResourceError(
-        `File exceeds ${Math.round(MAX_FILE_BYTES / 1024 / 1024)}MB.`,
+        `File exceeds ${Math.round(maxFileBytes / 1024 / 1024)}MB.`,
         "FILE_TOO_LARGE"
       );
     }

@@ -1,14 +1,21 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { getLimits } from "@/server/settings";
+import type { LimitsConfig } from "@/lib/validators/limits";
 
 /**
  * 每日**行为次数**限制。
  *
  * 规则：**非管理员**每天最多
- *   - 评论（含回复）：50 条
- *   - 发布资源：50 个
+ *   - 评论（含回复）：默认 50 条
+ *   - 发布资源：默认 50 个
+ *   - 改用户名：1 次（固定）
  * 管理员完全不受限，也不落库。
+ *
+ * 评论与资源的数字由管理员在后台「限额设置」里调整（见 @/server/settings）；
+ * 用户名那一条**故意不开放配置** —— 它是防"改名躲人"的措施，不是配额，
+ * 而且放宽到几次就失去意义了。
  *
  * 和 quota.ts（字节配额）的分工：
  *   - quota.ts 防"流量"滥用  → TransferUsage，记字节
@@ -21,16 +28,22 @@ import { prisma } from "@/lib/prisma";
  *    对"防刷屏"这个目的足够；要严格就得在同一事务里加行锁。
  */
 
-export const DAILY_ACTION_LIMITS = {
-  /** 评论 + 回复合计 */
-  comment: 50,
-  /** 发布资源 */
-  resource: 50,
-  /** 改用户名 —— 每天只能改一次，避免"改名躲人" */
-  username: 1,
-} as const;
+/** 用户名每天只能改一次，避免"改名躲人"。固定值，不进配置 */
+export const USERNAME_CHANGES_PER_DAY = 1;
 
-export type DailyAction = keyof typeof DAILY_ACTION_LIMITS;
+export type DailyAction = "comment" | "resource" | "username";
+
+/** 取某个行为今天的上限 */
+function limitFor(config: LimitsConfig, kind: DailyAction): number {
+  switch (kind) {
+    case "comment":
+      return config.commentsPerDay;
+    case "resource":
+      return config.resourcesPerDay;
+    case "username":
+      return USERNAME_CHANGES_PER_DAY;
+  }
+}
 
 export interface LimitStatus {
   allowed: boolean;
@@ -72,7 +85,7 @@ export async function checkDailyLimit(
   kind: DailyAction,
   isAdmin = false
 ): Promise<LimitStatus> {
-  const limit = DAILY_ACTION_LIMITS[kind];
+  const limit = limitFor(await getLimits(), kind);
   if (isAdmin) return { allowed: true, used: 0, limit };
 
   const used = await readDailyCount(userId, kind);

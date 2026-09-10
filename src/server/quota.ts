@@ -1,13 +1,16 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { getLimits } from "@/server/settings";
+import { limitsToBytes } from "@/lib/validators/limits";
 
 /**
  * 每日传输配额。
  *
  * 规则：
- *   - 上传：**非管理员**每天 1GB（管理员不限）
- *   - 下载：**非管理员与未登录访客**每天 1GB（管理员不限）
+ *   - 上传：**非管理员**每天默认 1GB（管理员不限）
+ *   - 下载：**非管理员与未登录访客**每天默认 1GB（管理员不限）
+ * 具体数字由管理员在后台「限额设置」里调整（见 @/server/settings）。
  *
  * 设计要点：
  * 1. 计数以「UTC 日期 + 主体」为键落库（见 schema 的 TransferUsage），
@@ -17,8 +20,6 @@ import { prisma } from "@/lib/prisma";
  * 3. 这是**软限制**：高并发下 check 与 add 之间存在竞态，可能略微超出。
  *    对"防滥用"这个目的足够；如果要严格，需要在同一事务里加行锁。
  */
-
-export const DAILY_QUOTA_BYTES = 1024 * 1024 * 1024; // 1GB
 
 export type QuotaKind = "upload" | "download";
 
@@ -100,14 +101,18 @@ export async function checkQuota(
   kind: QuotaKind,
   amount: number
 ): Promise<QuotaStatus> {
+  const bytes = limitsToBytes(await getLimits());
+  const limit =
+    kind === "upload" ? bytes.uploadQuotaBytes : bytes.downloadQuotaBytes;
+
   if (subject.isAdmin) {
-    return { allowed: true, used: 0, limit: DAILY_QUOTA_BYTES, amount };
+    return { allowed: true, used: 0, limit, amount };
   }
   const used = await readUsage(subject, kind);
   return {
-    allowed: used + amount <= DAILY_QUOTA_BYTES,
+    allowed: used + amount <= limit,
     used,
-    limit: DAILY_QUOTA_BYTES,
+    limit,
     amount,
   };
 }
@@ -139,13 +144,4 @@ export async function addUsage(
       [field]: { increment: BigInt(amount) },
     },
   });
-}
-
-/** 给提示文案用：把字节数转成可读的 GB/MB */
-export function formatQuota(bytes: number): string {
-  if (bytes >= 1024 * 1024 * 1024) {
-    const gb = bytes / 1024 / 1024 / 1024;
-    return `${Number.isInteger(gb) ? gb : gb.toFixed(1)} GB`;
-  }
-  return `${Math.round(bytes / 1024 / 1024)} MB`;
 }

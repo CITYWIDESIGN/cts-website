@@ -8,22 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ALLOWED_COVER_MIME, COVER_ACCEPT_ATTR } from "@/lib/image-types";
-
-/** 与 src/server/resource.ts 保持一致 */
-export const MAX_FILE_BYTES = 5 * 1024 * 1024;
-export const MAX_IMAGE_BYTES = 1024 * 1024;
-
-export function formatBytes(bytes: number) {
-  if (bytes <= 0) return "0 B";
-  const units = ["B", "KB", "MB"];
-  const i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
-  const v = bytes / Math.pow(1024, i);
-  return `${i === 0 ? v : v.toFixed(1)} ${units[i]}`;
-}
+import { MB } from "@/lib/validators/limits";
+import { useLimits } from "@/components/limits-provider";
 
 /**
  * 资源表单的公共字段（标题 / 介绍 / 封面）。
- * 上传达与编辑弹窗共用，避免两处各写一份导致校验与提示不一致。
+ * 上传弹窗与编辑弹窗共用，避免两处各写一份导致校验与提示不一致。
+ *
+ * 封面大小上限来自 @/components/limits-provider（管理员可在后台调整），
+ * 不再写死 —— 服务端会再校验一次，见 @/server/resource。
  */
 export function ResourceFields({
   idPrefix,
@@ -43,6 +36,7 @@ export function ResourceFields({
   onImageChange: (v: string | null) => void;
 }) {
   const t = useTranslations("resources");
+  const limits = useLimits();
 
   function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -53,8 +47,8 @@ export function ResourceFields({
       e.target.value = "";
       return;
     }
-    if (f.size > MAX_IMAGE_BYTES) {
-      toast.error(t("errors.imageTooLarge", { max: 1 }));
+    if (f.size > limits.maxImageMb * MB) {
+      toast.error(t("errors.imageTooLarge", { max: limits.maxImageMb }));
       e.target.value = "";
       return;
     }
@@ -120,7 +114,9 @@ export function ResourceFields({
             />
           </label>
         )}
-        <p className="text-xs text-muted-foreground">{t("fields.imageHint")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("fields.imageHint", { max: limits.maxImageMb })}
+        </p>
       </div>
     </div>
   );

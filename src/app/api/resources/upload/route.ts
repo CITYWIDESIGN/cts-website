@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/server/auth";
-import {
-  createResource,
-  ResourceError,
-  MAX_FILE_BYTES,
-  MAX_IMAGE_BYTES,
-} from "@/server/resource";
+import { createResource, ResourceError } from "@/server/resource";
 import { addUsage, checkQuota, clientIp } from "@/server/quota";
 import { addDailyCount, checkDailyLimit } from "@/server/limit";
+import { getLimits } from "@/server/settings";
+import { limitsToBytes } from "@/lib/validators/limits";
 import { isBanned } from "@/server/ban";
 import { isAllowedCoverDataUrl } from "@/lib/image-types";
 import { ResourceMetaSchema } from "@/lib/validators/questionnaire";
@@ -16,9 +13,9 @@ import { ResourceMetaSchema } from "@/lib/validators/questionnaire";
  * 上传资源。
  *
  * 权限：**只要登录即可上传**，不要求通过入服审核；**被封禁的用户不能上传**。
- * 配额：
- *   - 次数：**非管理员每天 50 个**（管理员不限），超限返回 429 + limit_exceeded
- *   - 流量：**非管理员每天 1GB**（管理员不限），超限返回 413 + quota_exceeded
+ * 配额（数字由管理员在后台「限额设置」里调整，管理员不受限）：
+ *   - 次数：每天 N 个，超限返回 429 + limit_exceeded
+ *   - 流量：每天 N MB，超限返回 413 + quota_exceeded
  *   两者都不对外展示，由前端给出提示。
  *
  * 用 route handler 而不是 Server Action：Server Action 传二进制要做 base64
@@ -60,13 +57,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "invalid_meta" }, { status: 400 });
   }
 
+  const { maxFileBytes, maxImageBytes } = limitsToBytes(await getLimits());
+
   const file = form.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ ok: false, error: "file_required" }, { status: 400 });
   }
-  if (file.size > MAX_FILE_BYTES) {
+  if (file.size > maxFileBytes) {
     return NextResponse.json(
-      { ok: false, error: "file_too_large", max: MAX_FILE_BYTES },
+      { ok: false, error: "file_too_large", max: maxFileBytes },
       { status: 413 }
     );
   }
@@ -79,9 +78,9 @@ export async function POST(request: Request) {
     if (!isAllowedCoverDataUrl(imageField)) {
       return NextResponse.json({ ok: false, error: "image_type" }, { status: 415 });
     }
-    if (imageField.length > MAX_IMAGE_BYTES * 1.4) {
+    if (imageField.length > maxImageBytes * 1.4) {
       return NextResponse.json(
-        { ok: false, error: "image_too_large", max: MAX_IMAGE_BYTES },
+        { ok: false, error: "image_too_large", max: maxImageBytes },
         { status: 413 }
       );
     }

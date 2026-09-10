@@ -404,7 +404,7 @@
       "image": "Cover image",
       "pickImage": "Choose image",
       "removeImage": "Remove image",
-      "imageHint": "Optional. 16:9 recommended, 1MB max. PNG / JPG / GIF / WebP only — no SVG.",
+      "imageHint": "Optional. 16:9 recommended, {max}MB max. PNG / JPG / GIF / WebP only — no SVG.",
       "file": "File",
       "pickFile": "Click to choose a file",
       "keepFile": "Keep the current file",
@@ -421,7 +421,7 @@
       "needLogin": "Please sign in before uploading",
       "forbidden": "You don't have permission to modify this post",
       "limitReached": "You have reached today’s publishing limit ({limit} per day).",
-      "quotaExceeded": "Today’s upload quota ({limit}GB) has been used up. Please try again tomorrow.",
+      "quotaExceeded": "Today’s upload quota ({limit}) has been used up. Please try again tomorrow.",
       "unknown": "Upload failed, please try again later"
     }
   },
@@ -826,6 +826,7 @@
     "resourcesNav": "Resources",
     "reportsNav": "Reports",
     "joinNav": "Join entry",
+    "limitsNav": "Limits",
     "statsNav": "Statistics",
     "auditNav": "Audit log",
     "overview": "Overview",
@@ -936,7 +937,8 @@
         "user_purge": "Deleted user",
         "user_anonymize": "Closed account",
         "report_remove_content": "Removed reported content",
-        "join_config_update": "Changed join entry"
+        "join_config_update": "Changed join entry",
+        "limits_update": "Changed limits"
       }
     },
     "join": {
@@ -996,6 +998,38 @@
         "invalid_url": "The link must be a full address starting with http:// or https://.",
         "invalid_path": "An on-site path must start with / and cannot be a // address.",
         "questionnaire_not_found": "The selected questionnaire is unpublished or gone. Please pick another.",
+        "unknown": "Save failed, please try again later."
+      }
+    },
+    "limits": {
+      "title": "Limits",
+      "description": "Configure the daily usage caps for regular users. Admins are exempt and are never counted.",
+      "countTitle": "Action limits",
+      "countHint": "Counted per UTC day and reset automatically at midnight — nothing to clean up.",
+      "commentsPerDay": "Comments per day",
+      "commentsPerDayHint": "Comments and replies are counted together.",
+      "resourcesPerDay": "Resources published per day",
+      "resourcesPerDayHint": "Counts successfully published resources.",
+      "unitComments": "per day",
+      "unitResources": "per day",
+      "transferTitle": "Transfer and file size",
+      "transferHint": "Uploads and downloads are counted separately; cover images count towards the upload quota.",
+      "uploadQuota": "Upload per day",
+      "downloadQuota": "Download per day",
+      "downloadQuotaHint": "The download cap also applies to signed-out visitors, counted per IP.",
+      "maxFile": "Max size per resource file",
+      "maxImage": "Max size per cover image",
+      "equals": "= {value}",
+      "adminExemptNote": "These limits apply to regular users only. Admins are not restricted on comments, uploads or downloads, and are never written to the usage records.",
+      "resetDefaults": "Restore defaults",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved. The new limits are in effect.",
+      "applyHint": "Takes effect immediately, no redeploy needed.",
+      "errors": {
+        "invalid": "A field is empty or outside the allowed range.",
+        "file_over_quota": "The per-file limit cannot exceed the daily upload quota — otherwise a file would be blocked before it finishes uploading.",
+        "image_over_quota": "The cover image limit cannot exceed the daily upload quota.",
         "unknown": "Save failed, please try again later."
       }
     },

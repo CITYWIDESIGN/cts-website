@@ -404,7 +404,7 @@
       "image": "封面图",
       "pickImage": "选择图片",
       "removeImage": "移除图片",
-      "imageHint": "选填。建议 16:9，最大 1MB；支持 PNG / JPG / GIF / WebP，不支持 SVG",
+      "imageHint": "选填。建议 16:9，最大 {max}MB；支持 PNG / JPG / GIF / WebP，不支持 SVG",
       "file": "文件",
       "pickFile": "点这里选文件",
       "keepFile": "保持原文件不变",
@@ -421,7 +421,7 @@
       "needLogin": "请先登录再上传",
       "forbidden": "没有权限操作这条动态",
       "limitReached": "今日资源发布数量已达上限（每天 {limit} 个）。",
-      "quotaExceeded": "今日上传额度（{limit}GB）已用完，请明日再试。",
+      "quotaExceeded": "今日上传额度（{limit}）已用完，请明日再试。",
       "unknown": "上传失败，请稍后重试"
     }
   },
@@ -826,6 +826,7 @@
     "resourcesNav": "资源",
     "reportsNav": "举报",
     "joinNav": "加入入口",
+    "limitsNav": "限额设置",
     "statsNav": "统计",
     "auditNav": "审计日志",
     "overview": "概览",
@@ -936,7 +937,8 @@
         "user_purge": "删除用户",
         "user_anonymize": "注销账号",
         "report_remove_content": "按举报删除内容",
-        "join_config_update": "修改加入入口"
+        "join_config_update": "修改加入入口",
+        "limits_update": "修改限额设置"
       }
     },
     "join": {
@@ -996,6 +998,38 @@
         "invalid_url": "链接需为以 http:// 或 https:// 开头的完整地址。",
         "invalid_path": "站内路径必须以 / 开头，且不能是 // 开头的地址。",
         "questionnaire_not_found": "选中的问卷已下线或不存在，请重新选择。",
+        "unknown": "保存失败，请稍后重试。"
+      }
+    },
+    "limits": {
+      "title": "限额设置",
+      "description": "配置普通用户的每日用量上限。管理员不受这些限制，也不计入用量。",
+      "countTitle": "次数限额",
+      "countHint": "按 UTC 日期计算，每天零点自然重置，无需手动清理。",
+      "commentsPerDay": "每日评论数",
+      "commentsPerDayHint": "评论与回复合并计算。",
+      "resourcesPerDay": "每日发布资源数",
+      "resourcesPerDayHint": "统计成功发布的资源条数。",
+      "unitComments": "条 / 天",
+      "unitResources": "个 / 天",
+      "transferTitle": "流量与文件大小",
+      "transferHint": "上传与下载分开计算；封面图算在上传额度里。",
+      "uploadQuota": "每日上传总量",
+      "downloadQuota": "每日下载总量",
+      "downloadQuotaHint": "下载对未登录访客同样生效，按 IP 计算。",
+      "maxFile": "单个资源文件上限",
+      "maxImage": "单张封面图上限",
+      "equals": "相当于 {value}",
+      "adminExemptNote": "以上限额仅对普通用户生效。管理员的评论、上传、下载都不受限，也不会写入用量记录。",
+      "resetDefaults": "恢复默认值",
+      "save": "保存",
+      "saving": "保存中…",
+      "saved": "已保存，新的限额立即生效。",
+      "applyHint": "保存后立即生效，无需重新部署。",
+      "errors": {
+        "invalid": "有字段为空或超出允许范围。",
+        "file_over_quota": "单个文件上限不能高于每日上传总量，否则文件还没传完就会被额度挡住。",
+        "image_over_quota": "单张封面图上限不能高于每日上传总量。",
         "unknown": "保存失败，请稍后重试。"
       }
     },

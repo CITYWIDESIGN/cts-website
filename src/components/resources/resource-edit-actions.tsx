@@ -19,7 +19,10 @@ import {
   deleteResourceAction,
   updateResourceAction,
 } from "@/lib/actions/resource";
-import { ResourceFields, MAX_FILE_BYTES, formatBytes } from "./resource-fields";
+import { ResourceFields } from "./resource-fields";
+import { formatBytes } from "@/lib/format";
+import { MB } from "@/lib/validators/limits";
+import { useLimits } from "@/components/limits-provider";
 
 /**
  * 资源编辑 / 删除按钮。
@@ -46,6 +49,7 @@ export function ResourceEditActions({
   const t = useTranslations("resources");
   const common = useTranslations("common");
   const router = useRouter();
+  const limits = useLimits();
 
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -85,8 +89,8 @@ export function ResourceEditActions({
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
-    if (f && f.size > MAX_FILE_BYTES) {
-      toast.error(t("errors.fileTooLarge", { max: 5 }));
+    if (f && f.size > limits.maxFileMb * MB) {
+      toast.error(t("errors.fileTooLarge", { max: limits.maxFileMb }));
       e.target.value = "";
       return;
     }
@@ -128,9 +132,9 @@ export function ResourceEditActions({
         res.error === "forbidden"
           ? t("errors.forbidden")
           : res.error === "fileTooLarge"
-            ? t("errors.fileTooLarge", { max: 5 })
+            ? t("errors.fileTooLarge", { max: limits.maxFileMb })
             : res.error === "imageTooLarge"
-              ? t("errors.imageTooLarge", { max: 1 })
+              ? t("errors.imageTooLarge", { max: limits.maxImageMb })
               : res.error === "imageType"
                 ? t("errors.imageType")
                 : common("error")
@@ -210,7 +214,7 @@ export function ResourceEditActions({
                 <input type="file" className="hidden" onChange={onPickFile} />
               </label>
               <p className="text-xs text-muted-foreground">
-                {t("fields.replaceFileHint", { max: 5 })}
+                {t("fields.replaceFileHint", { max: limits.maxFileMb })}
               </p>
             </div>
           </div>

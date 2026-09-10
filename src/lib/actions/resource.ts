@@ -8,8 +8,9 @@ import {
   updateResource,
   canManageResource,
   ResourceError,
-  MAX_FILE_BYTES,
 } from "@/server/resource";
+import { getLimits } from "@/server/settings";
+import { limitsToBytes } from "@/lib/validators/limits";
 import { ResourceMetaSchema } from "@/lib/validators/questionnaire";
 import { recordAudit } from "@/server/audit";
 import { isAllowedCoverDataUrl } from "@/lib/image-types";
@@ -86,7 +87,8 @@ export async function updateResourceAction(
   let file: { name: string; type: string; data: Buffer } | undefined;
   const fileField = formData.get("file");
   if (fileField instanceof File && fileField.size > 0) {
-    if (fileField.size > MAX_FILE_BYTES) {
+    const { maxFileBytes } = limitsToBytes(await getLimits());
+    if (fileField.size > maxFileBytes) {
       return { ok: false, error: "fileTooLarge" };
     }
     file = {

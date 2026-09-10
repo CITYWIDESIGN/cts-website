@@ -1,6 +1,6 @@
 import { getCurrentUser } from "@/server/auth";
 import { getResourceBlob, incrementDownloads } from "@/server/resource";
-import { addUsage, checkQuota, clientIp, DAILY_QUOTA_BYTES } from "@/server/quota";
+import { addUsage, checkQuota, clientIp } from "@/server/quota";
 import { isBanned } from "@/server/ban";
 import { recordDownload } from "@/server/stats";
 
@@ -8,8 +8,8 @@ import { recordDownload } from "@/server/stats";
  * 下载资源附件。
  *
  * 权限：**不需要登录**，任何访客都能下载；**被封禁的用户不能下载**。
- * 配额：**非管理员与未登录访客每天 1GB**（管理员不限）。
- *       配额不对外展示，超限时返回 429 + quota_exceeded。
+ * 配额：**非管理员与未登录访客**每天 N MB（管理员不限，数字由管理员在
+ *       后台「限额设置」里调整）。配额不对外展示，超限时返回 429。
  *
  * 计数口径用「记录里的 fileSize」而不是实际写出的字节数：
  * 响应可能因为客户端中断而少发，但按文件大小计更稳定、也更好解释。
@@ -57,7 +57,7 @@ export async function GET(
     return new Response(
       JSON.stringify({
         error: "quota_exceeded",
-        limit: DAILY_QUOTA_BYTES,
+        limit: quota.limit,
       }),
       {
         status: 429,

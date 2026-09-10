@@ -20,7 +20,8 @@ export type AuditAction =
   | "user.purge"
   | "user.anonymize"
   | "report.remove_content"
-  | "join_config.update";
+  | "join_config.update"
+  | "limits.update";
 
 export interface AuditInput {
   action: AuditAction;

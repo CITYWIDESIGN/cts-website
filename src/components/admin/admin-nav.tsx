@@ -14,6 +14,7 @@ import {
   BarChart3,
   History,
   DoorOpen,
+  Gauge,
   Home,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +42,7 @@ const groups: Array<{ labelKey: string; items: NavItem[] }> = [
       { href: "/admin/resources", key: "resourcesNav", icon: FolderArchive },
       { href: "/admin/reports", key: "reportsNav", icon: Flag },
       { href: "/admin/join", key: "joinNav", icon: DoorOpen },
+      { href: "/admin/limits", key: "limitsNav", icon: Gauge },
     ],
   },
   {

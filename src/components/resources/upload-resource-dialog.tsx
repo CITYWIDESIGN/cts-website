@@ -17,11 +17,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  ResourceFields,
-  MAX_FILE_BYTES,
-  formatBytes,
-} from "./resource-fields";
+import { ResourceFields } from "./resource-fields";
+import { formatBytes } from "@/lib/format";
+import { MB } from "@/lib/validators/limits";
+import { useLimits } from "@/components/limits-provider";
 import { useBanNotice } from "@/components/ban-notice";
 
 /**
@@ -36,6 +35,7 @@ export function UploadResourceDialog() {
   const common = useTranslations("common");
   const router = useRouter();
   const banNotice = useBanNotice();
+  const limits = useLimits();
   const [scope, animate] = useAnimate();
 
   const [open, setOpen] = React.useState(false);
@@ -55,8 +55,8 @@ export function UploadResourceDialog() {
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
-    if (f && f.size > MAX_FILE_BYTES) {
-      toast.error(t("errors.fileTooLarge", { max: 5 }));
+    if (f && f.size > limits.maxFileMb * MB) {
+      toast.error(t("errors.fileTooLarge", { max: limits.maxFileMb }));
       e.target.value = "";
       return;
     }
@@ -115,12 +115,18 @@ export function UploadResourceDialog() {
         }
         // 次数超限：文案要说清楚"明天恢复"，否则用户会以为永久受限
         if (data.error === "limit_exceeded") {
-          toast.error(t("errors.limitReached", { limit: data.limit ?? 50 }));
+          toast.error(
+            t("errors.limitReached", { limit: data.limit ?? limits.resourcesPerDay })
+          );
           return;
         }
-        // 流量配额超限：同上
+        // 流量配额超限：同上。服务端把字节数放在 limit 里
         if (data.error === "quota_exceeded") {
-          toast.error(t("errors.quotaExceeded", { limit: 1 }));
+          toast.error(
+            t("errors.quotaExceeded", {
+              limit: formatBytes(data.limit ?? limits.uploadQuotaMb * MB),
+            })
+          );
           return;
         }
         const key =
@@ -133,9 +139,9 @@ export function UploadResourceDialog() {
                 : "unknown";
         toast.error(
           key === "fileTooLarge"
-            ? t("errors.fileTooLarge", { max: 5 })
+            ? t("errors.fileTooLarge", { max: limits.maxFileMb })
             : key === "imageTooLarge"
-              ? t("errors.imageTooLarge", { max: 1 })
+              ? t("errors.imageTooLarge", { max: limits.maxImageMb })
               : t(`errors.${key}`)
         );
         return;
@@ -204,7 +210,7 @@ export function UploadResourceDialog() {
                 <input type="file" className="hidden" onChange={onPickFile} />
               </label>
               <p className="text-xs text-muted-foreground">
-                {t("fields.fileHint", { max: 5 })}
+                {t("fields.fileHint", { max: limits.maxFileMb })}
               </p>
             </div>
           </div>
