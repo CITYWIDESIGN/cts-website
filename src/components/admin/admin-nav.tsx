@@ -217,7 +217,13 @@ export function AdminNav({
   );
 
   return (
-    <nav className="flex flex-col gap-5">
+    /*
+      layoutRoot：当前项指示块是 layoutId 共享元素，Motion 会按**文档坐标**
+      做 FLIP。后台各页高度差得不小，切到更矮的一页时浏览器会把 scrollY 往回夹，
+      "切换前的位置"和"切换后的位置"就不在同一个滚动基准上了 —— 指示块会从屏幕
+      外滑进来。声明 layoutRoot 后它只相对这列导航测量。
+    */
+    <motion.nav layoutRoot className="flex flex-col gap-5">
       {groups.map((group, gi) => (
         <div key={group.labelKey} className="flex flex-col gap-1">
           {/*
@@ -264,6 +270,6 @@ export function AdminNav({
           flat.length
         )}
       </div>
-    </nav>
+    </motion.nav>
   );
 }

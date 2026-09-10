@@ -197,7 +197,15 @@ export function ResourceGrid({
           )}
         </div>
 
-        <div
+        {/*
+          layoutRoot：高亮块是 layoutId 共享元素，Motion 会把它换算成**文档
+          坐标**来做 FLIP。三种视图的页面高度差很大，切换到更矮的视图时浏览器
+          会把 scrollY 往回夹，于是"切换前记下的位置"和"切换后的位置"不在同一
+          个滚动基准上 —— 高亮块会从屏幕外飞进来。
+          声明 layoutRoot 后，子元素只相对这排标签测量，与页面滚动无关。
+        */}
+        <motion.div
+          layoutRoot
           role="tablist"
           aria-label={t("viewLabel")}
           className="inline-flex shrink-0 items-center gap-0.5 rounded-lg border bg-muted/40 p-0.5"
@@ -232,7 +240,7 @@ export function ResourceGrid({
               </button>
             );
           })}
-        </div>
+        </motion.div>
       </div>
 
       {items.length === 0 ? (

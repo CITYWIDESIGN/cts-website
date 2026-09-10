@@ -6,6 +6,7 @@ import { requireAdmin } from "@/server/auth";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LimitsLoader } from "@/components/limits-loader";
+import { StickyLayoutRoot } from "@/components/motion/layout-root";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Suspense } from "react";
@@ -49,8 +50,11 @@ export default async function AdminLayout({
         </AdminSidebar>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          {/* 顶部栏 */}
-          <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
+          {/* 顶部栏。
+              用 StickyLayoutRoot 而不是裸 <header>：移动端横向导航的高亮块是
+              layoutId 共享元素，sticky 容器不加 layoutRoot 会算错滚动偏移
+              （原因见 @/components/motion/layout-root）。 */}
+          <StickyLayoutRoot className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
             {/* 移动端：品牌 + 横向导航 */}
             <div className="flex min-w-0 items-center gap-2 lg:hidden">
               <Link href="/admin" className="flex shrink-0 items-center gap-2">
@@ -86,7 +90,7 @@ export default async function AdminLayout({
                 <UserMenu />
               </Suspense>
             </div>
-          </header>
+          </StickyLayoutRoot>
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
         </div>

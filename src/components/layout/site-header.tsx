@@ -8,10 +8,16 @@ import { NotificationMenu } from "./notification-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StickyLayoutRoot } from "@/components/motion/layout-root";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur transition-colors">
+    /*
+      用 StickyLayoutRoot 而不是裸 <header>：导航项的高亮指示条是 layoutId
+      共享元素，而这里是 sticky 容器 —— 不加 layoutRoot 的话，页面滚到底再
+      切换导航时指示条会从屏幕外飞进来（原因见 layout-root.tsx）。
+    */
+    <StickyLayoutRoot className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur transition-colors">
       <div className="relative mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
         {/* 左：移动端菜单 + Logo */}
         <div className="flex flex-1 items-center gap-2">
@@ -38,6 +44,6 @@ export function SiteHeader() {
           </Suspense>
         </div>
       </div>
-    </header>
+    </StickyLayoutRoot>
   );
 }
