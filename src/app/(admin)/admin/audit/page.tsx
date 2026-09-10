@@ -67,6 +67,7 @@ export default async function AdminAuditPage() {
                 return (
                   <RowReveal
                     key={log.id}
+                    as="li"
                     index={Math.min(i, 12)}
                     className="rounded-xl border px-4 py-3 transition-colors duration-200 hover:bg-accent/40"
                   >
