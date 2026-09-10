@@ -54,19 +54,34 @@ export function UserAvatarLink({
   );
 
   return (
+    /*
+      ⚠️ `h-fit` 不能去掉。
+      这里的 Link 与里面的 span 都是 **flex item**，而 flex 的 `align-items`
+      默认是 `stretch` —— 只要父容器没写 items-center / items-start，
+      它们就会被拉到整行高度（评论区里一行 ~70px，而头像只有 32px）。
+      于是 `ring-1` 那一圈被画在一个 ~70px 高的圆角矩形上，32px 的头像
+      只盖住它的上半部分，**底下就露出一条 U 形的线**。
+
+      `h-fit` 让高度由内容决定，不再被拉伸；同时 `align-self` 仍是 auto，
+      所以在 `items-center` 的父容器里依旧正常居中。
+    */
     <Link
       href={`/u/${userId}`}
       title={title}
       aria-label={title}
       className={cn(
-        "inline-flex shrink-0 rounded-md transition-transform duration-200 hover:scale-105 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+        "inline-flex h-fit shrink-0 rounded-md transition-transform duration-200 hover:scale-105 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
         className
       )}
     >
       {framed ? (
         <AvatarFrame size={size}>{avatar}</AvatarFrame>
       ) : (
-        <span className="block overflow-hidden rounded-md ring-1 ring-border">
+        // 显式尺寸，双保险：即使父容器是 stretch，这圈 ring 也只会贴着头像
+        <span
+          className="block overflow-hidden rounded-md ring-1 ring-border"
+          style={{ width: size, height: size }}
+        >
           {avatar}
         </span>
       )}
