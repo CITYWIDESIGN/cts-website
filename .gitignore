@@ -39,6 +39,25 @@ yarn-error.log*
 # 文件保留在本地（部署和填表时还要用）。
 appid表单.txt
 
+# 本地环境覆盖：docker-compose.override.yml 常被用来写死本机端口/路径
+docker-compose.override.yml
+
+# 日志与数据库转储（排查问题时会在根目录生成，不该进版本库）
+*.log
+*.sql.gz
+*.dump
+
+# 编辑器 / 助手工具的本地配置：每个开发者机器上都不一样，
+# 提交进来只会给审阅的人增加噪音
+.idea/
+.vscode/
+.claude/
+.cursor/
+
+# 系统杂物
+Thumbs.db
+Desktop.ini
+
 # vercel
 .vercel
 

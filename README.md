@@ -413,4 +413,7 @@ npm run start        # runs on :3000, put nginx/caddy in front for HTTPS
 
 ## License
 
-Private project. All rights reserved.
+**Proprietary — all rights reserved.** This repository is published for review and
+reference only. It is **not** open source: no permission is granted to use, copy,
+modify, redistribute or reuse any part of it. See [LICENSE](./LICENSE) for the
+full terms.
