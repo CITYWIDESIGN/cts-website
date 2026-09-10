@@ -9,6 +9,7 @@ import {
   type KeyObject,
 } from "node:crypto";
 import { createAuthLogger, type AuthLogger } from "./logger";
+import { sessionSecret } from "@/lib/session-secret";
 
 /**
  * Microsoft / Xbox / Minecraft OAuth 认证链路。
@@ -79,8 +80,13 @@ export function isMicrosoftConfigured(): boolean {
 // state（CSRF 防护，无状态签名）
 // ---------------------------------------------------------------------------
 
+/**
+ * state 的签名密钥。
+ * 与 session cookie 用同一个密钥（见 @/lib/session-secret）：
+ * 生产环境缺失会在这里抛错，而不是悄悄用一个公开的默认值。
+ */
 function stateSecret(): string {
-  return process.env.SESSION_SECRET ?? "insecure-development-secret";
+  return sessionSecret();
 }
 
 function signState(raw: string): string {

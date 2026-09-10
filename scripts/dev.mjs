@@ -91,6 +91,38 @@ function banner() {
 // ---------------------------------------------------------------------------
 // 基础工具
 // ---------------------------------------------------------------------------
+
+/**
+ * 检查 SESSION_SECRET 是否够格。
+ * 返回 null 表示没问题，否则返回一句人话说明哪里不行。
+ *
+ * 与 src/lib/session-secret.ts 的规则保持一致：至少 32 字符、不能是示例值。
+ */
+const MIN_SECRET_LENGTH = 32;
+const DEV_FALLBACK_SECRET = "insecure-development-secret-change-me";
+
+function checkSessionSecret(raw) {
+  const v = (raw ?? "").trim();
+  if (!v) return "未配置（开发环境会用兜底值，生产环境会直接报错）";
+  if (v === DEV_FALLBACK_SECRET || v.includes("replace-me")) {
+    return "还是示例里的占位值，请换成随机字符串";
+  }
+  if (v.length < MIN_SECRET_LENGTH) {
+    return `太短（${v.length} 字符，至少 ${MIN_SECRET_LENGTH}）`;
+  }
+  return null;
+}
+
+/** 生产构建 / 启动前拦一道：这类问题不该等到线上才发现 */
+function assertSecretForProduction() {
+  const issue = checkSessionSecret(envValue("SESSION_SECRET"));
+  if (!issue) return true;
+  log.err(`SESSION_SECRET ${issue}`);
+  log.dim("  生成一个并写进 .env：");
+  log.dim("    node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"");
+  return false;
+}
+
 function loadEnv() {
   const envPath = path.join(ROOT, ".env");
   if (!existsSync(envPath)) return;
@@ -220,9 +252,12 @@ async function doCheck() {
   if (dbUrl) log.ok("DATABASE_URL 已配置");
   else log.warn("DATABASE_URL 未配置");
 
+  // SESSION_SECRET 是安全边界：泄露 = 可伪造登录态。
+  // 开发环境缺失会自动兜底，所以这里只提示；构建 / 启动前会拦。
   const secret = envValue("SESSION_SECRET");
-  if (secret && !secret.includes("replace-me")) log.ok("SESSION_SECRET 已配置");
-  else log.warn("SESSION_SECRET 缺失或为默认值");
+  const secretIssue = checkSessionSecret(secret);
+  if (!secretIssue) log.ok(`SESSION_SECRET 已配置（${secret.trim().length} 字符）`);
+  else log.warn(`SESSION_SECRET ${secretIssue}`);
 
   if (isOAuthConfigured()) log.ok("Microsoft OAuth 已配置");
   else log.dim("Microsoft OAuth 未配置（登录页将显示友好提示）");
@@ -402,6 +437,7 @@ async function doDev() {
  */
 async function doBuild() {
   loadEnv();
+  if (!assertSecretForProduction()) return 1;
   await ensurePrismaClient();
   log.step("生产构建 (next build) …");
   return nextCmd("build");
@@ -410,6 +446,7 @@ async function doBuild() {
 /** 启动生产服务器（需要先 build） */
 async function doStart() {
   loadEnv();
+  if (!assertSecretForProduction()) return 1;
   log.step("启动生产服务器 (next start) …");
   return nextCmd("start");
 }
