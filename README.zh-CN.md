@@ -26,13 +26,24 @@
 
 ## 功能
 
-- **公开页面** — 首页（Hero、服务器状态、特色、介绍、CTA）、`/server`、`/rules`、`/login`（全部双语、SEO 友好）。
-- **账户系统** — 使用 Microsoft 登录，绑定真实 Minecraft 身份（UUID + 玩家名）。本站绝不经手或保存 Microsoft 密码。
-- **问卷系统** — 单选、多选、单行文本、多行文本。分步向导，带进度显示、必填校验与提交确认。
-- **管理后台** — 数据概览、用户管理（搜索/筛选/分页/角色）、问卷 CRUD + 编辑器、提交审核（通过/拒绝）、资源管理。
-- **资源分享** — 类似 MCBBS 的资源板块：游客可浏览与下载，登录用户可上传（附件 ≤5MB，可附封面图），管理员在后台编辑或删除。
-- **社区页** — QQ 群二维码、OOPZ 与 Discord 入口。
-- **设计系统** — 中性色 + 低饱和品牌绿、明暗主题、`prefers-reduced-motion` 降级、完整响应式。
+### 公开页面
+
+- **首页** — Hero（服务器状态、影像轮播、行动入口）、特色、介绍、数据、加入流程、公告、FAQ，全部双语。
+- **`/server` `/rules` `/community`** — 服务器信息、规则、社区渠道（QQ 群 / OOPZ / Discord）。
+- **`/u/<id>`** — 玩家公开资料页，任何访客都能看（评论 / 资源 / 下载数）。
+
+### 账户
+
+- **本地账号为主** — 用户名 + 邮箱 + 密码，**两步注册**：填资料 → 收邮箱验证码，验证通过后账号才创建。
+- **Microsoft 登录可选** — 绑定后可验证真实 Minecraft 身份并解锁一枚头像框；未绑定也能正常使用站内功能（Minecraft ID / UUID 可在个人中心手动填写，皮肤头像照常显示）。
+- **找回密码** — 邮箱验证码重置。
+- **换绑邮箱** — 为防账号被盗，需**同时验证当前邮箱与新邮箱**（两封验证码邮件）。
+- **修改用户名** — 每天仅一次，防止"改名躲人"。
+- **注销账号** — 账号立即失效、身份信息抹除，但已发布的内容保留（作者显示为「已注销用户」）。
+
+### 问卷与入服申请
+
+单选、多选、单行文本、多行文本四种题型；分步向导，带进度、必填校验与提交确认。管理员在后台审核（通过 / 拒绝），审核状态会反映到首页的行动入口上。
 
 ### 资源分享（`/resources`）
 
@@ -41,27 +52,72 @@
 | 浏览列表 / 查看详情 | 所有人（无需登录） |
 | **下载附件** | 所有人（无需登录） |
 | **上传资源** | **只要登录即可**，不要求通过入服审核 |
-| 编辑介绍 / 删除 | 仅管理员（后台 `/admin/resources`） |
+| 编辑介绍 / 删除 | 上传者本人或管理员 |
 
-- 附件单个不超过 **5MB**，可另附封面图（≤1MB）
-- 附件存放在数据库（`resources` + `resource_blobs` 两张表）——**不依赖共享文件系统或外部对象存储**，本地 / Docker / 多实例部署行为一致
-- 列表查询只取元数据；附件二进制单独放 `resource_blobs`，只有下载接口才读取，避免列表把几 MB 的 blob 全拉回来
-- 封面图经 `/api/resources/[id]/image` 单独提供，避免把 data URL 内联进列表 HTML
-- 下载次数自动计数；删除资源级联删除附件
+- 三种浏览视图：**网格 / 动态 / 列表**，选择记在浏览器本地。
+- 支持搜索（服务端，走 URL 的 `?q=`）与分页（`?page=`）。
+- 点赞、评论、回复、举报、分享链接；每次编辑都生成一条修改记录（类似 git commit，可在详情页查看）。
+- 附件存放在数据库（`resources` + `resource_blobs` 两张表）——**不依赖共享文件系统或外部对象存储**，本地 / Docker / 多实例部署行为一致。
+- 列表查询只取元数据；附件二进制单独放 `resource_blobs`，只有下载接口才读取，避免列表把几 MB 的 blob 全拉回来。
+- 封面图经 `/api/resources/[id]/image` 单独提供，避免把 data URL 内联进列表 HTML。
+- 封面图只接受栅格格式（PNG / JPG / GIF / WebP / AVIF），**明确不支持 SVG** —— SVG 能内嵌脚本，同源内联渲染等于存储型 XSS。
 
-### 每日传输配额
+### 通知
 
-| 动作 | 非管理员 | 管理员 |
-| --- | --- | --- |
-| 上传 | **每天 1GB** | 不限 |
-| 下载 | **每天 1GB**（未登录访客同样受限于此） | 不限 |
+收到点赞或回复时进消息列表（`notifications` 表）；自己操作自己不会产生通知。
 
-- 配额**不对外展示**，只在超限时提示（上传返回 `413 quota_exceeded`，下载返回 `429`）
-- 计数按「**UTC 日期 + 主体**」落库（`transfer_usage` 表）：登录用户按 user id，未登录访客按 IP
-- 跨天自然是新记录，**不需要定时任务清零**
-- 上传与下载分别计数，互不影响
-- 管理员完全不参与配额（连用量行都不写）
-- 说明：这是**软限制**，高并发下 check 与 add 之间存在竞态、可能略微超出；对"防滥用"足够。访客按 IP 计意味着同一 NAT 出口共享额度
+### 管理后台（`/admin`）
+
+| 板块 | 内容 |
+| --- | --- |
+| 概览 | 统计卡片、最近注册用户、最近提交问卷 |
+| 用户管理 | 搜索 / 筛选 / 分页 / 改角色 / 封禁（1d·3d·7d·30d·永久）/ 彻底删除 |
+| 问卷管理 | 创建、编辑、发布 / 暂停、查看结果、审核提交 |
+| 资源管理 | 编辑元信息、替换附件、删除 |
+| 举报处理 | 查看举报与被举报内容摘要，忽略或删除内容 |
+| **加入入口** | 配置首页「申请加入」按钮点击后的行为（见下） |
+| **限额设置** | 配置普通用户的每日用量上限（见下） |
+| 活跃度统计 | 评论 / 资源 / 下载排行，含未登录访客（按 IP） |
+| 审计日志 | 不可逆操作的完整记录 |
+
+#### 加入入口配置
+
+首页与页头「申请加入」按钮点击后做什么，由管理员在 `/admin/join` 配置，四种行为：
+
+| 行为 | 说明 |
+| --- | --- |
+| 填写问卷 | 指定某一份，或自动用最新发布的（默认，等同旧行为） |
+| 打开外部链接 | QQ 群 / Discord / 外部报名表，可选新标签页打开 |
+| 打开站内页面 | 任意站内路径 |
+| 暂时关闭 | 首页不再显示该按钮 |
+
+- **审核状态优先于配置** —— 已提交申请的人看到的始终是「查询审核结果」，不会被推去重填。
+- 还有一个「必须先登录」开关（默认开）：未登录访客先跳登录页，登录后**直接落到目标**（站内目标走 `redirectTo`，登录表单会读取它）。
+- 指定的问卷若被下线或删除，自动退回最新发布的一份，首页不会因此空掉。
+
+#### 用量限额
+
+`/admin/limits` 统一配置普通用户的每日上限。**管理员不受任何限制，也不计入用量记录。**
+
+| 配置项 | 默认值 |
+| --- | --- |
+| 每日评论数（含回复） | 50 |
+| 每日发布资源数 | 50 |
+| 每日上传总量 | 1024 MB（1GB） |
+| 每日下载总量 | 1024 MB（1GB） |
+| 单个资源文件上限 | 5 MB |
+| 单张封面图上限 | 1 MB |
+
+- 配置一律以 **MB 整数**存储（表单里填 1024 比填 1073741824 现实），字节数由代码派生。
+- 上传与下载分别计数；下载额度对**未登录访客**同样生效，按 IP 计（同一 NAT 出口共享额度）。
+- 计数按「**UTC 日期 + 主体 + 行为**」落库（`transfer_usage` / `daily_actions` 两张表），跨天自然是新记录，**不需要定时任务清零**。
+- 配额**不对外展示**，只在超限时提示（上传返回 `413 quota_exceeded`，下载返回 `429`）。
+- 这是**软限制**：高并发下 check 与 add 之间存在竞态、可能略微超出；对"防滥用"足够。
+- 校验有两层：zod 管单字段范围；另有一条**字段关系**规则 —— 单文件上限不得高于每日上传总额度，否则文件永远传不完就被额度挡住，表面合法、实际不可用。
+
+### 设计系统
+
+中性色 + 低饱和品牌绿、明暗主题、`prefers-reduced-motion` 降级、完整响应式。
 
 ---
 
@@ -71,36 +127,51 @@
 webv2/
 ├── prisma/
 │   ├── schema.prisma        # 数据模型
-│   ├── seed.ts              # 演示数据（问卷 + 用户）
+│   ├── seed.ts              # 种子数据（问卷 + 可选演示用户）
 │   └── migrations/
 ├── messages/
 │   ├── en.json              # 英文文案
-│   └── zh.json              # 中文文案
+│   └── zh.json              # 中文文案（两边键必须完全一致，有脚本校验）
+├── scripts/
+│   ├── dev.mjs              # 统一 CLI（启动 / 数据库 / 检查 / 调试）
+│   ├── users.mjs            # 用户管理 + 强制登录
+│   └── i18n-check.mjs       # 中英文案键一致性校验
 ├── src/
 │   ├── app/                 # App Router 页面与路由处理器
-│   │   ├── (marketing)/     # / , /server, /rules, /login
+│   │   ├── (marketing)/     # / , /server, /rules, /community, /resources, /login
 │   │   ├── (dashboard)/     # /dashboard, /questionnaires/*
 │   │   ├── (admin)/         # /admin/*
-│   │   └── api/             # 认证路由
+│   │   └── api/             # 认证、资源上传/下载/封面
 │   ├── components/
 │   │   ├── ui/              # shadcn/ui 基础组件
-│   │   ├── layout/          # 头部、页脚、用户菜单、导航
-│   │   ├── marketing/       # 首页各 Section
+│   │   ├── motion/          # 入场动画原语（Stagger / SplitHeading / RowReveal …）
+│   │   ├── layout/          # 头部、页脚、用户菜单、语言切换
+│   │   ├── marketing/       # 首页各 Section、加入入口按钮
 │   │   ├── questionnaire/   # 问卷表单
+│   │   ├── resources/       # 资源列表 / 详情 / 上传编辑
 │   │   └── admin/           # 后台 UI
-│   ├── server/              # 数据访问层（server-only）
+│   ├── server/              # 数据访问与判定层（server-only）
 │   │   ├── auth.ts          # 会话与角色辅助
-│   │   ├── questionnaire.ts # 问卷查询/CRUD
-│   │   ├── submission.ts    # 提交查询/CRUD
-│   │   └── admin.ts         # 后台统计/用户
+│   │   ├── settings.ts      # SiteSetting 键值配置读写（加入入口 / 限额）
+│   │   ├── limit.ts         # 每日次数限额判定
+│   │   ├── quota.ts         # 每日流量配额判定
+│   │   ├── resource.ts      # 资源查询 / CRUD
+│   │   ├── ban.ts           # 封禁
+│   │   ├── notify.ts        # 通知（自己操作自己不通知）
+│   │   ├── audit.ts         # 审计日志
+│   │   └── …                # questionnaire / submission / report / stats …
 │   ├── lib/
 │   │   ├── prisma.ts        # Prisma 客户端单例
 │   │   ├── session.ts       # iron-session 配置
+│   │   ├── session-secret.ts# SESSION_SECRET 的唯一来源与校验
+│   │   ├── safe-redirect.ts # 站内跳转白名单（挡开放重定向）
+│   │   ├── image-types.ts   # 封面图 MIME 白名单（无 SVG）
 │   │   ├── auth/microsoft.ts# Microsoft → Xbox → XSTS → Minecraft 流程
 │   │   ├── actions/         # Server Actions（变更操作）
-│   │   └── validators/      # Zod 校验
+│   │   └── validators/      # Zod 校验（含 join-config / limits）
 │   ├── i18n/                # next-intl 请求配置
 │   └── config/site.ts       # 服务器名称/地址/状态（mock）
+├── debug.bat                # Windows 一键菜单（等价于 scripts/dev.mjs）
 ├── .env.example
 ├── docker-compose.yml       # 本地 PostgreSQL
 ├── Dockerfile               # 生产镜像
@@ -232,11 +303,19 @@ npm run debug session YourName           # 打印 30 天有效的 mc_session coo
 | 变量                      | 必填 | 说明                                                       |
 | ------------------------- | ---- | ---------------------------------------------------------- |
 | `DATABASE_URL`            | ✅   | PostgreSQL 连接串                                          |
-| `SESSION_SECRET`          | ✅   | 会话 cookie 加密密钥（`openssl rand -base64 32`）          |
+| `SESSION_SECRET`          | ✅   | 会话 cookie 加密密钥兼 OAuth state 签名（`openssl rand -base64 32`）。**至少 32 字符且不能是占位值**；生产环境缺失会直接抛错，`debug.bat build`/`start` 也会拒绝运行 |
+| `NEXT_PUBLIC_SITE_NAME`   | ⬜   | 站点名，用于邮件发件人与页面标题                            |
+| `NEXT_PUBLIC_SITE_URL`    | ⬜   | 站点公开 URL（用于 SEO / 重定向）                          |
 | `MICROSOFT_CLIENT_ID`     | ⬜   | Microsoft Azure 应用客户端 ID（OAuth 用）                  |
 | `MICROSOFT_CLIENT_SECRET` | ⬜   | Microsoft Azure 应用客户端密钥                             |
 | `MICROSOFT_REDIRECT_URI`  | ⬜   | 必须与 Azure 应用的回调 URI 一致                            |
-| `NEXT_PUBLIC_SITE_URL`    | ⬜   | 站点公开 URL（用于 SEO / 重定向）                          |
+| `SMTP_HOST` `SMTP_PORT` `SMTP_SECURE` | ⬜ | 发信服务器。`SMTP_SECURE=true` 用 465，`false` 用 587/STARTTLS |
+| `SMTP_USER` `SMTP_PASS`   | ⬜   | **发件**邮箱与授权码（不是登录密码）。**只需配一个发件邮箱**，它可以给任意收件人发验证码 |
+| `SMTP_FROM`               | ⬜   | 发件人地址，需与 `SMTP_USER` 一致                           |
+
+未配置 SMTP 时：**开发环境**把验证码打印到服务端控制台并显示在页面上，整条流程照常可走；**生产环境**邮件发送会明确报错，而不是静默失败。
+
+自检：`node scripts/dev.mjs mail:test you@example.com`（不带邮箱只测连接）；`node scripts/dev.mjs mail:preview you@example.com` 发送真实模板的排版预览。
 
 ---
 
@@ -335,18 +414,18 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 ## 将用户设为管理员
 
-网站没有注册表单——账户在首次 Microsoft 登录时自动创建。首次登录后，将你的账户提升为管理员：
+网站有注册表单，第一个注册的账号就是普通用户，需要手动提升为管理员：
 
 **方式 A — 调试脚本（最快）**
 
 ```bash
-npm run debug makeadmin <玩家名>   # Windows 也可用: debug.bat makeadmin <玩家名>
+npm run debug makeadmin <用户名或玩家名>   # Windows 也可用: debug.bat makeadmin <用户名>
 ```
 
-同时完成两件事：把该用户提升为 `ADMIN`，并打印一个 30 天有效的 `mc_session` cookie，可直接贴进浏览器登录。若数据库里还没有用户（首次 Microsoft 登录尚未走通时），先建一个：
+同时完成两件事：把该用户提升为 `ADMIN`，并打印一个 30 天有效的 `mc_session` cookie，可直接贴进浏览器登录。数据库里还没有用户时，先建一个：
 
 ```bash
-npm run debug adduser <玩家名> --admin
+npm run debug adduser <用户名> --admin
 ```
 
 **方式 B — Prisma Studio**
@@ -360,10 +439,10 @@ npm run db:studio
 **方式 C — SQL**
 
 ```sql
-UPDATE users SET role = 'ADMIN' WHERE minecraft_username = '<你的玩家名>';
+UPDATE users SET role = 'ADMIN' WHERE username = '<用户名>';
 ```
 
-角色判断始终在服务端进行，绝不信任前端。
+角色判断始终在服务端进行，绝不信任前端。管理员不受任何用量限额约束。
 
 ---
 
@@ -401,15 +480,23 @@ npm run start       # 监听 :3000，前置 nginx/caddy 处理 HTTPS
 
 ## 设计决策与取舍
 
-- **基于 Cookie 的国际化（无 URL 前缀）** — 保持 URL 简洁（`/`、`/server` …）。代价：公开页面按需服务端渲染而非静态预渲染。若需要静态页面，可将 next-intl 切换为 `[locale]` 路由策略。
+- **基于 Cookie 的国际化（无 URL 前缀）** — 保持 URL 简洁（`/`、`/server` …）。代价：公开页面按需服务端渲染而非静态预渲染。若需要静态页面，可将 next-intl 切换为 `[locale]` 路由策略。中英文案的键集合由 `scripts/i18n-check.mjs` 强制一致（也校验代码里 `t("…")` 的引用是否存在）。
+- **站点配置用键值表而不是每种配置一张表** — `SiteSetting`（`key` + Json `value`）配 zod 校验，类型安全由代码保证而不是数据库。目前有 `join`（加入入口）与 `limits`（用量限额）两个键。读不到、解析失败、或数据库连不上时一律退回默认值，绝不让首页因配置问题挂掉。
+- **限额单位存 MB 整数** — 表单里填 `1024` 比填 `1073741824` 现实得多；不用 GB 存是为了避开 `0.5GB` 这类小数的浮点边界。字节数由 `limitsToBytes()` 派生。
 - **iron-session（无状态、加密 Cookie）** — 对当前规模简单且安全，无需会话表。若需要「注销所有设备」可换用数据库会话。
+- **密码用 scrypt 哈希** — 纯 Microsoft 账号的 `passwordHash` 为空，本地账号为主、Microsoft 绑定为辅。
 - **题目排序使用上/下移动按钮** — 桌面与移动端都可靠（刻意避免拖拽排序以保证移动端稳定）。
 - **答案存储选项文本快照** — 结果页渲染简单；选择题选项同样存文本。若日后需要按选项 id 做分析，可迁移为选项 id 引用。
 - **服务器信息位于 `src/config/site.ts`** — 便于日后将「编辑服务器信息」迁移到数据库并加入后台。
+- **审计日志只记不可逆操作** — 删资源 / 删用户 / 注销 / 按举报删内容 / 改站点配置。写入失败也不影响主流程（审计不该成为故障点）。
+- **界面文案与提示语分两档语气** — 界面、状态、报错、后台保持商务、克制、说明性；输入框 placeholder 与输入类 hint 用口语化表达，且一律不举例子（例如不写「例如：空岛生存整合包 v2」）。
 
 ## 已知待办
 
 - **迁移 Prisma seed 配置**：`package.json#prisma` 已废弃（会提示 `The configuration property package.json#prisma is deprecated`）。Prisma 6 上仍正常工作，**不影响认证**。升级到 Prisma 7 前需迁移到 `prisma.config.ts`。
+- **评论列表仍是定长取用**（`listComments` 的 `take`），条数超过后会静默截断，尚未分页。
+- **域名上线后配置 SPF / DKIM**，否则验证码邮件容易进垃圾箱。
+- **Minecraft AppID 审批**未完成前，Microsoft 登录会在最后一步 403（见上文），本地账号不受影响。
 
 ## 许可证
 
