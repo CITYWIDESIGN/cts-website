@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { RowReveal } from "@/components/motion/row-reveal";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { formatDateTime, formatUuid } from "@/lib/format";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,24 +43,19 @@ export default async function ResultsPage({
   return (
     <PageEnter className="flex flex-col gap-6">
       <Stagger inView={false} stagger={0.09} className="flex flex-col gap-6">
-        <StaggerItem
-          index={0}
-          className="flex items-center justify-between gap-4"
-        >
-          <div className="min-w-0">
-            <h1 className="truncate text-2xl font-semibold tracking-tight">
-              {questionnaire.title}
-            </h1>
-            <p className="text-muted-foreground">
-              {submissions.length} {t("submissions")}
-            </p>
-          </div>
-          <Button asChild variant="ghost" size="sm" className="group shrink-0">
-            <Link href="/admin/questionnaires">
-              <ArrowLeft className="transition-transform duration-300 group-hover:-translate-x-0.5" />
-              {t("review.back")}
-            </Link>
-          </Button>
+        <StaggerItem index={0}>
+          <AdminPageHeader
+            title={questionnaire.title}
+            description={`${submissions.length} ${t("submissions")}`}
+            actions={
+              <Button asChild variant="ghost" size="sm" className="group">
+                <Link href="/admin/questionnaires">
+                  <ArrowLeft className="transition-transform duration-300 group-hover:-translate-x-0.5" />
+                  {t("review.back")}
+                </Link>
+              </Button>
+            }
+          />
         </StaggerItem>
 
         <StaggerItem index={1}>

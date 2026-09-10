@@ -23,6 +23,8 @@ import {
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { StatCard, type StatIconName } from "@/components/motion/stat-card";
 import { RowReveal } from "@/components/motion/row-reveal";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { Pagination } from "@/components/ui/pagination";
 import { formatDateTime } from "@/lib/format";
 
 /**
@@ -61,8 +63,7 @@ export default async function AdminStatsPage({
     <PageEnter className="flex flex-col gap-8">
       <Stagger inView={false} stagger={0.1} className="flex flex-col gap-8">
         <StaggerItem index={0}>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("description")}</p>
+          <AdminPageHeader title={t("title")} description={t("description")} />
         </StaggerItem>
 
         <StaggerItem index={1}>
@@ -193,9 +194,19 @@ export default async function AdminStatsPage({
             </Table>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
             <span>{t("userCount", { count: totalUsers })}</span>
-            <Pagination page={page} totalPages={totalPages} />
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              hrefFor={(n) => `?page=${n}`}
+              compact
+              labels={{
+                prev: common("prevPage"),
+                next: common("nextPage"),
+                nav: common("pagination"),
+              }}
+            />
           </div>
         </StaggerItem>
 
@@ -268,29 +279,5 @@ function MetricCell({
         </span>
       </span>
     </TableCell>
-  );
-}
-
-function Pagination({ page, totalPages }: { page: number; totalPages: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      {page > 1 ? (
-        <Link href={`?page=${page - 1}`} className="rounded-md border px-3 py-1 hover:bg-accent">
-          ‹
-        </Link>
-      ) : (
-        <span className="rounded-md border px-3 py-1 opacity-40">‹</span>
-      )}
-      <span>
-        {page} / {totalPages}
-      </span>
-      {page < totalPages ? (
-        <Link href={`?page=${page + 1}`} className="rounded-md border px-3 py-1 hover:bg-accent">
-          ›
-        </Link>
-      ) : (
-        <span className="rounded-md border px-3 py-1 opacity-40">›</span>
-      )}
-    </div>
   );
 }

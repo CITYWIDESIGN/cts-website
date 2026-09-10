@@ -25,13 +25,14 @@ export function Pagination({
   totalPages: number;
   hrefFor: (page: number) => string;
   compact?: boolean;
-  labels?: { prev?: string; next?: string };
+  labels?: { prev?: string; next?: string; nav?: string };
   className?: string;
 }) {
   if (totalPages <= 1) return null;
 
   const prevLabel = labels?.prev ?? "Previous";
   const nextLabel = labels?.next ?? "Next";
+  const navLabel = labels?.nav ?? "Pagination";
 
   const linkCls =
     "inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-sm transition-colors duration-200 hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none";
@@ -40,7 +41,7 @@ export function Pagination({
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={navLabel}
       className={cn("flex items-center gap-1.5", className)}
     >
       {page > 1 ? (

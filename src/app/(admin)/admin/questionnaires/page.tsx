@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { Reveal } from "@/components/motion/reveal";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { formatDate } from "@/lib/format";
 
 export default async function AdminQuestionnairesPage() {
@@ -28,13 +29,11 @@ export default async function AdminQuestionnairesPage() {
   return (
     <PageEnter className="flex flex-col gap-6">
       <Reveal>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-            <p className="text-muted-foreground">{t("description")}</p>
-          </div>
-          <NewQuestionnaireButton />
-        </div>
+        <AdminPageHeader
+          title={t("title")}
+          description={t("description")}
+          actions={<NewQuestionnaireButton />}
+        />
       </Reveal>
 
       {questionnaires.length === 0 ? (

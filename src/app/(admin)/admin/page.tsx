@@ -6,6 +6,7 @@ import { getStats, getRecentUsers, getRecentSubmissions } from "@/server/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { StatCard, type StatIconName } from "@/components/motion/stat-card";
 import { displayNameOr } from "@/lib/display-name";
 import { formatDateTime } from "@/lib/format";
@@ -32,7 +33,7 @@ export default async function AdminDashboardPage() {
     <PageEnter className="flex flex-col gap-8">
       <Stagger inView={false} stagger={0.12} className="flex flex-col gap-8">
         <StaggerItem index={0}>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("overview")}</h1>
+          <AdminPageHeader title={t("overview")} />
         </StaggerItem>
 
         <StaggerItem index={1}>

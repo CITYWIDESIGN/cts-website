@@ -3,6 +3,7 @@ import { requireAdmin } from "@/server/auth";
 import { getJoinConfig, listJoinableQuestionnaires } from "@/server/settings";
 import { JoinConfigForm } from "@/components/admin/join-config-form";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 
 /**
  * 后台：「加入我们」入口配置。
@@ -23,8 +24,7 @@ export default async function AdminJoinPage() {
     <PageEnter className="flex flex-col gap-6">
       <Stagger inView={false} stagger={0.09} className="flex flex-col gap-6">
         <StaggerItem index={0}>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("description")}</p>
+          <AdminPageHeader title={t("title")} description={t("description")} />
         </StaggerItem>
 
         <StaggerItem index={1}>

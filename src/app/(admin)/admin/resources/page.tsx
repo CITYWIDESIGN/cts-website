@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { RowReveal } from "@/components/motion/row-reveal";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { formatBytes, formatDateTime } from "@/lib/format";
 
 export default async function AdminResourcesPage() {
@@ -27,8 +28,7 @@ export default async function AdminResourcesPage() {
     <PageEnter className="flex flex-col gap-6">
       <Stagger inView={false} stagger={0.09} className="flex flex-col gap-6">
         <StaggerItem index={0}>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("description")}</p>
+          <AdminPageHeader title={t("title")} description={t("description")} />
         </StaggerItem>
 
         <StaggerItem index={1}>

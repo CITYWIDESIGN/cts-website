@@ -19,6 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { RowReveal } from "@/components/motion/row-reveal";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { Pagination } from "@/components/ui/pagination";
 import { formatDateTime, formatUuid } from "@/lib/format";
 
 export default async function AdminUsersPage({
@@ -29,6 +31,7 @@ export default async function AdminUsersPage({
   const admin = await requireAdmin();
   const params = await searchParams;
   const t = await getTranslations("admin.userManagement");
+  const common = await getTranslations("common");
 
   const page = Number(params.page) || 1;
   const { users, total, totalPages } = await listUsers({
@@ -37,12 +40,20 @@ export default async function AdminUsersPage({
     role: params.role === "ADMIN" || params.role === "USER" ? params.role : undefined,
   });
 
+  /** 翻页链接：保留搜索词和角色筛选，只换页码 */
+  function hrefForPage(n: number) {
+    const sp = new URLSearchParams();
+    if (params.search) sp.set("search", params.search);
+    if (params.role) sp.set("role", params.role);
+    sp.set("page", String(n));
+    return `?${sp.toString()}`;
+  }
+
   return (
     <PageEnter className="flex flex-col gap-6">
       <Stagger inView={false} stagger={0.09} className="flex flex-col gap-6">
         <StaggerItem index={0}>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("description")}</p>
+          <AdminPageHeader title={t("title")} description={t("description")} />
         </StaggerItem>
 
         <StaggerItem index={1}>
@@ -152,59 +163,22 @@ export default async function AdminUsersPage({
 
         <StaggerItem
           index={3}
-          className="flex items-center justify-between text-sm text-muted-foreground"
+          className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
         >
           <span>{t("count", { count: total })}</span>
-          <PaginationControls
+          <Pagination
             page={page}
             totalPages={totalPages}
-            search={params.search}
-            role={params.role}
+            hrefFor={hrefForPage}
+            compact
+            labels={{
+              prev: common("prevPage"),
+              next: common("nextPage"),
+              nav: common("pagination"),
+            }}
           />
         </StaggerItem>
       </Stagger>
     </PageEnter>
-  );
-}
-
-function PaginationControls({
-  page,
-  totalPages,
-  search,
-  role,
-}: {
-  page: number;
-  totalPages: number;
-  search?: string;
-  role?: string;
-}) {
-  function href(p: number) {
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (role) params.set("role", role);
-    params.set("page", String(p));
-    return `?${params.toString()}`;
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      {page > 1 ? (
-        <a href={href(page - 1)} className="rounded-md border px-3 py-1 hover:bg-accent">
-          ‹
-        </a>
-      ) : (
-        <span className="rounded-md border px-3 py-1 opacity-40">‹</span>
-      )}
-      <span>
-        {page} / {totalPages}
-      </span>
-      {page < totalPages ? (
-        <a href={href(page + 1)} className="rounded-md border px-3 py-1 hover:bg-accent">
-          ›
-        </a>
-      ) : (
-        <span className="rounded-md border px-3 py-1 opacity-40">›</span>
-      )}
-    </div>
   );
 }

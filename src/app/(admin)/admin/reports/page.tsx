@@ -7,6 +7,7 @@ import { ReportActions } from "@/components/admin/report-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Stagger, StaggerItem, PageEnter } from "@/components/motion/stagger";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -33,17 +34,17 @@ export default async function AdminReportsPage() {
     <PageEnter className="flex flex-col gap-6">
       <Stagger inView={false} stagger={0.09} className="flex flex-col gap-6">
         <StaggerItem index={0}>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {t("title")}
-            </h1>
-            {pendingCount > 0 && (
-              <Badge variant="warning">
-                {t("pendingCount", { count: pendingCount })}
-              </Badge>
-            )}
-          </div>
-          <p className="mt-1 text-muted-foreground">{t("description")}</p>
+          <AdminPageHeader
+            title={t("title")}
+            description={t("description")}
+            badge={
+              pendingCount > 0 ? (
+                <Badge variant="warning">
+                  {t("pendingCount", { count: pendingCount })}
+                </Badge>
+              ) : undefined
+            }
+          />
         </StaggerItem>
 
         {/* 待处理 */}
