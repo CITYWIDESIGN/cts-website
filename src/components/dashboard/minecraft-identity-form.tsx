@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { saveMinecraftIdentityAction } from "@/lib/actions/auth";
+import { saveMinecraftIdentityAction } from "@/lib/actions/auth/account";
 
 /** 有对应文案的错误码；其余走 generic */
 const KNOWN_ERRORS = new Set([

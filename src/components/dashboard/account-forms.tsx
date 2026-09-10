@@ -27,11 +27,11 @@ import {
   SentToEmail,
 } from "@/components/auth/verify-bits";
 import { CODE_LENGTH } from "@/lib/code";
+import { changeUsernameAction } from "@/lib/actions/auth/account";
 import {
-  changeUsernameAction,
   sendEmailCodeAction,
   verifyEmailAction,
-} from "@/lib/actions/auth";
+} from "@/lib/actions/auth/email-code";
 
 /* ------------------------------------------------------------ 改用户名 */
 

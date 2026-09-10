@@ -6,7 +6,7 @@ import { Check, Clock, Loader2, Mail, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { messageFor } from "@/components/auth/error-messages";
-import { sendEmailCodeAction } from "@/lib/actions/auth";
+import { sendEmailCodeAction } from "@/lib/actions/auth/email-code";
 import {
   CODE_RESEND_COOLDOWN_SECONDS,
   CODE_TTL_MINUTES,

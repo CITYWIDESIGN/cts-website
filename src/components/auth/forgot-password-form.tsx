@@ -19,7 +19,8 @@ import {
   StepIndicator,
 } from "@/components/auth/verify-bits";
 import { messageFor } from "@/components/auth/error-messages";
-import { resetPasswordAction, sendEmailCodeAction } from "@/lib/actions/auth";
+import { resetPasswordAction } from "@/lib/actions/auth/password-reset";
+import { sendEmailCodeAction } from "@/lib/actions/auth/email-code";
 import { CODE_LENGTH } from "@/lib/code";
 
 /**

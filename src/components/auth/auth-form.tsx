@@ -21,9 +21,9 @@ import {
 import { messageFor } from "@/components/auth/error-messages";
 import {
   completeRegistrationAction,
-  loginAction,
   registerAction,
-} from "@/lib/actions/auth";
+} from "@/lib/actions/auth/register";
+import { loginAction } from "@/lib/actions/auth/login";
 import { CODE_LENGTH } from "@/lib/code";
 
 type Step = "form" | "verify";

@@ -12,7 +12,7 @@ import { UserAvatarLink } from "@/components/user/user-avatar-link";
 import {
   setWearFrameAction,
   unbindMicrosoftAction,
-} from "@/lib/actions/auth";
+} from "@/lib/actions/auth/account";
 
 /**
  * 头像框设置 —— **只有绑定了 Microsoft 的账号才有框**。

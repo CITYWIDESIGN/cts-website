@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteOwnAccountAction } from "@/lib/actions/auth";
+import { deleteOwnAccountAction } from "@/lib/actions/auth/account";
 import { messageFor } from "@/components/auth/error-messages";
 
 /**
