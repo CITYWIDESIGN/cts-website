@@ -612,7 +612,8 @@
       "CODE_WRONG_CODE": "That code is not correct",
       "CODE_INVALID_CODE": "The code is 6 digits",
       "CODE_MAIL_NOT_CONFIGURED": "Email is not configured in this environment, so no code can be sent",
-      "CODE_MAIL_FAILED": "Could not send the code, please try again"
+      "CODE_MAIL_FAILED": "Could not send the code, please try again",
+      "EMAIL_SAME": "The new email is the same as your current one"
     }
   },
   "dashboard": {
@@ -640,6 +641,12 @@
       "newEmail": "New email",
       "sendCode": "Send code",
       "cancel": "Cancel",
+      "confirmChange": "Confirm change",
+      "verifyOld": "Verify the current email",
+      "verifyNew": "Verify the new email",
+      "rebindNeedsBoth": "To protect your account, changing email requires **verifying both the current and the new address** — a code goes to each, please enter both.",
+      "verifyBothHint": "Both emails are on their way. Enter each code in the matching field below.",
+      "emailChanged": "Email updated",
       "emailPurpose": "Your email is the only way to recover your password, so it must be verified before it counts as bound."
     },
     "dangerZone": {

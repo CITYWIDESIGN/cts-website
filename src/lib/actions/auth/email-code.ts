@@ -109,33 +109,128 @@ export async function sendEmailCodeAction(input: {
   }
 }
 
-/** 用验证码验证并绑定新邮箱（注册后验证 / 换绑都走这里） */
-export async function verifyEmailAction(input: {
-  email: string;
-  code: string;
+/* ------------------------------------------------------------ 换绑邮箱 */
+
+/**
+ * 换绑第一步：给**新旧两个邮箱各发一个验证码**。
+ *
+ * 为什么旧的也要验：邮箱是找回密码的唯一凭据。会话被别人拿到（XSS、
+ * 共用电脑没退出）时，只验新邮箱就够把找回渠道改到攻击者手里，
+ * 原主人再也拿不回账号。要求同时证明「我控制当前邮箱」，
+ * 这条路径就被堵死了。
+ *
+ * 账号本来就没有邮箱（纯 Microsoft 登录）时不发旧邮箱的码 ——
+ * 没有旧的可验，只需要验新的。
+ */
+export async function startEmailChangeAction(input: {
+  newEmail: string;
 }): Promise<AuthState> {
   const user = await requireUser();
 
-  const parsedEmail = EmailSchema.safeParse(input.email);
-  const parsedCode = CodeSchema.safeParse(input.code);
+  const parsedEmail = EmailSchema.safeParse(input.newEmail);
   if (!parsedEmail.success) return { ok: false, error: "EMAIL_INVALID" };
-  if (!parsedCode.success) return { ok: false, error: "CODE_INVALID_CODE" };
+  const email = parsedEmail.data;
 
+  const current = (user.email ?? "").toLowerCase();
+  if (email === current) return { ok: false, error: "EMAIL_SAME" };
+
+  const taken = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  if (taken && taken.id !== user.id) return { ok: false, error: "EMAIL_TAKEN" };
+
+  const ip = await requestIp();
+  try {
+    const toNew = await issueEmailCode({
+      email,
+      purpose: "bind",
+      userId: user.id,
+      ip,
+    });
+    // 有当前邮箱就必须也验一次
+    let oldDevCode: string | undefined;
+    if (current) {
+      const toOld = await issueEmailCode({
+        email: current,
+        purpose: "bind",
+        userId: user.id,
+        ip,
+      });
+      oldDevCode = toOld.devCode;
+    }
+    return {
+      ok: true,
+      codeSent: true,
+      needsOldCode: Boolean(current),
+      devCode: toNew.devCode,
+      oldDevCode,
+    };
+  } catch (err) {
+    if (err instanceof EmailCodeError) return { ok: false, error: err.code };
+    console.error("[startEmailChangeAction]", err);
+    return { ok: false, error: "UNKNOWN" };
+  }
+}
+
+/**
+ * 换绑第二步：**两个验证码都通过**才真的改。
+ *
+ * 顺序有意为之：先验旧邮箱。旧邮箱都控制不了，就没必要浪费新邮箱的
+ * 尝试次数（验证码有 5 次上限，验错会消耗额度）。
+ */
+export async function confirmEmailChangeAction(input: {
+  newEmail: string;
+  oldCode: string;
+  newCode: string;
+}): Promise<AuthState> {
+  const user = await requireUser();
+
+  const parsedEmail = EmailSchema.safeParse(input.newEmail);
+  if (!parsedEmail.success) return { ok: false, error: "EMAIL_INVALID" };
+  const email = parsedEmail.data;
+  const current = (user.email ?? "").toLowerCase();
+
+  const parsedNew = CodeSchema.safeParse(input.newCode);
+  if (!parsedNew.success) return { ok: false, error: "CODE_INVALID_CODE" };
+
+  // 1. 旧邮箱（有的话）
+  if (current) {
+    const parsedOld = CodeSchema.safeParse(input.oldCode);
+    if (!parsedOld.success) return { ok: false, error: "CODE_INVALID_CODE" };
+    try {
+      await verifyEmailCode({
+        email: current,
+        purpose: "bind",
+        code: parsedOld.data,
+      });
+    } catch (err) {
+      if (err instanceof EmailCodeError) {
+        return { ok: false, error: `CODE_${err.code}`, step: "old" };
+      }
+      console.error("[confirmEmailChangeAction:old]", err);
+      return { ok: false, error: "UNKNOWN" };
+    }
+  }
+
+  // 2. 新邮箱
   try {
     const verified = await verifyEmailCode({
-      email: parsedEmail.data,
+      email,
       purpose: "bind",
-      code: parsedCode.data,
+      code: parsedNew.data,
     });
-    // 验证码必须属于当前登录的人，否则 A 可以用 B 的邮箱验证码
+    // 码必须属于当前登录的人，否则 A 能拿 B 的邮箱验证码
     if (verified.userId && verified.userId !== user.id) {
-      return { ok: false, error: "CODE_NOT_FOUND" };
+      return { ok: false, error: "CODE_NOT_FOUND", step: "new" };
     }
-    await changeEmail(user.id, parsedEmail.data);
+    await changeEmail(user.id, email);
   } catch (err) {
-    if (err instanceof EmailCodeError) return { ok: false, error: `CODE_${err.code}` };
+    if (err instanceof EmailCodeError) {
+      return { ok: false, error: `CODE_${err.code}`, step: "new" };
+    }
     if (err instanceof AccountError) return { ok: false, error: err.code };
-    console.error("[verifyEmailAction]", err);
+    console.error("[confirmEmailChangeAction:new]", err);
     return { ok: false, error: "UNKNOWN" };
   }
 

@@ -29,8 +29,8 @@ import {
 import { CODE_LENGTH } from "@/lib/code";
 import { changeUsernameAction } from "@/lib/actions/auth/account";
 import {
-  sendEmailCodeAction,
-  verifyEmailAction,
+  confirmEmailChangeAction,
+  startEmailChangeAction,
 } from "@/lib/actions/auth/email-code";
 
 /* ------------------------------------------------------------ 改用户名 */
@@ -108,8 +108,13 @@ export function UsernameForm({
 /**
  * 邮箱绑定 / 换绑。
  *
- * 必须收验证码才算绑定成功 —— 邮箱是找回密码的唯一凭据，
- * 不验证的话填错一个字母就永远找不回来了。
+ * **换绑必须同时验证旧邮箱和新邮箱。**
+ *
+ * 为什么旧的也要验：邮箱是找回密码的唯一凭据。会话被别人拿到时
+ * （XSS、共用电脑没退出），只验新邮箱就够把找回渠道改到攻击者手里，
+ * 原主人再也拿不回账号。要求同时证明「我控制当前邮箱」就堵死了这条路。
+ *
+ * 账号本来没有邮箱（纯 Microsoft 登录）时没有旧的可验，只验新的。
  */
 export function EmailCard({
   current,
@@ -123,60 +128,101 @@ export function EmailCard({
   const router = useRouter();
 
   const [editing, setEditing] = React.useState(!verified);
-  const [email, setEmail] = React.useState(current);
-  const [code, setCode] = React.useState("");
-  const [sentTo, setSentTo] = React.useState<string | null>(null);
-  const [sentAt, setSentAt] = React.useState(() => Date.now());
+  const [stage, setStage] = React.useState<"input" | "verify">("input");
+  const [newEmail, setNewEmail] = React.useState("");
   const [pending, setPending] = React.useState(false);
-  const [invalid, setInvalid] = React.useState(false);
-  const [devCode, setDevCode] = React.useState<string | null>(null);
+  const [sentAt, setSentAt] = React.useState(() => Date.now());
 
-  /** 第一步：把验证码发到填写的邮箱 */
+  const [oldCode, setOldCode] = React.useState("");
+  const [newCode, setNewCode] = React.useState("");
+  const [needsOld, setNeedsOld] = React.useState(Boolean(current));
+  const [devNew, setDevNew] = React.useState<string | null>(null);
+  const [devOld, setDevOld] = React.useState<string | null>(null);
+  const [invalidOld, setInvalidOld] = React.useState(false);
+  const [invalidNew, setInvalidNew] = React.useState(false);
+
+  /** 第一步：给新旧邮箱各发一个验证码 */
   async function send() {
-    if (pending || !email.includes("@")) return;
+    if (pending || !newEmail.includes("@")) return;
     setPending(true);
-    const res = await sendEmailCodeAction({ email, purpose: "bind" });
+    const res = await startEmailChangeAction({ newEmail });
     setPending(false);
 
     if (!res.ok) {
       toast.error(messageFor(ta, res.error));
       return;
     }
-    setSentTo(email.trim().toLowerCase());
+    setNeedsOld(Boolean(res.needsOldCode));
+    setDevNew(res.devCode ?? null);
+    setDevOld(res.oldDevCode ?? null);
     setSentAt(Date.now());
-    setDevCode(res.devCode ?? null);
-    setCode("");
+    setOldCode("");
+    setNewCode("");
     toast.success(ta("codeSent"));
+    setStage("verify");
   }
 
-  /** 第二步：填满 6 位自动校验（用 ref 防重入，不禁用输入框以免丢焦点） */
   const verifyingRef = React.useRef(false);
-  const verify = React.useCallback(
-    async (value: string) => {
-      if (!sentTo || verifyingRef.current) return;
+
+  /** 第二步：两个码都通过才换 */
+  const confirm = React.useCallback(
+    async (nextNewCode: string, nextOldCode: string) => {
+      if (verifyingRef.current) return;
       verifyingRef.current = true;
       setPending(true);
-      const res = await verifyEmailAction({ email: sentTo, code: value });
+
+      const res = await confirmEmailChangeAction({
+        newEmail,
+        oldCode: nextOldCode,
+        newCode: nextNewCode,
+      });
+
       setPending(false);
       verifyingRef.current = false;
 
       if (!res.ok) {
-        setInvalid(true);
-        window.setTimeout(() => setInvalid(false), 600);
+        // 把抖动打在对应那一步的输入框上，用户一眼知道该改哪个
+        const whichOld = res.step === "old";
+        if (whichOld) setInvalidOld(true);
+        else setInvalidNew(true);
+        window.setTimeout(() => {
+          setInvalidOld(false);
+          setInvalidNew(false);
+        }, 600);
         toast.error(messageFor(ta, res.error));
         return;
       }
-      toast.success(ta("verified"));
+
+      toast.success(t("emailChanged"));
       setEditing(false);
-      setCode("");
-      setSentTo(null);
-      setDevCode(null);
+      setStage("input");
+      setNewEmail("");
+      setOldCode("");
+      setNewCode("");
+      setDevNew(null);
+      setDevOld(null);
       router.refresh();
     },
-    [sentTo, router, ta]
+    [newEmail, router, t, ta]
   );
 
-  const changed = email.trim().toLowerCase() !== current.toLowerCase();
+  /* 新邮箱填满 → 不需要旧码时直接提交；需要旧码时等两个都满 */
+  function onNewComplete(value: string) {
+    if (!needsOld) void confirm(value, "");
+  }
+
+  const ready =
+    newCode.length === CODE_LENGTH &&
+    (!needsOld || oldCode.length === CODE_LENGTH);
+
+  // 两个都填满后自动提交一次
+  React.useEffect(() => {
+    if (stage !== "verify" || !needsOld || !ready) return;
+    if (verifyingRef.current) return;
+    void confirm(newCode, oldCode);
+  }, [stage, needsOld, ready, newCode, oldCode, confirm]);
+
+  const changed = newEmail.trim().toLowerCase() !== current.toLowerCase();
 
   return (
     <div className="flex flex-col gap-4">
@@ -204,7 +250,8 @@ export function EmailCard({
             className="ml-auto"
             onClick={() => {
               setEditing(true);
-              setEmail("");
+              setStage("input");
+              setNewEmail("");
             }}
           >
             <PencilLine className="size-3.5" />
@@ -218,8 +265,8 @@ export function EmailCard({
       )}
 
       {editing && (
-        <div className="flex flex-col gap-3 rounded-xl border border-dashed p-4">
-          {!sentTo ? (
+        <div className="flex flex-col gap-4 rounded-xl border border-dashed p-4">
+          {stage === "input" ? (
             <>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="account-email">
@@ -228,18 +275,27 @@ export function EmailCard({
                 <Input
                   id="account-email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
                   placeholder={ta("emailHint")}
                   autoComplete="email"
                   maxLength={120}
                 />
               </div>
+
+              {/* 换绑时说明要验两个邮箱，别让用户收到两封邮件后一脸问号 */}
+              {verified && (
+                <p className="flex items-start gap-2 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-xs leading-relaxed">
+                  <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                  <span>{t("rebindNeedsBoth")}</span>
+                </p>
+              )}
+
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   onClick={send}
-                  disabled={pending || !email.includes("@")}
+                  disabled={pending || !newEmail.includes("@") || !changed}
                 >
                   {pending ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -262,33 +318,57 @@ export function EmailCard({
             </>
           ) : (
             <>
-              <SentToEmail email={sentTo} />
+              <p className="text-xs text-muted-foreground">
+                {needsOld ? t("verifyBothHint") : ta("verifySubtitle", { email: newEmail })}
+              </p>
 
-              {devCode && <DevCodeNotice code={devCode} />}
+              {/* 旧邮箱 */}
+              {needsOld && (
+                <section className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-3">
+                  <SentToEmail email={current} />
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t("verifyOld")}
+                  </p>
+                  {devOld && <DevCodeNotice code={devOld} />}
+                  <CodeInput
+                    length={CODE_LENGTH}
+                    value={oldCode}
+                    onChange={setOldCode}
+                    invalid={invalidOld}
+                  />
+                </section>
+              )}
 
-              <div className="flex flex-col items-center gap-3 py-1">
+              {/* 新邮箱 */}
+              <section className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-3">
+                <SentToEmail email={newEmail} />
+                <p className="text-xs font-medium text-muted-foreground">
+                  {needsOld ? t("verifyNew") : t("bind")}
+                </p>
+                {devNew && <DevCodeNotice code={devNew} />}
                 <CodeInput
                   length={CODE_LENGTH}
-                  value={code}
-                  onChange={setCode}
-                  onComplete={verify}
-                  invalid={invalid}
+                  value={newCode}
+                  onChange={setNewCode}
+                  onComplete={onNewComplete}
+                  invalid={invalidNew}
                 />
-                <div className="flex h-5 items-center gap-3">
-                  <ExpiryCountdown sentAt={sentAt} />
-                  {pending && (
-                    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Loader2 className="size-3.5 animate-spin" />
-                      {ta("verifying")}
-                    </span>
-                  )}
-                </div>
+              </section>
+
+              <div className="flex h-5 items-center gap-3">
+                <ExpiryCountdown sentAt={sentAt} />
+                {pending && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Loader2 className="size-3.5 animate-spin" />
+                    {ta("verifying")}
+                  </span>
+                )}
               </div>
 
               <Button
                 type="button"
-                onClick={() => verify(code)}
-                disabled={pending || code.length !== CODE_LENGTH}
+                onClick={() => confirm(newCode, oldCode)}
+                disabled={pending || !ready}
                 className="w-full"
               >
                 {pending ? (
@@ -296,29 +376,32 @@ export function EmailCard({
                 ) : (
                   <BadgeCheck className="size-4" />
                 )}
-                {ta("verifyButton")}
+                {t("confirmChange")}
               </Button>
 
               <ResendButton
-                email={sentTo}
+                email={newEmail}
                 purpose="bind"
                 disabled={pending}
                 onSent={(info) => {
-                  setDevCode(info.devCode ?? null);
+                  setDevNew(info.devCode ?? null);
                   setSentAt(info.sentAt);
-                  setCode("");
+                  setOldCode("");
+                  setNewCode("");
                 }}
                 className="w-full"
               />
 
-              <MailHints email={sentTo} />
+              <MailHints email={newEmail} />
 
               <button
                 type="button"
                 onClick={() => {
-                  setSentTo(null);
-                  setCode("");
-                  setDevCode(null);
+                  setStage("input");
+                  setOldCode("");
+                  setNewCode("");
+                  setDevNew(null);
+                  setDevOld(null);
                   if (verified) setEditing(false);
                 }}
                 disabled={pending}

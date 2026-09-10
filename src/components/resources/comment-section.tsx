@@ -331,32 +331,53 @@ export function CommentSection({
         </p>
       ) : (
         <ul className="flex flex-col divide-y">
-          {optimisticList.map((c, i) => (
-            <li
-              key={c.id}
-              className="animate-in fade-in slide-in-from-top-1 py-4 duration-300"
-              style={{
-                // 逐条错开一点点，避免整列同时出现
-                animationDelay: reduce ? undefined : `${Math.min(i, 8) * 30}ms`,
-                animationFillMode: "backwards",
-              }}
-            >
-              {renderComment(c, false)}
+          {optimisticList.map((c, i) => {
+            /* 父评论先出现，回复依次跟进 —— 两处必须是**同一套**入场动画。
+               之前回复的 <li> 上什么类都没有，于是新回复连同它左边那条
+               缩进线一起"啪"地闪出来，看着就像凭空多了一根线条。 */
+            const parentDelay = Math.min(i, 8) * 30;
+            return (
+              <li
+                key={c.id}
+                className="animate-in fade-in slide-in-from-top-1 py-4 duration-300"
+                style={enterStyle(parentDelay, reduce)}
+              >
+                {renderComment(c, false)}
 
-              {/* 回复列表：缩进一层，左侧一条细线 */}
-              {c.replies && c.replies.length > 0 && (
-                <ul className="ml-4 mt-3 flex flex-col gap-3 border-l pl-4">
-                  {c.replies.map((r) => (
-                    <li key={r.id}>{renderComment(r, true)}</li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
+                {/* 回复列表：缩进一层，左侧一条细线 */}
+                {c.replies && c.replies.length > 0 && (
+                  <ul className="ml-4 mt-3 flex flex-col gap-3 border-l border-border/70 pl-4">
+                    {c.replies.map((r, ri) => (
+                      <li
+                        key={r.id}
+                        className="animate-in fade-in slide-in-from-top-1 duration-300"
+                        style={enterStyle(parentDelay + (ri + 1) * 40, reduce)}
+                      >
+                        {renderComment(r, true)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
   );
+}
+
+/**
+ * 评论/回复入场动画的内联样式。
+ * `reduce`（系统开启了"减少动态效果"）时返回 undefined —— 完全不动画。
+ */
+function enterStyle(delayMs: number, reduce: boolean | null) {
+  if (reduce) return undefined;
+  return {
+    animationDelay: `${delayMs}ms`,
+    // 延迟期间保持起始态（透明 + 下移），否则会先闪一下再动
+    animationFillMode: "backwards" as const,
+  };
 }
 
 /** 单条评论的操作行：点赞 / 回复 */

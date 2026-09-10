@@ -612,7 +612,8 @@
       "CODE_WRONG_CODE": "验证码不正确",
       "CODE_INVALID_CODE": "验证码是 6 位数字",
       "CODE_MAIL_NOT_CONFIGURED": "当前环境没有配置邮件服务，发不出验证码",
-      "CODE_MAIL_FAILED": "验证码发送失败，请稍后重试"
+      "CODE_MAIL_FAILED": "验证码发送失败，请稍后重试",
+      "EMAIL_SAME": "新邮箱和当前邮箱是同一个"
     }
   },
   "dashboard": {
@@ -640,6 +641,12 @@
       "newEmail": "新邮箱",
       "sendCode": "发送验证码",
       "cancel": "取消",
+      "confirmChange": "确认换绑",
+      "verifyOld": "验证当前邮箱",
+      "verifyNew": "验证新邮箱",
+      "rebindNeedsBoth": "为了保护账号，换绑需要**同时验证当前邮箱和新邮箱** —— 两边都会收到验证码，请都填进来。",
+      "verifyBothHint": "两封邮件都发出去了，把两个验证码分别填进下面两栏。",
+      "emailChanged": "邮箱已换绑",
       "emailPurpose": "邮箱是找回密码的唯一凭据，所以必须验证过才算绑定成功。"
     },
     "dangerZone": {

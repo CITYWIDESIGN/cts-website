@@ -23,4 +23,10 @@ export type AuthState = {
   mailFailed?: boolean;
   /** 频次限制类错误带回的额度（例如每天能改几次用户名） */
   limit?: number;
+  /** 换绑邮箱：当前账号有没有旧邮箱要验（纯 Microsoft 账号没有） */
+  needsOldCode?: boolean;
+  /** 开发模式下的旧邮箱验证码（仅未配 SMTP 时返回） */
+  oldDevCode?: string;
+  /** 换绑邮箱时是哪一步失败了，前端据此把抖动打在对应的输入框上 */
+  step?: "old" | "new";
 };
