@@ -780,6 +780,7 @@
     "dataGroup": "数据",
     "resourcesNav": "资源",
     "reportsNav": "举报",
+    "joinNav": "加入入口",
     "statsNav": "统计",
     "auditNav": "审计日志",
     "overview": "概览",
@@ -889,7 +890,68 @@
         "resource_delete": "删除资源",
         "user_purge": "删除用户",
         "user_anonymize": "注销账号",
-        "report_remove_content": "按举报删除内容"
+        "report_remove_content": "按举报删除内容",
+        "join_config_update": "修改加入入口"
+      }
+    },
+    "join": {
+      "title": "加入入口",
+      "description": "配置首页与页头「加入我们」按钮点击后做什么。不同阶段想让人做的事不一样：开服前先加群，开服后填问卷，也可以先关掉。",
+      "behaviorTitle": "点击之后",
+      "behaviorHint": "已提交申请的用户永远优先看到审核状态，不受这里影响。",
+      "kinds": {
+        "questionnaire": {
+          "title": "填写问卷",
+          "description": "跳转到指定问卷，或自动使用最新发布的一份。"
+        },
+        "link": {
+          "title": "打开外部链接",
+          "description": "QQ 群、Discord、外部报名表等站外地址。"
+        },
+        "page": {
+          "title": "打开站内页面",
+          "description": "例如 /server、/rules 这类站内页面。"
+        },
+        "disabled": {
+          "title": "暂时关闭入口",
+          "description": "首页不再显示「加入我们」按钮，其余内容不受影响。"
+        }
+      },
+      "questionnaireLabel": "使用哪份问卷",
+      "questionnaireHint": "该问卷被下线或删除后，会自动退回最新发布的一份，首页不会因此空掉。",
+      "latest": "最新发布的问卷",
+      "selectedQuestionnaire": "已选：{name}（{count} 份提交）",
+      "noQuestionnaires": "目前没有任何已发布的问卷。请先到「问卷」里发布一份，再选这个选项。",
+      "urlLabel": "链接地址",
+      "urlHint": "必须是以 http:// 或 https:// 开头的完整地址。",
+      "newTabLabel": "在新标签页打开",
+      "newTabHint": "站外链接建议开启，访客不会因此离开本站。",
+      "pathLabel": "站内路径",
+      "pathHint": "以 / 开头，例如 /server。",
+      "disabledHint": "入口关闭后，首页、页头、页脚都不再出现「加入我们」按钮。随时可以在这里重新打开。",
+      "requireLoginLabel": "必须先登录",
+      "requireLoginHint": "未登录的访客点击按钮会先跳到登录页，登录后再点一次即可继续。关闭后游客可以直接进入上面配置的目标。",
+      "previewTitle": "效果预览",
+      "previewGuest": "未登录访客",
+      "previewUser": "已登录用户",
+      "previewNote": "已提交申请、正在审核中的用户始终看到「查询审核结果」。",
+      "preview": {
+        "hidden": "不显示「加入我们」按钮",
+        "toLogin": "跳转登录页",
+        "toQuestionnaire": "填写问卷：{name}",
+        "toLink": "打开 {url}",
+        "toPage": "打开站内页面 {path}"
+      },
+      "save": "保存",
+      "saving": "保存中…",
+      "saved": "已保存，首页按钮已更新。",
+      "applyHint": "保存后立即生效，无需重新部署。",
+      "errors": {
+        "invalid": "填写的内容不完整或格式不对。",
+        "invalid_url": "链接必须是 http:// 或 https:// 开头的完整地址。",
+        "invalid_path": "站内路径必须以 / 开头，且不能是 // 开头的地址。",
+        "questionnaire_not_found": "选中的问卷已下线或不存在，请重新选择。",
+        "unknown": "保存失败，请稍后重试。"
       }
     },
     "resources": {

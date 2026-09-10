@@ -6,6 +6,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { isMicrosoftConfigured } from "@/lib/auth/microsoft";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { getCurrentUser } from "@/server/auth";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { SplitHeading } from "@/components/motion/split-heading";
@@ -37,14 +38,21 @@ const KNOWN_ERRORS = new Set([
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; redirectTo?: string }>;
 }) {
   const params = await searchParams;
+
+  /*
+    登录后要去哪。只接受站内路径 —— `?redirectTo=https://evil.com` 是经典的
+    开放重定向（伪装成"登录过期，请重新输入密码"的钓鱼页）。safeRedirectPath
+    在这里回退成空串，表示"没指定"，由 AuthForm 用角色默认值兜底。
+  */
+  const redirectTo = safeRedirectPath(params.redirectTo, "");
 
   // 已登录用户不需要再看到登录页（例如从首页 CTA 进来）
   const user = await getCurrentUser();
   if (user && !params.error) {
-    redirect("/dashboard");
+    redirect(redirectTo || "/dashboard");
   }
 
   const t = await getTranslations("auth");
@@ -116,7 +124,7 @@ export default async function LoginPage({
 
                 {/* 本地账号：主入口 */}
                 <StaggerItem index={errKey ? 1 : 0}>
-                  <AuthForm mode="login" />
+                  <AuthForm mode="login" redirectTo={redirectTo} />
                 </StaggerItem>
 
                 {/* Microsoft：可选方式 */}
@@ -133,6 +141,7 @@ export default async function LoginPage({
                       <MicrosoftLoginButton
                         label={t("microsoftButton")}
                         redirectingLabel={t("redirecting")}
+                        redirectTo={redirectTo}
                       />
                     </div>
                   </StaggerItem>

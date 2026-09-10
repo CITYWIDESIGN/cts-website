@@ -780,6 +780,7 @@
     "dataGroup": "Data",
     "resourcesNav": "Resources",
     "reportsNav": "Reports",
+    "joinNav": "Join entry",
     "statsNav": "Statistics",
     "auditNav": "Audit log",
     "overview": "Overview",
@@ -889,7 +890,68 @@
         "resource_delete": "Deleted resource",
         "user_purge": "Deleted user",
         "user_anonymize": "Closed account",
-        "report_remove_content": "Removed reported content"
+        "report_remove_content": "Removed reported content",
+        "join_config_update": "Changed join entry"
+      }
+    },
+    "join": {
+      "title": "Join entry",
+      "description": "Configure what the “Join us” button in the hero and header does. What you want people to do changes over time: join the group before launch, fill in a questionnaire after, or turn it off for a while.",
+      "behaviorTitle": "After clicking",
+      "behaviorHint": "Users with a pending submission always see their review status instead — that is not affected by this setting.",
+      "kinds": {
+        "questionnaire": {
+          "title": "Fill in a questionnaire",
+          "description": "Go to a specific questionnaire, or automatically use the latest published one."
+        },
+        "link": {
+          "title": "Open an external link",
+          "description": "Off-site addresses such as a QQ group, Discord or an external form."
+        },
+        "page": {
+          "title": "Open an on-site page",
+          "description": "A page on this site, such as /server or /rules."
+        },
+        "disabled": {
+          "title": "Turn the entry off",
+          "description": "The “Join us” button disappears from the homepage; nothing else changes."
+        }
+      },
+      "questionnaireLabel": "Which questionnaire",
+      "questionnaireHint": "If it is unpublished or deleted later, this falls back to the latest published one so the homepage never goes blank.",
+      "latest": "Latest published questionnaire",
+      "selectedQuestionnaire": "Selected: {name} ({count} submissions)",
+      "noQuestionnaires": "There are no published questionnaires yet. Publish one under “Questionnaires” first, then pick this option.",
+      "urlLabel": "Link address",
+      "urlHint": "Must be a full address starting with http:// or https://.",
+      "newTabLabel": "Open in a new tab",
+      "newTabHint": "Recommended for external links, so visitors do not leave this site.",
+      "pathLabel": "On-site path",
+      "pathHint": "Starts with /, for example /server.",
+      "disabledHint": "While the entry is off, no “Join us” button appears in the hero, header or footer. You can turn it back on here at any time.",
+      "requireLoginLabel": "Require signing in first",
+      "requireLoginHint": "A signed-out visitor goes to the login page first, then clicks again to continue. Turn this off to let guests reach the target above directly.",
+      "previewTitle": "Preview",
+      "previewGuest": "Guest",
+      "previewUser": "Signed in",
+      "previewNote": "Users with a submission under review always see “Check review status”.",
+      "preview": {
+        "hidden": "No “Join us” button is shown",
+        "toLogin": "Goes to the login page",
+        "toQuestionnaire": "Fills in: {name}",
+        "toLink": "Opens {url}",
+        "toPage": "Opens the on-site page {path}"
+      },
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved. The homepage button is updated.",
+      "applyHint": "Takes effect immediately, no redeploy needed.",
+      "errors": {
+        "invalid": "Some fields are missing or badly formatted.",
+        "invalid_url": "The link must be a full address starting with http:// or https://.",
+        "invalid_path": "An on-site path must start with / and cannot be a // address.",
+        "questionnaire_not_found": "The selected questionnaire is unpublished or gone. Please pick another.",
+        "unknown": "Save failed, please try again later."
       }
     },
     "resources": {

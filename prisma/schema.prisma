@@ -463,6 +463,24 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+/**
+ * 站点级配置（键值对）。
+ *
+ * 为什么用通用键值表而不是每种配置建一张表：配置项会慢慢变多
+ * （加入入口、公告、开关……），每加一个都动 schema 太啰嗦。
+ * 值用 Json，读写在 @/server/settings.ts 里用 zod 校验，
+ * 所以类型安全由那一层保证，不靠数据库。
+ *
+ * 目前只有一个键："join"（「加入我们」的行为），见 DEFAULT_JOIN_CONFIG。
+ */
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
 /** 举报状态：只有"待处理"和"已处理"两种，够用且不啰嗦 */enum ReportStatus {
   PENDING
   RESOLVED

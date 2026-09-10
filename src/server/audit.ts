@@ -19,13 +19,14 @@ export type AuditAction =
   | "resource.delete"
   | "user.purge"
   | "user.anonymize"
-  | "report.remove_content";
+  | "report.remove_content"
+  | "join_config.update";
 
 export interface AuditInput {
   action: AuditAction;
   actorId?: string | null;
   actorName?: string | null;
-  targetType: "resource" | "user" | "comment";
+  targetType: "resource" | "user" | "comment" | "setting";
   targetId: string;
   targetLabel?: string | null;
   detail?: Record<string, unknown> | null;

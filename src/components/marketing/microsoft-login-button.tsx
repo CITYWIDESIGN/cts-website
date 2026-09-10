@@ -17,12 +17,23 @@ import { EASE_OUT } from "@/components/motion/transitions";
 export function MicrosoftLoginButton({
   label,
   redirectingLabel,
+  /** 授权成功后回到这里（站内路径，服务端还会再过滤一次） */
+  redirectTo = "",
 }: {
   label: string;
   redirectingLabel: string;
+  redirectTo?: string;
 }) {
   const [pending, setPending] = React.useState(false);
   const reduce = useReducedMotion();
+
+  /*
+    和本地账号登录保持一致：登录前是从哪个页面被拦下来的，登录后回哪去。
+    /api/auth/login 本身会用 safeRedirectPath 再校验一遍，这里不担心伪造。
+  */
+  const href = redirectTo
+    ? `/api/auth/login?redirectTo=${encodeURIComponent(redirectTo)}`
+    : "/api/auth/login";
 
   return (
     <Button
@@ -35,7 +46,7 @@ export function MicrosoftLoginButton({
         if (!pending) setPending(true);
       }}
     >
-      <a href="/api/auth/login">
+      <a href={href}>
         {/* 悬停时从左向右扫过的高光，克制、不抢眼 */}
         {!reduce && !pending && (
           <motion.span

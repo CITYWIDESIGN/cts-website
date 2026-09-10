@@ -41,7 +41,14 @@ type Step = "form" | "verify";
  * 验证码只是把邮箱"绑定"下来（用于以后找回密码），不验证也能正常用站内
  * 功能，所以第二步可以跳过。
  */
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({
+  mode,
+  /** 登录成功后回到这里（已经过 safeRedirectPath 过滤的站内路径） */
+  redirectTo = "",
+}: {
+  mode: "login" | "register";
+  redirectTo?: string;
+}) {
   const t = useTranslations("auth");
   const router = useRouter();
 
@@ -72,7 +79,12 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         return;
       }
       toast.success(t("loginSuccess"));
-      router.push(res.redirectTo ?? "/dashboard");
+      /*
+        优先级：URL 里指定的站内目标 > 服务端按角色给的默认值。
+        有 redirectTo 是为了让「加入我们 → 先登录 → 继续原本要做的事」走得通，
+        不然从首页被拦到登录页的人，登完会掉到 /dashboard 再自己找回去。
+      */
+      router.push(redirectTo || res.redirectTo || "/dashboard");
       router.refresh();
       return;
     }

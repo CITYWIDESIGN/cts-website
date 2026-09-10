@@ -13,6 +13,7 @@ import {
   Flag,
   BarChart3,
   History,
+  DoorOpen,
   Home,
   type LucideIcon,
 } from "lucide-react";
@@ -39,6 +40,7 @@ const groups: Array<{ labelKey: string; items: NavItem[] }> = [
       { href: "/admin/questionnaires", key: "questionnaires", icon: FileText },
       { href: "/admin/resources", key: "resourcesNav", icon: FolderArchive },
       { href: "/admin/reports", key: "reportsNav", icon: Flag },
+      { href: "/admin/join", key: "joinNav", icon: DoorOpen },
     ],
   },
   {

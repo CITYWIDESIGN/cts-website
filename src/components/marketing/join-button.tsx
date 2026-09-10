@@ -3,7 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, ClipboardList, LayoutDashboard, Server } from "lucide-react";
+import {
+  ArrowRight,
+  ClipboardList,
+  ExternalLink,
+  LayoutDashboard,
+  Server,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { EASE_OUT } from "@/components/motion/transitions";
@@ -11,24 +17,28 @@ import { useJoinState } from "./join-state-context";
 
 /**
  * 是否有可展示的"加入服务器/查询审核结果"入口。
- * 审核通过或没有可填问卷时返回 false —— 调用方据此让整行按钮居中，
+ * 关闭入口、审核通过或没有可用目标时返回 false —— 调用方据此让整行按钮居中，
  * 而不是留一个隐形占位（那样会让旁边的按钮歪在一边）。
  */
 export function useHasJoinAction(): boolean {
   const state = useJoinState();
   if (!state) return true;
-  return state.action.kind === "pending" || state.action.kind === "questionnaire";
+  return state.action.kind !== "approved" && state.action.kind !== "empty";
 }
 
 /**
  * 感知登录与审核状态的 CTA 按钮（首页三处 CTA 共用）。
  *
+ * 「未提交」这一支的目标由管理员在后台「加入我们」里配置（问卷 / 外链 /
+ * 站内页面 / 关闭）。审核状态优先于配置 —— 已经提交过申请的人关心的是
+ * "我过没过"，不该被推去重填一遍。
+ *
  * 状态 → 行为：
- *   未登录              → 「加入服务器」→ /login
- *   已提交、审核中       → 「查询审核结果」→ /dashboard
+ *   后台关闭入口        → 不渲染
  *   审核通过            → 不渲染（调用方负责居中其余按钮）
- *   未提交 / 被拒       → 「加入服务器」→ 问卷页
- *   无可填写问卷         → 不渲染
+ *   审核中              → 「查询审核结果」→ /dashboard
+ *   未登录且要求登录     → 「加入服务器」→ /login
+ *   其余                → 「加入服务器」→ 管理员配置的目标
  *
  * 数据来自上层 JoinStateProvider（服务端查一次库），客户端不能伪造。
  */
@@ -52,26 +62,54 @@ export function JoinButton({
   const action = state?.action;
 
   // 无入口时直接不渲染，交给父级居中其余元素
-  if (!action || action.kind === "approved" || action.kind === "empty") {
+  if (!state || !action || action.kind === "approved" || action.kind === "empty") {
     return null;
   }
 
   let href: string;
   let text: string;
   let Icon: React.ComponentType<{ className?: string }>;
+  /** 站外链接用普通 <a>，这样 target/rel 语义才正确 */
+  let external = false;
+  let newTab = false;
 
   if (action.kind === "pending") {
     href = "/dashboard";
     text = label ?? dashboard("checkResult");
     Icon = LayoutDashboard;
-  } else if (action.requiresLogin) {
-    href = "/login";
+  } else if (state.needsLogin) {
+    /*
+      需要先登录时，把真正的目标塞进 redirectTo，登录后直接落过去，
+      不用登完再自己找回来。
+
+      外链不能写进 redirectTo（它只接受站内路径，用来挡开放重定向），
+      所以那种情况登完回首页 —— 那时按钮已经指向外链，再点一次即可。
+    */
+    const back =
+      action.kind === "questionnaire"
+        ? `/questionnaires/${action.questionnaireId}`
+        : action.kind === "page"
+          ? action.path
+          : "/";
+
+    href = `/login?redirectTo=${encodeURIComponent(back)}`;
     text = label ?? cta("apply");
     Icon = ArrowRight;
-  } else {
+  } else if (action.kind === "questionnaire") {
     href = `/questionnaires/${action.questionnaireId}`;
     text = label ?? cta("apply");
     Icon = ClipboardList;
+  } else if (action.kind === "link") {
+    href = action.url;
+    text = label ?? cta("apply");
+    Icon = ExternalLink;
+    external = true;
+    newTab = action.newTab;
+  } else {
+    // kind === "page"
+    href = action.path;
+    text = label ?? cta("apply");
+    Icon = ArrowRight;
   }
 
   const content = (
@@ -81,11 +119,24 @@ export function JoinButton({
     </>
   );
 
+  /** 站外链接加 rel=noopener，避免新标签页拿到 window.opener 反向控制本站 */
+  const link = external ? (
+    <a
+      href={href}
+      target={newTab ? "_blank" : undefined}
+      rel={newTab ? "noopener noreferrer" : undefined}
+    >
+      {content}
+    </a>
+  ) : (
+    <Link href={href}>{content}</Link>
+  );
+
   // 状态变化时（例如登录态从服务端刷新回来）做一次交叉淡入
   if (reduce) {
     return (
       <Button asChild size={size} variant={variant} className={className}>
-        <Link href={href}>{content}</Link>
+        {link}
       </Button>
     );
   }
@@ -100,13 +151,8 @@ export function JoinButton({
         transition={{ duration: 0.25, ease: EASE_OUT }}
         className="inline-flex"
       >
-        <Button
-          asChild
-          size={size}
-          variant={variant}
-          className={`group ${className ?? ""}`}
-        >
-          <Link href={href}>{content}</Link>
+        <Button asChild size={size} variant={variant} className={`group ${className ?? ""}`}>
+          {link}
         </Button>
       </motion.div>
     </AnimatePresence>

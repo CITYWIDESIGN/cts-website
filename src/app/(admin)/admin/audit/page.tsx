@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { AlertTriangle, FileArchive, Trash2, UserX } from "lucide-react";
+import { AlertTriangle, FileArchive, Settings2, Trash2, UserX } from "lucide-react";
 import { requireAdmin } from "@/server/auth";
 import { listAuditLogs } from "@/server/audit";
 import { Badge } from "@/components/ui/badge";
@@ -57,8 +57,12 @@ export default async function AdminAuditPage() {
                     ? UserX
                     : log.action === "resource.delete"
                       ? FileArchive
-                      : Trash2;
+                      : log.action === "join_config.update"
+                        ? Settings2
+                        : Trash2;
                 const danger = log.action === "user.purge";
+                /** 配置变更不算"破坏性"，用中性色，免得每次改配置都弹一条警告色 */
+                const neutral = log.action === "join_config.update";
 
                 return (
                   <RowReveal
@@ -71,7 +75,9 @@ export default async function AdminAuditPage() {
                         className={
                           danger
                             ? "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive"
-                            : "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning"
+                            : neutral
+                              ? "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                              : "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning"
                         }
                       >
                         <Icon className="size-4" />
@@ -79,7 +85,7 @@ export default async function AdminAuditPage() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={danger ? "destructive" : "warning"}>
+                          <Badge variant={danger ? "destructive" : neutral ? "secondary" : "warning"}>
                             {t(`actions.${log.action.replace(/\./g, "_")}`)}
                           </Badge>
                           <span className="truncate text-sm font-medium">
