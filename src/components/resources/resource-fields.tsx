@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ALLOWED_COVER_MIME, COVER_ACCEPT_ATTR } from "@/lib/image-types";
 
 /** 与 src/server/resource.ts 保持一致 */
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
@@ -46,7 +47,8 @@ export function ResourceFields({
   function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (!f.type.startsWith("image/")) {
+    // 只收栅格图。SVG 能内嵌脚本，服务端也会拒（见 @/lib/image-types）
+    if (!(ALLOWED_COVER_MIME as readonly string[]).includes(f.type)) {
       toast.error(t("errors.imageType"));
       e.target.value = "";
       return;
@@ -112,7 +114,7 @@ export function ResourceFields({
             {t("fields.pickImage")}
             <input
               type="file"
-              accept="image/*"
+              accept={COVER_ACCEPT_ATTR}
               className="hidden"
               onChange={onPickImage}
             />

@@ -32,13 +32,14 @@ export function ResourceEditActions({
   id,
   title,
   description,
-  imageUrl,
+  hasImage,
   canDelete = true,
 }: {
   id: string;
   title: string;
   description: string;
-  imageUrl: string | null;
+  /** 有没有封面。**不传 data URL** —— 那玩意儿一张最大 1.4MB */
+  hasImage: boolean;
   /** 管理员在后台用同一组件；上传者前台也可用 */
   canDelete?: boolean;
 }) {
@@ -51,13 +52,33 @@ export function ResourceEditActions({
   const [pending, setPending] = React.useState(false);
 
   const [form, setForm] = React.useState({ title, description });
-  const [image, setImage] = React.useState<string | null>(imageUrl);
+
+  /**
+   * 预览用的地址：已有封面就指向图片接口（不是 data URL），
+   * 新选的图才是本地 data URL。
+   */
+  const existingImageUrl = hasImage ? `/api/resources/${id}/image` : null;
+  const [image, setImage] = React.useState<string | null>(existingImageUrl);
+  /**
+   * 封面是否被改过。
+   * 只有改过才把它放进 FormData —— 否则每次保存都要把整张图
+   * 从浏览器传到服务端再存回去，白白多传 1MB+。
+   */
+  const [imageDirty, setImageDirty] = React.useState(false);
+
   /** 选中的新附件；为 null 表示不动原文件 */
   const [newFile, setNewFile] = React.useState<File | null>(null);
 
+  function onImageChange(v: string | null) {
+    setImage(v);
+    setImageDirty(true);
+  }
+
   function openEdit() {
     setForm({ title, description });
-    setImage(imageUrl);
+    // 回到"未改动"状态，预览指向服务端的图而不是把 data URL 拉进内存
+    setImage(existingImageUrl);
+    setImageDirty(false);
     setNewFile(null);
     setEditOpen(true);
   }
@@ -87,8 +108,9 @@ export function ResourceEditActions({
     const body = new FormData();
     body.set("title", form.title);
     body.set("description", form.description);
-    // 空字符串表示"移除封面"（服务端据此置 null）
-    body.set("image", image ?? "");
+    // 只有封面真的被改过才带上：空字符串 = 移除，data URL = 换成新图。
+    // 没改就不带这个字段，服务端据此"原样不动"。
+    if (imageDirty) body.set("image", image ?? "");
     if (newFile) body.set("file", newFile);
 
     const res = await updateResourceAction(id, body);
@@ -107,7 +129,11 @@ export function ResourceEditActions({
           ? t("errors.forbidden")
           : res.error === "fileTooLarge"
             ? t("errors.fileTooLarge", { max: 5 })
-            : common("error")
+            : res.error === "imageTooLarge"
+              ? t("errors.imageTooLarge", { max: 1 })
+              : res.error === "imageType"
+                ? t("errors.imageType")
+                : common("error")
       );
     }
   }
@@ -163,7 +189,7 @@ export function ResourceEditActions({
               onDescriptionChange={(v) =>
                 setForm((f) => ({ ...f, description: v }))
               }
-              onImageChange={setImage}
+              onImageChange={onImageChange}
             />
 
             {/* 替换附件（可选） */}

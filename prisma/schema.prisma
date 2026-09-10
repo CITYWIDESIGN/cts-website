@@ -169,8 +169,6 @@ model Resource {
   id          String   @id @default(cuid())
   title       String
   description String   @db.Text
-  /** 封面图（存 data URL，限制 1MB 以内，避免列表查询变重） */
-  imageUrl    String?  @map("image_url") @db.Text
   /** 附件元数据 */
   fileName    String   @map("file_name")
   fileSize    Int      @map("file_size")
@@ -188,6 +186,8 @@ model Resource {
 
   uploader  User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
   blob      ResourceBlob?
+  /** 封面图。**单独一张表**，不要在 Resource 上放 data URL（见 ResourceImage） */
+  image     ResourceImage?
   revisions ResourceRevision[]
   likes     ResourceLike[]
   comments  ResourceComment[]
@@ -197,6 +197,30 @@ model Resource {
   @@index([uploaderId])
   @@index([createdAt])
   @@map("resources")
+}
+
+/**
+ * 资源封面图（存 data URL，最大 1MB）。
+ *
+ * ⚠️ **必须单独一张表**，不能作为 `Resource.imageUrl` 的列。
+ *
+ * 起因是一个真实事故：列表页 `listResources` 为了算一个
+ * `hasImage: Boolean(r.imageUrl)`，把整列 data URL 一起 select 了出来 ——
+ * 每张最大 ~1.4MB（base64 膨胀 1.37 倍），100 条就是 **100MB+ 的无效传输**，
+ * 数据库和连接池全被这个拖垮。
+ *
+ * 拆出来之后，列表只 select 关系主键（`image: { select: { resourceId: true } }`），
+ * 和 `ResourceBlob` 用的是同一套办法：**要二进制就单独一次查询**。
+ */
+model ResourceImage {
+  resourceId String   @id @map("resource_id")
+  /** data URL，例如 data:image/png;base64,... */
+  data       String   @db.Text
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@map("resource_images")
 }
 
 /**
@@ -238,6 +262,7 @@ model ResourceLike {
 
   @@unique([resourceId, userId])
   @@index([resourceId])
+  @@index([userId])
   @@map("resource_likes")
 }
 
@@ -266,6 +291,7 @@ model ResourceComment {
 
   @@index([resourceId])
   @@index([parentId])
+  @@index([userId])
   @@map("resource_comments")
 }
 
@@ -280,6 +306,7 @@ model CommentLike {
 
   @@unique([commentId, userId])
   @@index([commentId])
+  @@index([userId])
   @@map("comment_likes")
 }
 
@@ -310,6 +337,7 @@ model ResourceRevision {
   resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@index([resourceId])
+  @@index([editorId])
   @@map("resource_revisions")
 }
 
@@ -396,6 +424,7 @@ model EmailCode {
   createdAt  DateTime  @default(now()) @map("created_at")
 
   @@index([email, purpose, createdAt])
+  @@index([userId])
   @@index([expiresAt])
   @@map("email_codes")
 }
@@ -469,6 +498,7 @@ model Report {
 
   @@index([status])
   @@index([targetType, targetId])
+  @@index([reporterId])
   @@map("reports")
 }
 
@@ -507,6 +537,7 @@ model Notification {
 
   @@index([userId, readAt])
   @@index([userId, createdAt])
+  @@index([actorId])
   @@map("notifications")
 }
 

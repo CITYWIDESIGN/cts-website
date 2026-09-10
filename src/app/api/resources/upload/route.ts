@@ -9,6 +9,7 @@ import {
 import { addUsage, checkQuota, clientIp } from "@/server/quota";
 import { addDailyCount, checkDailyLimit } from "@/server/limit";
 import { isBanned } from "@/server/ban";
+import { isAllowedCoverDataUrl } from "@/lib/image-types";
 import { ResourceMetaSchema } from "@/lib/validators/questionnaire";
 
 /**
@@ -73,7 +74,11 @@ export async function POST(request: Request) {
   // 封面图：前端已转成 data URL；这里再校验一次大小
   const imageField = form.get("image");
   let imageUrl: string | null = null;
-  if (typeof imageField === "string" && imageField.startsWith("data:image/")) {
+  if (typeof imageField === "string" && imageField.length > 0) {
+    // 类型白名单：挡掉 SVG（能内嵌脚本，见 @/lib/image-types）
+    if (!isAllowedCoverDataUrl(imageField)) {
+      return NextResponse.json({ ok: false, error: "image_type" }, { status: 415 });
+    }
     if (imageField.length > MAX_IMAGE_BYTES * 1.4) {
       return NextResponse.json(
         { ok: false, error: "image_too_large", max: MAX_IMAGE_BYTES },

@@ -5,6 +5,7 @@ import {
   generateOAuthState,
   isMicrosoftConfigured,
 } from "@/lib/auth/microsoft";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export async function GET(request: Request) {
   if (!isMicrosoftConfigured()) {
@@ -14,8 +15,11 @@ export async function GET(request: Request) {
   }
 
   const state = generateOAuthState();
-  const redirectTo =
-    new URL(request.url).searchParams.get("redirectTo") ?? "/dashboard";
+  // 只接受站内路径：这个值会写进 cookie，登录后再拿来跳转
+  const redirectTo = safeRedirectPath(
+    new URL(request.url).searchParams.get("redirectTo"),
+    "/dashboard"
+  );
 
   // 动态匹配请求地址，避免 localhost / 127.0.0.1 混用导致 cookie 域不一致
   const redirectUri = `${new URL(request.url).origin}/api/auth/callback`;

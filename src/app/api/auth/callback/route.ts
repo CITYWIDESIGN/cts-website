@@ -9,6 +9,7 @@ import {
   describe,
 } from "@/lib/auth/microsoft";
 import { generateAttemptId } from "@/lib/auth/logger";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -16,7 +17,12 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
 
   const cookieStore = await cookies();
-  const redirectTo = cookieStore.get("oauth_redirect")?.value ?? "/dashboard";
+  // 纵深防御：cookie 是 /api/auth/login 写的，那边已经校验过；
+  // 但旧版本写下的 cookie 可能还在浏览器里，这里再挡一次。
+  const redirectTo = safeRedirectPath(
+    cookieStore.get("oauth_redirect")?.value,
+    "/dashboard"
+  );
 
   // CSRF 防护：验证 state 签名（无状态，无需 cookie）
   if (!state || !verifyOAuthState(state)) {

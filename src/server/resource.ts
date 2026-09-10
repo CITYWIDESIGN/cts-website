@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { hasAvatarFrame } from "@/lib/frame";
 import { displayName } from "@/lib/display-name";
+import { isAllowedCoverDataUrl } from "@/lib/image-types";
 import type { Resource } from "@prisma/client";
 
 /** 附件大小上限：5MB（与前端校验保持一致） */
@@ -19,6 +20,7 @@ export class ResourceError extends Error {
       | "FILE_REQUIRED"
       | "FILE_TOO_LARGE"
       | "IMAGE_TOO_LARGE"
+      | "IMAGE_TYPE"
       | "NOT_FOUND"
       | "FORBIDDEN"
   ) {
@@ -74,7 +76,6 @@ export async function listResources(options: {
       id: true,
       title: true,
       description: true,
-      imageUrl: true,
       fileName: true,
       fileSize: true,
       fileType: true,
@@ -84,6 +85,10 @@ export async function listResources(options: {
       commentCount: true,
       createdAt: true,
       uploaderId: true,
+      // ⚠️ 这里**只 select 关系主键**，不要 select 封面的 data URL。
+      // 曾经写成 imageUrl: true + Boolean(r.imageUrl)，等于把每张最大 1.4MB
+      // 的 base64 全捞回来只为判断"有没有" —— 100 条就是 100MB+ 的无效传输。
+      image: { select: { resourceId: true } },
       uploader: {
         select: {
           username: true,
@@ -96,7 +101,7 @@ export async function listResources(options: {
     },
   });
 
-  // description 可能很长，列表只取前 160 字；imageUrl 只暴露"有没有"
+  // description 可能很长，列表只取前 160 字
   return rows.map((r) => ({
     id: r.id,
     title: r.title,
@@ -110,7 +115,7 @@ export async function listResources(options: {
     commentCount: r.commentCount,
     createdAt: r.createdAt,
     uploaderId: r.uploaderId,
-    hasImage: Boolean(r.imageUrl),
+    hasImage: Boolean(r.image),
     // 没填游戏 ID 就退回账号名，不然列表里一片「—」
     uploaderName: displayName(r.uploader),
     uploaderUuid: r.uploader.minecraftUuid,
@@ -133,15 +138,20 @@ export async function getResource(id: string) {
         },
       },
       blob: { select: { resourceId: true } },
+      // 同样只取主键：详情页只需要知道"有没有封面"
+      image: { select: { resourceId: true } },
     },
   });
 }
 
-/** 只取封面图（列表/详情单独拉，避免把 data URL 混进主查询） */
+/**
+ * 只取封面图本体。
+ * 列表 / 详情都**不该**顺带把它捞出来 —— 一张最大 1.4MB，见 ResourceImage 的注释。
+ */
 export async function getResourceImage(id: string) {
-  return prisma.resource.findUnique({
-    where: { id },
-    select: { imageUrl: true },
+  return prisma.resourceImage.findUnique({
+    where: { resourceId: id },
+    select: { data: true },
   });
 }
 
@@ -180,16 +190,21 @@ export async function createResource(input: {
       `File exceeds ${Math.round(MAX_FILE_BYTES / 1024 / 1024)}MB.`,
       "FILE_TOO_LARGE"
     );
-  if (input.imageUrl && input.imageUrl.length > MAX_IMAGE_BYTES * 1.4) {
+  if (input.imageUrl) {
+    // 类型必须在白名单里 —— 挡掉 SVG（能内嵌脚本，见 @/lib/image-types）
+    if (!isAllowedCoverDataUrl(input.imageUrl)) {
+      throw new ResourceError("Unsupported cover image type.", "IMAGE_TYPE");
+    }
     // data URL 是 base64，长度约为原文件的 1.37 倍
-    throw new ResourceError("Cover image is too large.", "IMAGE_TOO_LARGE");
+    if (input.imageUrl.length > MAX_IMAGE_BYTES * 1.4) {
+      throw new ResourceError("Cover image is too large.", "IMAGE_TOO_LARGE");
+    }
   }
 
   return prisma.resource.create({
     data: {
       title: title.slice(0, 120),
       description: description.slice(0, 5000),
-      imageUrl: input.imageUrl ?? null,
       fileName: input.fileName.slice(0, 200) || "download",
       fileType: input.fileType || "application/octet-stream",
       fileSize: input.data.byteLength,
@@ -198,6 +213,10 @@ export async function createResource(input: {
       // 底层是 ArrayBufferLike，直接传会类型不兼容；这里显式包一层
       // （会有一次拷贝，5MB 以内可接受）。
       blob: { create: { data: new Uint8Array(input.data) } },
+      // 封面写进独立的表（有才建）
+      ...(input.imageUrl
+        ? { image: { create: { data: input.imageUrl } } }
+        : {}),
     },
   });
 }
@@ -214,7 +233,11 @@ export async function updateResource(
   },
   editor: { id: string; name: string | null; isAdmin: boolean }
 ) {
-  const existing = await prisma.resource.findUnique({ where: { id } });
+  const existing = await prisma.resource.findUnique({
+    where: { id },
+    // 只取"有没有封面"，不取 data URL 本体
+    include: { image: { select: { resourceId: true } } },
+  });
   if (!existing) throw new ResourceError("Resource not found.", "NOT_FOUND");
 
   const data: Record<string, unknown> = {};
@@ -246,17 +269,34 @@ export async function updateResource(
     }
   }
 
+  /**
+   * 封面是"写入/替换"还是"删除"。
+   * 注意 `input.imageUrl === undefined` 表示**没动封面** —— 调用方只有
+   * 用户真的改了才带上这个字段，避免每次保存都把整张图来回传。
+   */
+  let imageAction: "set" | "clear" | null = null;
+
   if (input.imageUrl !== undefined) {
-    if (input.imageUrl && input.imageUrl.length > MAX_IMAGE_BYTES * 1.4) {
-      throw new ResourceError("Cover image is too large.", "IMAGE_TOO_LARGE");
+    if (input.imageUrl) {
+      // 类型白名单：挡掉 SVG（能内嵌脚本，见 @/lib/image-types）
+      if (!isAllowedCoverDataUrl(input.imageUrl)) {
+        throw new ResourceError("Unsupported cover image type.", "IMAGE_TYPE");
+      }
+      if (input.imageUrl.length > MAX_IMAGE_BYTES * 1.4) {
+        throw new ResourceError("Cover image is too large.", "IMAGE_TOO_LARGE");
+      }
     }
     const next = input.imageUrl || null;
-    if (next !== existing.imageUrl) {
-      data.imageUrl = next;
-      // 封面可能是很长的 data URL，历史里只记录"有/无/是否更换"
+    const hadImage = Boolean(existing.image);
+
+    if (next) imageAction = "set";
+    else if (hadImage) imageAction = "clear";
+
+    if (imageAction) {
+      // 封面是超长 data URL，历史里只记录"有 / 无"
       changes.push({
         field: "image",
-        before: existing.imageUrl ? "present" : null,
+        before: hadImage ? "present" : null,
         after: next ? "present" : null,
       });
     }
@@ -307,6 +347,17 @@ export async function updateResource(
         create: { resourceId: id, data: new Uint8Array(input.file.data) },
         update: { data: new Uint8Array(input.file.data) },
       });
+    }
+
+    // 封面走独立的表
+    if (imageAction === "set" && input.imageUrl) {
+      await tx.resourceImage.upsert({
+        where: { resourceId: id },
+        create: { resourceId: id, data: input.imageUrl },
+        update: { data: input.imageUrl },
+      });
+    } else if (imageAction === "clear") {
+      await tx.resourceImage.deleteMany({ where: { resourceId: id } });
     }
 
     await tx.resourceRevision.create({

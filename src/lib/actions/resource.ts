@@ -12,6 +12,7 @@ import {
 } from "@/server/resource";
 import { ResourceMetaSchema } from "@/lib/validators/questionnaire";
 import { recordAudit } from "@/server/audit";
+import { isAllowedCoverDataUrl } from "@/lib/image-types";
 
 export type ResourceActionState = {
   ok: boolean;
@@ -33,6 +34,8 @@ function toErrorKey(code: string): string {
       return "fileTooLarge";
     case "IMAGE_TOO_LARGE":
       return "imageTooLarge";
+    case "IMAGE_TYPE":
+      return "imageType";
     case "FORBIDDEN":
       return "forbidden";
     case "NOT_FOUND":
@@ -74,7 +77,9 @@ export async function updateResourceAction(
   let imageUrl: string | null | undefined;
   if (typeof imageField === "string") {
     if (imageField === "") imageUrl = null;
-    else if (imageField.startsWith("data:image/")) imageUrl = imageField;
+    // 类型白名单：挡掉 SVG（能内嵌脚本，见 @/lib/image-types）
+    else if (isAllowedCoverDataUrl(imageField)) imageUrl = imageField;
+    else return { ok: false, error: "imageType" };
   }
 
   // 附件：有就替换

@@ -214,7 +214,7 @@ export default async function ResourceDetailPage({
                   id={resource.id}
                   title={resource.title}
                   description={resource.description}
-                  imageUrl={resource.imageUrl}
+                  hasImage={Boolean(resource.image)}
                 />
               </div>
             </div>
@@ -224,7 +224,7 @@ export default async function ResourceDetailPage({
         {/* 封面 */}
         <StaggerItem index={3}>
           <div className="overflow-hidden rounded-xl border bg-muted">
-            {resource.imageUrl ? (
+            {resource.image ? (
               // 封面来自本站接口，尺寸由容器控制
               // eslint-disable-next-line @next/next/no-img-element
               <img
