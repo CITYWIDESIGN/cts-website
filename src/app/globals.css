@@ -1,26 +1,394 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   配色
+   --------------------------------------------------------------------------
+   全部改用 oklch：感知均匀、色相统一，调浅调深时不会像 HSL 那样跑色，
+   color-mix 出来的半透明色也更干净。
+   品牌色刻意压低饱和度（一株偏灰的苔绿），整站保持"克制"的基调。
+   ========================================================================== */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --radius: 0.625rem;
+
+  --background: oklch(0.995 0.001 250);
+  --foreground: oklch(0.205 0.008 255);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.205 0.008 255);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.205 0.008 255);
+
+  --primary: oklch(0.505 0.093 158);
+  --primary-foreground: oklch(0.985 0.004 150);
+
+  --secondary: oklch(0.968 0.003 255);
+  --secondary-foreground: oklch(0.235 0.008 255);
+
+  --muted: oklch(0.968 0.003 255);
+  --muted-foreground: oklch(0.552 0.012 255);
+
+  --accent: oklch(0.962 0.021 158);
+  --accent-foreground: oklch(0.36 0.078 158);
+
+  --destructive: oklch(0.577 0.211 27);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.918 0.004 255);
+  --input: oklch(0.918 0.004 255);
+  --ring: oklch(0.578 0.106 158);
+
+  --success: oklch(0.573 0.122 158);
+  --warning: oklch(0.705 0.155 72);
+
+  /*
+   * 图表三色。
+   * 站点是单色（绿）体系，所以第 1 色直接复用主色相 158，
+   * 另外两色沿色轮分别偏冷（205 青）与偏暖（85 琥珀），
+   * 明度递进，保证堆叠时相邻段可分辨、又不跳出整体调性。
+   */
+  --chart-1: oklch(0.505 0.093 158);
+  --chart-2: oklch(0.565 0.088 205);
+  --chart-3: oklch(0.7 0.13 85);
+
+  /* 阴影刻度：用同一套色相与低透明度，保证整站"深度"一致 */
+  --shadow-2xs: 0 1px 2px 0 oklch(0.205 0.008 255 / 0.04);
+  --shadow-xs: 0 1px 2px 0 oklch(0.205 0.008 255 / 0.05);
+  --shadow-sm: 0 1px 3px 0 oklch(0.205 0.008 255 / 0.07),
+    0 1px 2px -1px oklch(0.205 0.008 255 / 0.06);
+  --shadow-md: 0 4px 10px -2px oklch(0.205 0.008 255 / 0.08),
+    0 2px 4px -2px oklch(0.205 0.008 255 / 0.05);
+  --shadow-lg: 0 12px 28px -8px oklch(0.205 0.008 255 / 0.13),
+    0 4px 10px -6px oklch(0.205 0.008 255 / 0.08);
+}
+
+.dark {
+  --background: oklch(0.163 0.007 255);
+  --foreground: oklch(0.965 0.003 250);
+
+  --card: oklch(0.196 0.008 255);
+  --card-foreground: oklch(0.965 0.003 250);
+
+  --popover: oklch(0.196 0.008 255);
+  --popover-foreground: oklch(0.965 0.003 250);
+
+  --primary: oklch(0.735 0.113 158);
+  --primary-foreground: oklch(0.175 0.02 158);
+
+  --secondary: oklch(0.245 0.008 255);
+  --secondary-foreground: oklch(0.965 0.003 250);
+
+  --muted: oklch(0.245 0.008 255);
+  --muted-foreground: oklch(0.685 0.012 255);
+
+  --accent: oklch(0.28 0.032 158);
+  --accent-foreground: oklch(0.83 0.09 158);
+
+  --destructive: oklch(0.66 0.185 25);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.272 0.008 255);
+  --input: oklch(0.272 0.008 255);
+  --ring: oklch(0.7 0.1 158);
+
+  --success: oklch(0.71 0.134 158);
+  --warning: oklch(0.79 0.143 72);
+
+  --chart-1: oklch(0.735 0.113 158);
+  --chart-2: oklch(0.72 0.1 205);
+  --chart-3: oklch(0.79 0.13 85);
+
+  --shadow-2xs: 0 1px 2px 0 oklch(0 0 0 / 0.24);
+  --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.28);
+  --shadow-sm: 0 1px 3px 0 oklch(0 0 0 / 0.34), 0 1px 2px -1px oklch(0 0 0 / 0.3);
+  --shadow-md: 0 4px 10px -2px oklch(0 0 0 / 0.4), 0 2px 4px -2px oklch(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 28px -8px oklch(0 0 0 / 0.5), 0 4px 10px -6px oklch(0 0 0 / 0.35);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+
+  /* 阴影刻度接入 Tailwind（shadow-xs / shadow-sm / ... 使用自定义值） */
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    /**
+     * 常驻预留滚动条槽位。
+     *
+     * 不加这句时：页面内容够长才有滚动条，短页面（如规则页手风琴默认折叠）
+     * 没有滚动条 → 内容区宽约 15px → 居中的页面容器（以及绝对居中的顶部
+     * 导航）会整体右移约 7.5px。表现就是"切到某些页面时，顶部标签栏往右偏"。
+     * 预留槽位后所有页面宽度一致，导航位置恒定。
+     */
+    scrollbar-gutter: stable;
+    /* 老浏览器不支持 scrollbar-gutter 时的兜底：常驻滚动条 */
+    overflow-y: scroll;
+  }
+
+  /* 锚点跳转时预留粘性头部的高度，避免标题被挡住 */
+  :target {
+    scroll-margin-top: 5rem;
+  }
+
+  /* 标题统一收紧字距，中英混排更整齐 */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.022em;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--primary) 22%, transparent);
+  }
+
+  /* 保留默认 focus 可见性，并统一焦点样式 */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* 细滚动条，避免默认滚动条破坏整体质感 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent)
+      transparent;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* 标题字距：中文与英文混排时都能收紧一点，显得更"排版过" */
+  .tracking-display {
+    letter-spacing: -0.022em;
+  }
+
+  /* 极细的分隔线，比 border 更轻，用于标题下方等处 */
+  .rule-hairline {
+    background: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--primary) 55%, transparent),
+      transparent
+    );
+  }
+
+  /* 区块顶部的柔和渐变，用来区分相邻区块而不加边框 */
+  .section-glow {
+    background: radial-gradient(
+      ellipse 60% 100% at 50% 0%,
+      color-mix(in oklab, var(--primary) 7%, transparent),
+      transparent
+    );
+  }
+}
+
+/* 为偏好减少动态效果的用户提供降级 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 克制的漂浮装饰 */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+/* --- 静态装饰层（借鉴鹰角网络的设计语汇） --- */
+
+/**
+ * 42° 斜纹缓慢平铺移动。
+ *
+ * 位移量必须与背景尺寸（= 条纹周期）严格相等，否则每次循环都会"跳"一下。
+ *
+ * 周期推导：CSS 渐变角度以**向上**为 0deg，42deg 的渐变轴在屏幕坐标里的
+ * 水平投影是 sin(42°)——不是 cos。因此
+ *     周期 = 条纹间距 / sin(42°) = 16 / 0.669131 ≈ 23.916px
+ * （早先用 cos(42°)=0.7431 算出 22.627px，少了约 1.3px，
+ *   每个 tile 累积后就出现肉眼可见的 1–2px 错缝。）
+ */
+@keyframes deco-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 23.916px 23.916px;
+  }
+}
+
+/* 极缓慢自转（用于同心圆环） */
+@keyframes deco-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 反向自转，制造内外层的相对运动 */
+@keyframes deco-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* 呼吸式明暗 */
+@keyframes deco-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 扫描线向上缓慢移动（周期为 4px 的整数倍，循环无缝） */
+@keyframes deco-scan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 -200px;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* 42° 细斜纹：背景尺寸 = 条纹周期(16/sin42° ≈ 23.916)，因此四向无缝衔接 */
+  .deco-hatch {
+    background-image: repeating-linear-gradient(
+      42deg,
+      color-mix(in oklab, var(--foreground) 11%, transparent) 0 1px,
+      transparent 1px 16px
+    );
+    background-size: 23.916px 23.916px;
+    animation: deco-drift 60s linear infinite;
+  }
+
+  /* 斜线装饰块：同样的周期，保证块内斜线连续、四边与页面斜纹也接得上 */
+  .deco-hatchblock {
+    background-image: repeating-linear-gradient(
+      42deg,
+      color-mix(in oklab, var(--primary) 24%, transparent) 0 1px,
+      transparent 1px 16px
+    );
+    background-size: 23.916px 23.916px;
+  }
+
+  /* 技术感细网格 */
+  .deco-grid {
+    background-image: linear-gradient(
+        to right,
+        color-mix(in oklab, var(--foreground) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--foreground) 8%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 88px 88px;
+  }
+
+  /* 横向扫描线：与斜纹方向相反，用于替代原来的点阵 */
+  .deco-scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 9%, transparent) 0 1px,
+      transparent 1px 4px
+    );
+    animation: deco-scan 24s linear infinite;
+  }
+
+  .deco-spin-slow {
+    animation: deco-spin 110s linear infinite;
+  }
+
+  .deco-spin-reverse {
+    animation: deco-spin-reverse 150s linear infinite;
+  }
+
+  .deco-pulse {
+    animation: deco-pulse 6s ease-in-out infinite;
+  }
 }

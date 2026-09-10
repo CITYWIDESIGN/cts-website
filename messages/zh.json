@@ -1,0 +1,1011 @@
+{
+  "meta": {
+    "title": "Minecraft 服务器 — 官方网站",
+    "description": "一个属于玩家的 Minecraft 世界。了解服务器信息、阅读规则，并使用 Microsoft 账号加入。"
+  },
+  "common": {
+    "loading": "加载中…",
+    "error": "出错了",
+    "errorRetry": "出现了一些问题，请稍后再试。",
+    "retry": "重试",
+    "empty": "这里暂时没有内容",
+    "save": "保存",
+    "saving": "保存中…",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "submit": "提交",
+    "submitting": "提交中…",
+    "back": "返回",
+    "next": "下一题",
+    "previous": "上一题",
+    "search": "搜索",
+    "confirm": "确认",
+    "close": "关闭",
+    "copy": "复制",
+    "copied": "已复制到剪贴板",
+    "required": "必填",
+    "optional": "选填",
+    "yes": "是",
+    "no": "否",
+    "actions": "操作",
+    "status": "状态",
+    "name": "名称",
+    "date": "日期",
+    "view": "查看",
+    "all": "全部",
+    "none": "无",
+    "submitted": "已提交",
+    "published": "已发布",
+    "draft": "草稿",
+    "paused": "已暂停",
+    "pending": "待审核",
+    "approved": "已通过",
+    "rejected": "已拒绝",
+    "online": "在线",
+    "offline": "离线",
+    "players": "玩家",
+    "version": "版本",
+    "notAvailable": "暂无",
+    "total": "总计",
+    "page": "第",
+    "of": "/",
+    "perPage": "条/页",
+    "results": "条结果"
+  },
+  "nav": {
+    "home": "首页",
+    "server": "服务器",
+    "rules": "规则",
+    "resources": "资源",
+    "community": "社区",
+    "login": "登录",
+    "dashboard": "个人中心",
+    "currentlyHere": "你在这里",
+    "myQuestionnaires": "我的问卷",
+    "accountSettings": "账户设置",
+    "logout": "退出登录",
+    "admin": "管理后台",
+    "menu": "菜单",
+    "toggleTheme": "切换主题",
+    "language": "语言"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Minecraft Server",
+      "title": "一个属于玩家的 Minecraft 世界",
+      "subtitle": "加入一个稳定、友善、公平的生存社区，由玩家打造，为玩家而生。",
+      "ctaPrimary": "加入服务器",
+      "ctaSecondary": "了解服务器"
+    },
+    "status": {
+      "eyebrow": "服务器状态",
+      "address": "服务器地址",
+      "copyAddress": "复制地址",
+      "playersOnline": "在线玩家",
+      "maxPlayers": "最大玩家数",
+      "java": "Java 版",
+      "bedrock": "基岩版"
+    },
+    "features": {
+      "eyebrow": "为什么选择我们",
+      "title": "为玩家而生",
+      "survival": {
+        "title": "生存",
+        "description": "在广阔而持久的世界中，按照自己的节奏自由探索。"
+      },
+      "community": {
+        "title": "社区",
+        "description": "一个友好而热情、欢迎每一位玩家的社区。"
+      },
+      "fair": {
+        "title": "公平",
+        "description": "为每个人提供平衡、诚实的游戏环境。"
+      },
+      "stable": {
+        "title": "稳定",
+        "description": "长期运行、值得信赖的可靠基础设施。"
+      }
+    },
+    "intro": {
+      "eyebrow": "关于服务器",
+      "title": "每一位玩家的归宿",
+      "world": {
+        "title": "世界设定",
+        "description": "精心设计的世界，拥有长期规划——建造、探索，留下属于你的印记。"
+      },
+      "gameplay": {
+        "title": "游戏玩法",
+        "description": "生存、建筑、探索与社区活动，一应俱全。"
+      },
+      "community": {
+        "title": "社区",
+        "description": "活跃的玩家、乐于助人的管理团队和定期活动，让服务器始终充满活力。"
+      },
+      "events": {
+        "title": "活动",
+        "description": "季节活动、竞赛与协作项目，人人皆可参与。"
+      }
+    },
+    "cta": {
+      "title": "准备好进入这个世界了吗？",
+      "subtitle": "使用 Microsoft 账号加入，成为社区的一员。",
+      "button": "立即加入",
+      "apply": "加入我们"
+    },
+    "carousel": {
+      "label": "服务器影像",
+      "previous": "上一张",
+      "next": "下一张",
+      "goTo": "查看第 {index} 张",
+      "items": {
+        "slide1": {
+          "title": "第一位玩家的第一天",
+          "description": "从一片草原开始，这里的一切都由玩家亲手建造。"
+        },
+        "slide2": {
+          "title": "大家一起完成的工程",
+          "description": "跨服合作、红石机械、大型建筑，社区把想象变成现实。"
+        },
+        "slide3": {
+          "title": "每一次冒险都有同伴",
+          "description": "组队探索、下界速通、末地远征，从不缺少队友。"
+        },
+        "slide4": {
+          "title": "属于你的那片领地",
+          "description": "申请一块自己的地，慢慢把它变成想要的样子。"
+        },
+        "slide5": {
+          "title": "夜色下的主城",
+          "description": "灯光亮起来的时候，整座城市才真正活过来。"
+        },
+        "slide6": {
+          "title": "跨服活动日",
+          "description": "限时玩法、团队竞赛，一年里最热闹的几天。"
+        },
+        "slide7": {
+          "title": "农场与自动化",
+          "description": "从一格小麦到全自动流水线，红石玩家的浪漫。"
+        },
+        "slide8": {
+          "title": "建筑师的执念",
+          "description": "对称、比例、材质搭配——一砖一瓦都要对。"
+        },
+        "slide9": {
+          "title": "下界交通网",
+          "description": "用冰道和隧道把整个世界连成一张网。"
+        },
+        "slide10": {
+          "title": "一起看过的风景",
+          "description": "每一次合影，都是这个社区的一段记忆。"
+        }
+      }
+    },
+    "stats": {
+      "eyebrow": "服务器数据",
+      "title": "一个不断成长的社区",
+      "players": "累计玩家",
+      "builds": "建筑作品",
+      "members": "社区成员",
+      "days": "稳定运行天数"
+    },
+    "howtojoin": {
+      "eyebrow": "加入流程",
+      "title": "三步加入服务器",
+      "description": "加入流程简单快捷，几分钟即可完成。",
+      "step1": {
+        "title": "使用 Microsoft 登录",
+        "description": "用微软账号验证你的 Minecraft 正版身份。"
+      },
+      "step2": {
+        "title": "填写入服问卷",
+        "description": "回答几个简短问题，让我们更了解你。"
+      },
+      "step3": {
+        "title": "加入服务器",
+        "description": "审核通过后，连接服务器开启你的冒险。"
+      }
+    },
+    "news": {
+      "eyebrow": "公告",
+      "title": "最新动态",
+      "readMore": "阅读更多",
+      "item1": {
+        "title": "服务器已更新至 Minecraft 1.21",
+        "description": "服务器现已运行最新版本，带来全新内容。",
+        "date": "2026-09-05",
+        "tag": "更新"
+      },
+      "item2": {
+        "title": "冬季建筑大赛开启报名",
+        "description": "展示你的建筑才华，赢取独家奖励。",
+        "date": "2026-08-20",
+        "tag": "活动"
+      },
+      "item3": {
+        "title": "全新生存世界正式开放",
+        "description": "一个崭新的世界已向所有玩家开放探索。",
+        "date": "2026-08-01",
+        "tag": "公告"
+      }
+    },
+    "faq": {
+      "eyebrow": "常见问题",
+      "title": "你可能想问",
+      "item1": {
+        "q": "如何加入服务器？",
+        "a": "点击首页的「加入服务器」，使用 Microsoft 账号登录并填写入服问卷。"
+      },
+      "item2": {
+        "q": "需要正版 Minecraft 吗？",
+        "a": "需要。你的身份通过 Microsoft 官方认证验证，因此必须拥有正版账号。"
+      },
+      "item3": {
+        "q": "服务器支持什么版本？",
+        "a": "目前支持 Java 版 1.21.x。"
+      },
+      "item4": {
+        "q": "如何成为管理员？",
+        "a": "在社区中保持活跃，我们会邀请热心的玩家加入团队。"
+      },
+      "item5": {
+        "q": "遇到问题怎么办？",
+        "a": "加入我们的 Discord 并提交工单，团队很乐意帮助你。"
+      }
+    }
+  },
+  "community": {
+    "eyebrow": "社区",
+    "title": "加入我们的社区",
+    "description": "QQ 群、OOPZ 语音和 Discord —— 选一个你习惯的地方，和大家打个招呼。",
+    "placeholderTitle": "更多内容筹备中",
+    "placeholderDescription": "下面这些内容之后会陆续补上。",
+    "placeholder": {
+      "item1": "社区活动与公告",
+      "item2": "玩家作品展示",
+      "item3": "常见问题与新人指引"
+    },
+    "channels": {
+      "qq": {
+        "badge": "推荐",
+        "title": "QQ 群",
+        "description": "国内玩家最方便的方式，扫码或搜索群号加入，日常交流都在这里。",
+        "groupLabel": "群号",
+        "qrAlt": "QQ 群二维码"
+      },
+      "oopz": {
+        "badge": "语音",
+        "title": "OOPZ 语音",
+        "description": "开黑、活动、闲聊用的语音频道，点下面的按钮直接跳转。",
+        "button": "打开 OOPZ"
+      },
+      "discord": {
+        "badge": "国际",
+        "title": "Discord",
+        "description": "面向海外玩家与跨时区交流的服务器，也有完整的公告与工单频道。",
+        "button": "加入 Discord"
+      }
+    }
+  },
+  "resources": {
+    "eyebrow": "资源分享",
+    "title": "资源下载",
+    "description": "玩家分享的地图、整合包、材质与工具。任何访客都可以下载；登录后即可上传自己的作品。",
+    "searchPlaceholder": "搜索标题、介绍或上传者",
+    "empty": "还没有人分享资源，来当第一个吧。",
+    "noMatch": "没有匹配的资源。",
+    "upload": "上传资源",
+    "uploadTitle": "上传资源",
+    "uploadDescription": "填写基本信息并选择文件。单个文件不超过 5MB。",
+    "uploadSuccess": "上传成功",
+    "loginToUpload": "登录后上传",
+    "viewDetail": "查看详情",
+    "backToList": "返回资源列表",
+    "download": "下载",
+    "downloads": "{count} 次下载",
+    "uploader": "上传者",
+    "uploadedAt": "上传时间",
+    "fileSize": "文件",
+    "descriptionLabel": "资源介绍",
+    "ownerManageHint": "你是这个资源的上传者，可以修改介绍或封面；每次修改都会留下记录。",
+    "adminManageHint": "管理员权限：可以修改或删除该资源，每次修改都会留下记录。",
+    "editTitle": "编辑资源",
+    "editDescription": "可修改标题、介绍、封面，也可以替换附件；每次修改都会留下记录。",
+    "editSaved": "已保存，并记录了这次修改",
+    "editSavedWithFile": "已保存，附件已替换，并记录了这次修改",
+    "deleteTitle": "删除该资源？",
+    "deleteDescription": "将永久删除《{title}》及其附件，操作不可撤销。",
+    "deleteSuccess": "已删除",
+    "revisionNotice": "保存后会写入一条修改记录（类似 git commit），可在详情页查看。",
+    "historyTitle": "修改记录",
+    "viewLabel": "视图",
+    "viewGrid": "网格",
+    "viewFeed": "动态",
+    "viewList": "列表",
+    "sharedAt": "发布于 {time}",
+    "social": {
+      "like": "点赞",
+      "comment": "评论",
+      "share": "分享",
+      "shareHint": "复制这条动态的链接",
+      "linkCopied": "链接已复制到剪贴板",
+      "linkCopiedShort": "已复制",
+      "copyFailed": "复制失败，请手动复制地址栏链接",
+      "needLogin": "登录后才能互动",
+      "actionFailed": "操作失败，请稍后重试",
+      "comments": "评论",
+      "commentPlaceholder": "说点什么…（登录后即可评论，无需审核）",
+      "commentTooLong": "评论太长了",
+      "commentLimitReached": "今天的评论次数用完了（每天 {limit} 条），明天再来吧",
+      "send": "发送",
+      "sending": "发送中…",
+      "noComments": "还没有评论，来抢沙发。",
+      "loginToInteract": "登录后即可点赞、评论与分享",
+      "signIn": "登录",
+      "anonymous": "匿名玩家",
+      "reply": "回复",
+      "replyTo": "回复 {name}",
+      "replyingTo": "正在回复 {name}",
+      "replyPlaceholder": "写下你的回复…",
+      "cancelReply": "取消回复",
+      "deleteHint": "删除后将一并移除其下的回复"
+    },
+    "report": {
+      "action": "举报",
+      "reported": "已举报",
+      "alreadyReported": "你已经举报过了，管理员会尽快处理",
+      "needLogin": "登录后才能举报",
+      "selfReport": "不能举报自己的内容",
+      "failed": "举报提交失败，请稍后重试",
+      "title": "举报内容",
+      "description": "请选择举报原因。管理员会尽快处理，处理前内容不会被自动删除。",
+      "reason": "举报原因",
+      "reasonRequired": "请选择举报原因",
+      "detail": "补充说明（可选）",
+      "detailPlaceholder": "补充一些细节，方便管理员判断",
+      "cancel": "取消",
+      "submit": "提交举报",
+      "submitting": "提交中…",
+      "submitted": "举报已提交，管理员会尽快处理",
+      "reasons": {
+        "spam": "垃圾信息 / 广告",
+        "harassment": "骚扰 / 攻击他人",
+        "illegal": "违法或不当内容",
+        "malware": "文件含病毒或恶意程序",
+        "copyright": "侵犯版权",
+        "other": "其他"
+      }
+    },
+    "historyImagePresent": "有封面",
+    "historyImageAbsent": "无封面",
+    "historyFields": {
+      "title": "标题",
+      "description": "介绍",
+      "image": "封面",
+      "file": "附件"
+    },
+    "manageHint": "你可以在后台管理",
+    "adminHint": "管理员可以编辑介绍或删除该资源。",
+    "goAdmin": "前往后台",
+    "fields": {
+      "title": "标题",
+      "titlePlaceholder": "例如：空岛生存整合包 v2",
+      "description": "介绍",
+      "descriptionPlaceholder": "简要说明内容、版本要求与使用方法",
+      "image": "封面图",
+      "pickImage": "选择图片",
+      "removeImage": "移除图片",
+      "imageHint": "可选，建议 16:9，最大 1MB",
+      "file": "文件",
+      "pickFile": "点击选择文件",
+      "keepFile": "保持原文件不变",
+      "replaceFileHint": "可选：选择新文件即替换附件（最大 {max}MB），会记入修改记录",
+      "fileHint": "最大 {max}MB"
+    },
+    "errors": {
+      "titleRequired": "请填写标题",
+      "descriptionRequired": "请填写介绍",
+      "fileRequired": "请选择要上传的文件",
+      "fileTooLarge": "文件超过 {max}MB 限制",
+      "imageTooLarge": "封面图超过 {max}MB 限制",
+      "imageType": "封面图必须是图片格式",
+      "needLogin": "请先登录再上传",
+      "forbidden": "没有权限操作这条动态",
+      "limitReached": "今天发布资源已达上限（每天 {limit} 个），明天再来吧",
+      "quotaExceeded": "今日上传额度（{limit}GB）已用完，请明天再试",
+      "unknown": "上传失败，请稍后重试"
+    }
+  },
+  "ban": {
+    "socialForever": "你已被永久封禁，无法点赞或评论",
+    "socialUntil": "你已被封禁至 {date}，期间无法点赞或评论",
+    "uploadForever": "你已被永久封禁，无法发布资源",
+    "uploadUntil": "你已被封禁至 {date}，期间无法发布资源",
+    "downloadForever": "你已被永久封禁，无法下载资源",
+    "downloadUntil": "你已被封禁至 {date}，期间无法下载资源"
+  },
+  "profile": {
+    "title": "玩家资料",
+    "anonymous": "匿名玩家",
+    "notFound": "找不到该玩家",
+    "joined": "{date} 加入",
+    "banned": "已封禁",
+    "banReason": "理由：{reason}",
+    "comments": "评论",
+    "resources": "资源",
+    "downloads": "下载",
+    "published": "发布的资源",
+    "noResources": "这位玩家还没有发布资源。"
+  },
+  "notifications": {
+    "title": "消息",
+    "empty": "暂无消息。有人点赞或回复你时会出现在这里。",
+    "markAllRead": "全部已读",
+    "dismiss": "删除这条消息",
+    "someone": "有人",
+    "likedResource": "{name} 赞了你的资源",
+    "likedComment": "{name} 赞了你的评论",
+    "replied": "{name} 回复了你的评论",
+    "reportResolvedDismissed": "你提交的举报已处理：内容未违规",
+    "reportResolvedRemoved": "你提交的举报已处理：内容已删除",
+    "reportResolvedBody": "感谢你帮助维护社区秩序。"
+  },
+  "server": {
+    "eyebrow": "服务器",
+    "title": "服务器信息",
+    "description": "加入前需要了解的全部信息。",
+    "address": "服务器地址",
+    "version": "Minecraft 版本",
+    "platform": "支持平台",
+    "mode": "游戏模式",
+    "maxPlayers": "最大玩家数",
+    "onlinePlayers": "在线人数",
+    "status": "服务器状态",
+    "opened": "开服时间",
+    "features": "服务器特色",
+    "rulesSummary": "规则速览"
+  },
+  "rules": {
+    "eyebrow": "规则",
+    "title": "服务器规则",
+    "description": "加入前请仔细阅读规则。遵守规则能让社区对每个人都保持愉快。",
+    "behavior": {
+      "title": "基本行为规范",
+      "content": "尊重其他玩家。禁止骚扰、仇恨言论或任何形式的歧视。"
+    },
+    "gameplay": {
+      "title": "游戏规则",
+      "content": "禁止作弊、外挂或利用漏洞。公平游戏，尊重游戏精神。"
+    },
+    "building": {
+      "title": "建筑规则",
+      "content": "未经允许，不得破坏他人领地或在他人土地上建造。"
+    },
+    "economy": {
+      "title": "经济规则",
+      "content": "仅允许公平交易。禁止诈骗或滥用游戏经济系统。"
+    },
+    "punishment": {
+      "title": "处罚规则",
+      "content": "违反规则视情节轻重，可能面临警告、临时封禁或永久封禁。"
+    }
+  },
+  "auth": {
+    "title": "登录",
+    "subtitle": "注册一个账号即可参与。绑定 Microsoft 是可选的加分项。",
+    "microsoftButton": "使用 Microsoft 账号登录",
+    "redirecting": "正在跳转到 Microsoft…",
+    "privacy": "我们不会看到或保存你的 Microsoft 密码，认证完全由 Microsoft 官方处理。",
+    "whyTitle": "为什么要登录？",
+    "why1": "发布资源、评论、点赞和下载",
+    "why2": "在个人中心填写 Minecraft ID，头像立刻生效",
+    "why3": "绑定 Microsoft 可以获得一枚头像框",
+    "errors": {
+      "not_configured": { "title": "Microsoft 登录未配置", "description": "请检查服务器配置。" },
+      "MICROSOFT_OAUTH_FAILED": { "title": "微软授权失败", "description": "无法从微软获取授权信息，请重试。" },
+      "XBL_AUTH_FAILED": { "title": "Xbox 验证失败", "description": "无法验证你的 Xbox 身份。" },
+      "XSTS_AUTH_FAILED": { "title": "Xbox 授权失败", "description": "Xbox 服务拒绝了授权请求。" },
+      "NO_XBOX_ACCOUNT": { "title": "没有 Xbox 档案", "description": "你的微软账号尚未关联 Xbox 档案。" },
+      "REGION_NOT_SUPPORTED": { "title": "地区不支持", "description": "你的账号地区暂不支持 Xbox Live。" },
+      "MC_APP_NOT_APPROVED": { "title": "Minecraft 登录待审批", "description": "微软账号授权已成功，但 Minecraft 服务尚未认可本站的应用注册。新应用必须被加入 Mojang 的 API 白名单后才能登录。审批申请已提交，Mojang 每周审核一批——这不是你的账号问题。若长时间未通过，可联系 enforce@minecraft.net。" },
+      "MC_LOGIN_FAILED": { "title": "Minecraft 账号验证失败", "description": "微软账号授权成功，但 Minecraft 服务拒绝了本次登录请求。" },
+      "NO_MINECRAFT_PROFILE": { "title": "未拥有 Minecraft", "description": "该微软账号名下没有 Java 版 Minecraft。" },
+      "MC_PROFILE_FAILED": { "title": "获取 Minecraft 档案失败", "description": "无法获取你的 Minecraft 玩家信息，请重试。" },
+      "invalid_state": { "title": "登录请求无效", "description": "登录状态校验失败，请重新登录。" },
+      "no_code": { "title": "缺少授权码", "description": "登录请求缺少授权码，请重新登录。" },
+      "TIMEOUT": { "title": "请求超时", "description": "认证服务响应超时，请重试。" },
+      "generic": { "title": "认证失败", "description": "登录过程中出现问题，请重试。" }
+    },
+    "retry": "重新登录",
+    "backHome": "返回首页",
+    "registerTitle": "注册账号",
+    "registerSubtitle": "只需要用户名、邮箱和密码。绑定 Minecraft 是可选的。",
+    "username": "用户名",
+    "usernameHint": "3–20 位，字母、数字、下划线或连字符",
+    "email": "邮箱",
+    "emailHint": "用于登录，也方便以后找回账号",
+    "password": "密码",
+    "passwordHint": "至少 8 位",
+    "confirmPassword": "确认密码",
+    "identifier": "用户名或邮箱",
+    "identifierHint": "用户名或邮箱",
+    "loginButton": "登录",
+    "registerButton": "注册",
+    "submitting": "处理中…",
+    "loginSuccess": "登录成功",
+    "registerSuccess": "注册成功，欢迎加入！",
+    "noAccount": "还没有账号？",
+    "goRegister": "去注册",
+    "hasAccount": "已经有账号了？",
+    "goLogin": "去登录",
+    "orUseMicrosoft": "或使用 Microsoft",
+    "forgotPassword": "忘记密码？",
+    "code": "验证码",
+    "stepForm": "填写资料",
+    "stepVerify": "验证邮箱",
+    "stepReset": "设置新密码",
+    "codeSentTo": "验证码已发送至",
+    "codeValidFor": "{time} 后失效",
+    "codeExpired": "验证码已过期，请重新发送",
+    "resendIn": "{seconds} 秒后可重发",
+    "hintsTitle": "没收到？",
+    "hintSpam": "先翻一下垃圾邮件 / 广告邮件文件夹，很容易被误判",
+    "hintWhitelist": "把 {email} 加进联系人，以后就不会漏收",
+    "hintCooldown": "同一邮箱 60 秒内只能发一次，稍等再点重新发送",
+    "verifyTitle": "验证邮箱",
+    "verifySubtitle": "验证码已发送到 {email}，10 分钟内有效。",
+    "mustVerify": "验证通过后账号才会创建 —— 请先不要关闭这个页面。",
+    "verifyButton": "验证",
+    "verifying": "验证中…",
+    "resend": "重新发送",
+    "codeSent": "验证码已发送",
+    "verified": "邮箱验证成功",
+    "skipForNow": "稍后再说",
+    "backToForm": "返回上一步",
+    "changeEmail": "换一个邮箱",
+    "devCodeNotice": "开发模式验证码",
+    "forgot": {
+      "title": "找回密码",
+      "emailHint": "填写注册时用的邮箱，我们会发一个验证码过去。",
+      "sendCode": "发送验证码",
+      "newPassword": "新密码",
+      "resetButton": "设置新密码",
+      "resetSuccess": "密码已重置，可以用新密码登录了。",
+      "mailNotConfiguredTitle": "当前环境发不出邮件",
+      "mailNotConfiguredDescription": "管理员还没有配置 SMTP，验证码不会真的发出去。开发环境下验证码会打印在服务端控制台，也会显示在页面上。"
+    },
+    "registerNotesTitle": "注册之后",
+    "registerNote1": "**邮箱必须验证**：验证码通过之后账号才会创建，没有「先注册、后补验证」这一说",
+    "registerNote2": "在个人中心填写 Minecraft ID 与 UUID，头像立刻生效",
+    "registerNote3": "验证邮箱后可以用它找回密码；绑定 Microsoft 还能额外获得一枚头像框",
+    "formErrors": {
+      "generic": "操作失败，请稍后重试",
+      "TOO_MANY": "尝试次数太多，请过几分钟再试",
+      "PASSWORD_MISMATCH": "两次输入的密码不一致",
+      "EMAIL_INVALID": "邮箱格式不正确",
+      "EMAIL_TAKEN": "这个邮箱已经注册过了",
+      "USERNAME_TAKEN": "这个用户名已经被占用了",
+      "INVALID_CREDENTIALS": "用户名或密码不正确",
+      "UUID_TAKEN": "这个 UUID 已经被其他账号绑定了",
+      "UNKNOWN": "操作失败，请稍后重试",
+      "USERNAME_TOO_SHORT": "用户名至少 3 位",
+      "USERNAME_TOO_LONG": "用户名最多 20 位",
+      "USERNAME_INVALID_CHARS": "用户名只能包含字母、数字、下划线和连字符",
+      "PASSWORD_TOO_SHORT": "密码至少 8 位",
+      "PASSWORD_TOO_LONG": "密码太长了",
+      "NAME_TOO_SHORT": "Minecraft ID 至少 3 位",
+      "NAME_TOO_LONG": "Minecraft ID 最多 16 位",
+      "NAME_INVALID_CHARS": "Minecraft ID 只能包含字母、数字和下划线",
+      "UUID_INVALID_UUID": "UUID 格式不正确",
+      "USERNAME_COOLDOWN": "用户名每天只能改 {count} 次，明天再试吧",
+      "UNAUTHORIZED": "请先登录",
+      "CODE_TOO_SOON": "刚发过一次，请等 60 秒再试",
+      "CODE_TOO_MANY": "发送太频繁或尝试次数过多，请稍后再试",
+      "CODE_NOT_FOUND": "没有待验证的验证码，请先获取一个",
+      "CODE_EXPIRED": "验证码已过期，请重新获取",
+      "CODE_WRONG_CODE": "验证码不正确",
+      "CODE_INVALID_CODE": "验证码是 6 位数字",
+      "CODE_MAIL_NOT_CONFIGURED": "当前环境没有配置邮件服务，发不出验证码",
+      "CODE_MAIL_FAILED": "验证码发送失败，请稍后重试"
+    }
+  },
+  "dashboard": {
+    "title": "个人中心",
+    "welcome": "欢迎回来",
+    "subtitle": "在这里查看审核进度、管理账户与问卷。",
+    "account": "账户",
+    "accountName": "用户名",
+    "email": "邮箱",
+    "accountInfo": "账号信息",
+    "accountForm": {
+      "username": "用户名",
+      "save": "保存",
+      "usernameSaved": "用户名已更新",
+      "usernameCooldown": "用户名每天只能改 {count} 次，明天再试吧",
+      "usernameLimitHint": "用户名每天只能修改一次，改完要等第二天。",
+      "usernameAdminHint": "你是管理员，修改用户名不受每天一次的限制。",
+      "email": "邮箱",
+      "noEmail": "未填写",
+      "emailVerified": "已验证",
+      "emailUnverified": "未验证",
+      "emailUnverifiedHint": "邮箱还没有验证。验证之后才能用来找回密码。",
+      "bind": "绑定",
+      "rebind": "换绑",
+      "newEmail": "新邮箱",
+      "sendCode": "发送验证码",
+      "cancel": "取消",
+      "emailPurpose": "邮箱是找回密码的唯一凭据，所以必须验证过才算绑定成功。"
+    },
+    "dangerZone": {
+      "title": "危险操作",
+      "description": "注销账号后无法恢复。",
+      "hint": "不想继续玩了吗？注销会立刻让你退出登录。",
+      "action": "注销账号",
+      "consequence1": "账号立即失效，无法再登录，也无法用同一邮箱重新注册",
+      "consequence2": "账号名、邮箱、密码、Microsoft 绑定与 Minecraft ID 全部抹除",
+      "consequence3": "你发布的资源和评论**会保留**，作者显示为「已注销用户」",
+      "consequence4": "问卷提交（含个人信息）会被删除",
+      "confirmName": "输入账号名 {name} 以确认",
+      "confirmMismatch": "账号名不一致",
+      "lastAdmin": "你是最后一个管理员，不能注销。请先指派另一位管理员。",
+      "cancel": "取消",
+      "submit": "确认注销",
+      "done": "账号已注销，再见。"
+    },
+    "identity": {
+      "description": "自己填写就可以 —— 不需要绑定 Microsoft，也不经过审核。",
+      "current": "当前身份：",
+      "notSet": "尚未填写",
+      "name": "Minecraft ID",
+      "nameHint": "你的游戏内 ID",
+      "uuid": "UUID",
+      "uuidHint": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "uuidHelp": "不填也能保存，但填了才会显示皮肤头像。UUID 全局唯一，不能和别人的重复。",
+      "save": "保存",
+      "saving": "保存中…",
+      "saved": "已保存",
+      "errors": {
+        "generic": "保存失败，请稍后重试",
+        "UNKNOWN": "保存失败，请稍后重试",
+        "UUID_TAKEN": "这个 UUID 已经被其他账号绑定了",
+        "NAME_TOO_SHORT": "Minecraft ID 至少 3 位",
+        "NAME_TOO_LONG": "Minecraft ID 最多 16 位",
+        "NAME_INVALID_CHARS": "Minecraft ID 只能包含字母、数字和下划线",
+        "UUID_INVALID_UUID": "UUID 格式不正确"
+      }
+    },
+    "frame": {
+      "title": "头像框",
+      "cardDescription": "绑定 Microsoft 账号的奖励，可以随时选择戴不戴。",
+      "bound": "已绑定 Microsoft 账号",
+      "granted": "已获得头像框",
+      "notBoundHint": "还没有绑定 Microsoft。手动填写的 ID / UUID 无法验证，所以不会有头像框 —— 但皮肤头像照常显示。",
+      "bindNow": "绑定 Microsoft 领取头像框",
+      "notConfigured": "当前环境没有配置 Microsoft 登录，暂时无法绑定。",
+      "wear": "佩戴头像框",
+      "description": "不想戴可以随时关掉；关掉之后头像和普通用户一样。",
+      "previewOn": "佩戴",
+      "previewOff": "不佩戴",
+      "failed": "操作失败，请稍后重试",
+      "unbind": "解除绑定",
+      "unbindConfirm": "解除后会失去头像框，确定吗？",
+      "unbindConfirmYes": "确认解除",
+      "cancel": "取消",
+      "unbound": "已解除 Microsoft 绑定"
+    },
+    "quote": {
+      "title": "一言",
+      "refresh": "换一句",
+      "loading": "正在取一句…",
+      "fallback1": "所有的相遇，都是久别重逢。",
+      "fallback2": "愿你走出半生，归来仍是少年。",
+      "fallback3": "把每一个方块放好，世界就会慢慢成形。"
+    },
+    "reviewStatus": "审核状态",
+    "checkResult": "查询审核结果",
+    "role": "账户角色",
+    "statQuestionnaires": "问卷完成度",
+    "statSubmissions": "提交次数",
+    "statBinding": "绑定状态",
+    "statusNone": "尚未提交申请",
+    "statusNoneDescription": "完成入服问卷后即可等待审核。",
+    "statusPending": "审核中",
+    "statusPendingDescription": "申请已提交，请耐心等待管理员审核。",
+    "statusApproved": "已通过",
+    "statusApprovedDescription": "欢迎加入！你已通过审核。",
+    "statusRejected": "未通过",
+    "statusRejectedDescription": "很遗憾未通过审核，可修改后重新提交。",
+    "minecraftIdentity": "Minecraft 身份",
+    "username": "Minecraft 玩家名",
+    "uuid": "Minecraft UUID",
+    "binding": "绑定状态",
+    "bound": "已绑定",
+    "notBound": "未绑定",
+    "registered": "注册时间",
+    "questionnaireStatus": "问卷",
+    "notStarted": "未完成",
+    "submitted": "已提交",
+    "submittedAt": "提交时间",
+    "start": "开始填写",
+    "viewAnswers": "查看我的回答",
+    "noQuestionnaires": "当前暂无可用问卷。",
+    "questionnaire": {
+      "title": "我的问卷"
+    }
+  },
+  "questionnaire": {
+    "listTitle": "问卷",
+    "listDescription": "可供你填写的问卷。",
+    "questionCount": "{count} 道题",
+    "start": "开始",
+    "continue": "继续",
+    "viewSubmission": "查看提交",
+    "completed": "已完成",
+    "notCompleted": "未完成",
+    "question": "第 {current} / {total} 题",
+    "submittedAt": "提交时间",
+    "progress": "进度",
+    "requiredHint": "此题为必答题",
+    "multiSelectHint": "可多选",
+    "singleSelectHint": "请选择一个选项",
+    "yourAnswer": "你的回答",
+    "submitConfirmTitle": "提交问卷？",
+    "submitConfirmDescription": "提交后将无法修改答案，请在提交前仔细检查。",
+    "submitSuccess": "提交成功",
+    "submitSuccessDescription": "你的问卷已成功提交。",
+    "submitError": "提交失败",
+    "submitErrorDescription": "请稍后再试。",
+    "validationError": "请完成所有必答题。",
+    "review": "检查答案"
+  },
+  "admin": {
+    "title": "管理后台",
+    "panel": "管理后台",
+    "backToSite": "返回网站",
+    "overviewGroup": "总览",
+    "manageGroup": "管理",
+    "dataGroup": "数据",
+    "resourcesNav": "资源",
+    "reportsNav": "举报",
+    "statsNav": "统计",
+    "auditNav": "审计日志",
+    "overview": "概览",
+    "users": "用户",
+    "questionnaires": "问卷",
+    "totalUsers": "用户总数",
+    "boundUsers": "已绑定 Minecraft",
+    "submissions": "问卷提交",
+    "pendingReview": "待审核",
+    "recentUsers": "最近注册用户",
+    "recentSubmissions": "最近提交问卷",
+    "systemStatus": "系统状态",
+    "userManagement": {
+      "title": "用户管理",
+      "description": "查看和管理已注册用户。",
+      "searchPlaceholder": "按玩家名或 UUID 搜索",
+      "role": "角色",
+      "roleUser": "用户",
+      "roleAdmin": "管理员",
+      "registered": "注册时间",
+      "submissionStatus": "问卷状态",
+      "username": "玩家名",
+      "count": "{count} 位用户",
+      "status": "状态",
+      "active": "正常",
+      "banned": "已封禁",
+      "noUsers": "未找到用户。"
+    },
+    "ban": {
+      "action": "封禁",
+      "title": "封禁 {name}",
+      "description": "被封禁的用户不能点赞、评论、下载和发布资源。限时封禁到期会自动解除，不需要手动操作。",
+      "duration": "封禁时长",
+      "presets": {
+        "1d": "1 天",
+        "3d": "3 天",
+        "7d": "7 天",
+        "30d": "30 天",
+        "forever": "永久"
+      },
+      "reason": "封禁理由（可选）",
+      "reasonPlaceholder": "写清楚原因，方便日后复查",
+      "cancel": "取消",
+      "submit": "确认封禁",
+      "submitting": "处理中…",
+      "thisUser": "该用户",
+      "bannedForever": "永久封禁",
+      "bannedUntil": "封禁至 {date}",
+      "unban": "解封",
+      "bannedToast": "已封禁 {name}",
+      "unbannedToast": "已解除 {name} 的封禁",
+      "cannotBanAdmin": "不能封禁管理员",
+      "cannotBanSelf": "不能封禁自己",
+      "failed": "操作失败，请稍后重试"
+    },
+    "deleteUser": {
+      "action": "删除",
+      "title": "删除 {name}？",
+      "description": "这是彻底删除，和用户自己「注销」不是一回事 —— 内容会一并清掉。",
+      "consequence1": "账号被永久删除，无法恢复",
+      "consequence2": "他发布的**全部资源**会被删除",
+      "consequence3": "他发的评论、点赞、消息、举报一并清除",
+      "consequence4": "问卷提交也会删除（审核记录随之消失）",
+      "confirmName": "输入「{name}」以确认",
+      "cancel": "取消",
+      "submit": "确认删除",
+      "done": "已删除 {name} 及其全部内容",
+      "cannotDeleteSelf": "不能删除自己",
+      "cannotDeleteAdmin": "不能删除管理员",
+      "lastAdmin": "这是最后一个管理员，不能删除",
+      "failed": "删除失败，请稍后重试"
+    },
+    "stats": {
+      "title": "活跃度统计",
+      "description": "谁的评论、资源、下载最多。点任意头像即可进入该玩家的资料页。",
+      "totalComments": "评论总数",
+      "totalResources": "资源总数",
+      "totalDownloads": "下载总数",
+      "guestDownloads": "访客下载",
+      "chartUsers": "活跃度排行",
+      "chartUsersHint": "按评论 + 资源 + 下载的总数排序，只看前 10 名。",
+      "chartGuests": "访客下载排行",
+      "noData": "暂无数据。",
+      "byUser": "登录用户",
+      "user": "玩家",
+      "role": "角色",
+      "comments": "评论",
+      "resources": "资源",
+      "downloads": "下载",
+      "viewProfile": "查看资料",
+      "userCount": "{count} 位用户",
+      "byGuest": "未登录访客（按 IP）",
+      "guestHint": "未登录用户只能下载，所以这里按 IP 统计下载次数。同一网络出口会合并计算。",
+      "ip": "IP 地址",
+      "lastDownload": "最近下载"
+    },
+    "audit": {
+      "title": "审计日志",
+      "description": "记录所有不可逆的破坏性操作：谁、什么时候、删了什么。",
+      "noticeTitle": "为什么有这个页面",
+      "notice": "之前有一次资源被删光，事后完全查不出是谁删的 —— 因为当时没有留任何记录。从那次之后，删除资源、删除用户、注销账号、按举报删除内容都会在这里留一条。",
+      "empty": "还没有任何破坏性操作记录。",
+      "system": "系统",
+      "by": "操作者：{name}",
+      "count": "最近 {count} 条",
+      "actions": {
+        "resource_delete": "删除资源",
+        "user_purge": "删除用户",
+        "user_anonymize": "注销账号",
+        "report_remove_content": "按举报删除内容"
+      }
+    },
+    "resources": {
+      "title": "资源管理",
+      "description": "管理玩家上传的资源：修改标题与介绍，或删除条目。",
+      "empty": "还没有任何资源。",
+      "updated": "已更新",
+      "deleted": "已删除",
+      "editTitle": "编辑资源信息",
+      "editDescription": "只修改标题与介绍；如需替换附件，请让上传者重新上传。",
+      "deleteTitle": "删除该资源？",
+      "deleteDescription": "将永久删除《{title}》及其附件，操作不可撤销。",
+      "columns": {
+        "title": "标题",
+        "uploader": "上传者",
+        "size": "大小",
+        "downloads": "下载",
+        "createdAt": "上传时间"
+      },
+      "fields": {
+        "title": "标题",
+        "description": "介绍"
+      }
+    },
+    "reports": {
+      "title": "举报处理",
+      "description": "玩家提交的举报。处理前内容不会被自动删除，由你决定是否删除。",
+      "pending": "待处理",
+      "resolved": "已处理",
+      "pendingCount": "{count} 条待处理",
+      "empty": "暂无待处理的举报。",
+      "targets": {
+        "resource": "资源",
+        "comment": "评论"
+      },
+      "reportedBy": "由 {name} 举报",
+      "resourceLabel": "被举报资源",
+      "commentLabel": "被举报评论",
+      "detailLabel": "举报说明",
+      "targetGone": "该内容已被删除",
+      "dismiss": "忽略",
+      "removeContent": "删除内容",
+      "confirmRemove": "确定要删除被举报的内容吗？此操作不可撤销。",
+      "dismissed": "已忽略该举报",
+      "removed": "已删除被举报内容",
+      "resolvedDismissed": "已忽略",
+      "resolvedRemoved": "已删除内容"
+    },
+    "questionnaireManagement": {
+      "title": "问卷管理",
+      "description": "创建、编辑和发布问卷。",
+      "new": "新建问卷",
+      "title_": "标题",
+      "description_": "描述",
+      "submissions": "份提交",
+      "viewResults": "查看结果",
+      "pause": "暂停",
+      "publish": "发布",
+      "resume": "恢复",
+      "noQuestionnaires": "还没有问卷，创建你的第一份问卷吧。",
+      "deleteConfirm": "确定删除这份问卷吗？此操作不可撤销。",
+      "duplicate": "复制",
+      "createdAt": "创建时间"
+    },
+    "editor": {
+      "title": "编辑问卷",
+      "back": "返回问卷列表",
+      "question": "题目 {index}",
+      "questionTitlePlaceholder": "题目内容",
+      "questionType": "题型",
+      "required": "必填",
+      "addOption": "添加选项",
+      "optionPlaceholder": "选项 {index}",
+      "addQuestion": "添加问题",
+      "deleteQuestion": "删除问题",
+      "settings": "设置",
+      "typeSingleChoice": "单选",
+      "typeMultipleChoice": "多选",
+      "typeText": "单行文本",
+      "typeTextarea": "多行文本",
+      "unsavedTitle": "有未保存的更改",
+      "unsavedDescription": "你有未保存的更改，确定要离开吗？",
+      "saveSuccess": "问卷已保存",
+      "saveError": "保存问卷失败",
+      "titleLabel": "标题",
+      "descriptionLabel": "描述",
+      "titlePlaceholder": "问卷标题",
+      "descriptionPlaceholder": "可选描述"
+    },
+    "results": {
+      "title": "结果",
+      "submissions": "份提交",
+      "player": "玩家",
+      "minecraftId": "Minecraft ID",
+      "submittedAt": "提交时间",
+      "noSubmissions": "暂无提交。",
+      "view": "查看回答",
+      "review": {
+        "title": "提交详情",
+        "player": "玩家",
+        "uuid": "UUID",
+        "submitted": "提交时间",
+        "answer": "回答",
+        "pending": "待审核",
+        "approve": "通过",
+        "reject": "拒绝",
+        "statusUpdated": "状态已更新",
+        "back": "返回结果列表"
+      }
+    },
+    "denied": "你没有权限访问此页面。"
+  },
+  "footer": {
+    "tagline": "一个属于玩家的 Minecraft 世界。",
+    "navigation": "导航",
+    "resources": "资源",
+    "community": "社区",
+    "copyright": "保留所有权利。",
+    "madeWith": "由社区精心打造。"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "description": "你要访问的页面不存在。",
+    "backHome": "返回首页"
+  },
+  "error": {
+    "title": "出错了",
+    "description": "发生了意外错误，请稍后再试。",
+    "backHome": "返回首页"
+  }
+}

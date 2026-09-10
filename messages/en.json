@@ -1,0 +1,1011 @@
+{
+  "meta": {
+    "title": "Minecraft Server — Official Website",
+    "description": "A Minecraft world for players. Learn about the server, read the rules, and join with your Microsoft account."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "errorRetry": "Something went wrong. Please try again later.",
+    "retry": "Try again",
+    "empty": "Nothing here yet",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "submitting": "Submitting…",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "confirm": "Confirm",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "required": "Required",
+    "optional": "Optional",
+    "yes": "Yes",
+    "no": "No",
+    "actions": "Actions",
+    "status": "Status",
+    "name": "Name",
+    "date": "Date",
+    "view": "View",
+    "all": "All",
+    "none": "None",
+    "submitted": "Submitted",
+    "published": "Published",
+    "draft": "Draft",
+    "paused": "Paused",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "online": "Online",
+    "offline": "Offline",
+    "players": "Players",
+    "version": "Version",
+    "notAvailable": "Not available",
+    "total": "Total",
+    "page": "Page",
+    "of": "of",
+    "perPage": "per page",
+    "results": "results"
+  },
+  "nav": {
+    "home": "Home",
+    "server": "Server",
+    "rules": "Rules",
+    "resources": "Resources",
+    "community": "Community",
+    "login": "Sign in",
+    "dashboard": "Dashboard",
+    "currentlyHere": "You're here",
+    "myQuestionnaires": "My questionnaires",
+    "accountSettings": "Account settings",
+    "logout": "Sign out",
+    "admin": "Admin panel",
+    "menu": "Menu",
+    "toggleTheme": "Toggle theme",
+    "language": "Language"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Minecraft Server",
+      "title": "A Minecraft world for players",
+      "subtitle": "Join a stable, friendly and fair survival community built by players, for players.",
+      "ctaPrimary": "Join the server",
+      "ctaSecondary": "Learn more"
+    },
+    "status": {
+      "eyebrow": "Server status",
+      "address": "Server address",
+      "copyAddress": "Copy address",
+      "playersOnline": "players online",
+      "maxPlayers": "max players",
+      "java": "Java Edition",
+      "bedrock": "Bedrock Edition"
+    },
+    "features": {
+      "eyebrow": "Why join us",
+      "title": "Built for players",
+      "survival": {
+        "title": "Survival",
+        "description": "Explore a vast, persistent world at your own pace."
+      },
+      "community": {
+        "title": "Community",
+        "description": "A friendly and welcoming player community."
+      },
+      "fair": {
+        "title": "Fair play",
+        "description": "A balanced and honest game environment for everyone."
+      },
+      "stable": {
+        "title": "Stable",
+        "description": "Long-running, reliable infrastructure you can trust."
+      }
+    },
+    "intro": {
+      "eyebrow": "About the server",
+      "title": "A home for every kind of player",
+      "world": {
+        "title": "The world",
+        "description": "A carefully designed world with a long-term vision — build, explore and leave your mark."
+      },
+      "gameplay": {
+        "title": "Gameplay",
+        "description": "Survival, building, exploration and community events, all in one place."
+      },
+      "community": {
+        "title": "Community",
+        "description": "Active players, helpful staff and regular activities keep the server alive."
+      },
+      "events": {
+        "title": "Events",
+        "description": "Seasonal events, competitions and collaborative projects for everyone."
+      }
+    },
+    "cta": {
+      "title": "Ready to enter this world?",
+      "subtitle": "Join with your Microsoft account and become part of the community.",
+      "button": "Join now",
+      "apply": "Join us"
+    },
+    "carousel": {
+      "label": "Server gallery",
+      "previous": "Previous slide",
+      "next": "Next slide",
+      "goTo": "Go to slide {index}",
+      "items": {
+        "slide1": {
+          "title": "A player's first day",
+          "description": "It started on a patch of grassland — everything here is built by players."
+        },
+        "slide2": {
+          "title": "Projects we finished together",
+          "description": "Cross-server teamwork, redstone machines and huge builds — the community makes it real."
+        },
+        "slide3": {
+          "title": "Every adventure has company",
+          "description": "Exploring in groups, Nether speedruns, End expeditions — there is always a teammate."
+        },
+        "slide4": {
+          "title": "A piece of land that is yours",
+          "description": "Claim your own plot and shape it slowly into whatever you want."
+        },
+        "slide5": {
+          "title": "The capital after dark",
+          "description": "The city only truly comes alive once the lights are on."
+        },
+        "slide6": {
+          "title": "Cross-server event days",
+          "description": "Limited-time modes and team competitions — the busiest days of the year."
+        },
+        "slide7": {
+          "title": "Farms and automation",
+          "description": "From a single wheat tile to a fully automatic line — the redstone player's romance."
+        },
+        "slide8": {
+          "title": "A builder's obsession",
+          "description": "Symmetry, proportion, material choices — every block has to be right."
+        },
+        "slide9": {
+          "title": "The Nether transit network",
+          "description": "Ice roads and tunnels stitching the whole world into one grid."
+        },
+        "slide10": {
+          "title": "Scenery we saw together",
+          "description": "Every group photo is a memory this community keeps."
+        }
+      }
+    },
+    "stats": {
+      "eyebrow": "Server stats",
+      "title": "A growing community",
+      "players": "Players joined",
+      "builds": "Builds created",
+      "members": "Community members",
+      "days": "Days online"
+    },
+    "howtojoin": {
+      "eyebrow": "How to join",
+      "title": "Three steps to get started",
+      "description": "Joining is quick and straightforward.",
+      "step1": {
+        "title": "Sign in with Microsoft",
+        "description": "Verify your Minecraft identity with your Microsoft account."
+      },
+      "step2": {
+        "title": "Complete the application",
+        "description": "Answer a few short questions so we can get to know you."
+      },
+      "step3": {
+        "title": "Join the server",
+        "description": "Once approved, connect and start your adventure."
+      }
+    },
+    "news": {
+      "eyebrow": "News",
+      "title": "Latest updates",
+      "readMore": "Read more",
+      "item1": {
+        "title": "Server updated to Minecraft 1.21",
+        "description": "The server is now running the latest version with brand new content.",
+        "date": "2026-09-05",
+        "tag": "Update"
+      },
+      "item2": {
+        "title": "Winter building contest is open",
+        "description": "Show off your building skills and win exclusive rewards.",
+        "date": "2026-08-20",
+        "tag": "Event"
+      },
+      "item3": {
+        "title": "A brand new survival world",
+        "description": "A fresh world is now open for everyone to explore.",
+        "date": "2026-08-01",
+        "tag": "News"
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Frequently asked questions",
+      "item1": {
+        "q": "How do I join the server?",
+        "a": "Click “Join the server” on the homepage, sign in with your Microsoft account and complete the application form."
+      },
+      "item2": {
+        "q": "Do I need a genuine copy of Minecraft?",
+        "a": "Yes. Your identity is verified through Microsoft's official authentication, so a genuine account is required."
+      },
+      "item3": {
+        "q": "Which version does the server support?",
+        "a": "We currently support Java Edition 1.21.x."
+      },
+      "item4": {
+        "q": "How can I become staff?",
+        "a": "Stay active in the community — we invite dedicated players to join the team."
+      },
+      "item5": {
+        "q": "I need help. Where do I go?",
+        "a": "Join our Discord and open a ticket. The team is happy to help."
+      }
+    }
+  },
+  "community": {
+    "eyebrow": "Community",
+    "title": "Join our community",
+    "description": "QQ group, OOPZ voice and Discord — pick whichever you already use and say hello.",
+    "placeholderTitle": "More content coming soon",
+    "placeholderDescription": "The sections below will be filled in over time.",
+    "placeholder": {
+      "item1": "Community events and announcements",
+      "item2": "Player showcase",
+      "item3": "FAQ and newcomer guide"
+    },
+    "channels": {
+      "qq": {
+        "badge": "Popular",
+        "title": "QQ group",
+        "description": "The easiest option for players in China — scan the code or search the group number. Day-to-day chat happens here.",
+        "groupLabel": "Group",
+        "qrAlt": "QQ group QR code"
+      },
+      "oopz": {
+        "badge": "Voice",
+        "title": "OOPZ voice",
+        "description": "The voice channel we use for games, events and hanging out. Use the button below to jump in.",
+        "button": "Open OOPZ"
+      },
+      "discord": {
+        "badge": "Global",
+        "title": "Discord",
+        "description": "For overseas players and cross-timezone chat, with full announcement and ticket channels.",
+        "button": "Join Discord"
+      }
+    }
+  },
+  "resources": {
+    "eyebrow": "Resources",
+    "title": "Downloads",
+    "description": "Maps, modpacks, resource packs and tools shared by players. Anyone can download; sign in to upload your own.",
+    "searchPlaceholder": "Search title, description or uploader",
+    "empty": "No resources shared yet — be the first.",
+    "noMatch": "No matching resources.",
+    "upload": "Upload",
+    "uploadTitle": "Upload a resource",
+    "uploadDescription": "Fill in the details and pick a file. Maximum 5MB per file.",
+    "uploadSuccess": "Uploaded",
+    "loginToUpload": "Sign in to upload",
+    "viewDetail": "View details",
+    "backToList": "Back to resources",
+    "download": "Download",
+    "downloads": "{count} downloads",
+    "uploader": "Uploader",
+    "uploadedAt": "Uploaded",
+    "fileSize": "File",
+    "descriptionLabel": "Description",
+    "ownerManageHint": "You uploaded this resource — you can edit the description or cover. Every edit leaves a record.",
+    "adminManageHint": "Admin: you can edit or delete this resource. Every edit leaves a record.",
+    "editTitle": "Edit resource",
+    "editDescription": "Change the title, description or cover — or replace the attachment. Every edit leaves a record.",
+    "editSaved": "Saved, and this change was recorded",
+    "editSavedWithFile": "Saved, the attachment was replaced, and this change was recorded",
+    "deleteTitle": "Delete this resource?",
+    "deleteDescription": "\"{title}\" and its attachment will be permanently deleted. This cannot be undone.",
+    "deleteSuccess": "Deleted",
+    "revisionNotice": "Saving writes a revision entry (like a git commit), visible on the detail page.",
+    "historyTitle": "Revision history",
+    "viewLabel": "View",
+    "viewGrid": "Grid",
+    "viewFeed": "Feed",
+    "viewList": "List",
+    "sharedAt": "shared {time}",
+    "social": {
+      "like": "Like",
+      "comment": "Comment",
+      "share": "Share",
+      "shareHint": "Copy a link to this post",
+      "linkCopied": "Link copied to clipboard",
+      "linkCopiedShort": "Copied",
+      "copyFailed": "Copy failed — please copy the address bar instead",
+      "needLogin": "Sign in to interact",
+      "actionFailed": "Action failed, please try again",
+      "comments": "Comments",
+      "commentPlaceholder": "Say something… (sign in to comment, no review needed)",
+      "commentTooLong": "Comment is too long",
+      "commentLimitReached": "You have used up today's comments ({limit} per day) — please try again tomorrow",
+      "send": "Send",
+      "sending": "Sending…",
+      "noComments": "No comments yet — be the first.",
+      "loginToInteract": "Sign in to like, comment and share",
+      "signIn": "Sign in",
+      "anonymous": "Anonymous",
+      "reply": "Reply",
+      "replyTo": "replied to {name}",
+      "replyingTo": "Replying to {name}",
+      "replyPlaceholder": "Write your reply…",
+      "cancelReply": "Cancel reply",
+      "deleteHint": "Deleting also removes its replies"
+    },
+    "report": {
+      "action": "Report",
+      "reported": "Reported",
+      "alreadyReported": "You already reported this — an admin will review it soon",
+      "needLogin": "Sign in to report",
+      "selfReport": "You cannot report your own content",
+      "failed": "Failed to submit the report, please try again",
+      "title": "Report content",
+      "description": "Pick a reason. An admin will review it; content is not removed automatically.",
+      "reason": "Reason",
+      "reasonRequired": "Please choose a reason",
+      "detail": "Additional details (optional)",
+      "detailPlaceholder": "Add any details that help the admin judge",
+      "cancel": "Cancel",
+      "submit": "Submit report",
+      "submitting": "Submitting…",
+      "submitted": "Report submitted — an admin will review it soon",
+      "reasons": {
+        "spam": "Spam / advertising",
+        "harassment": "Harassment / abuse",
+        "illegal": "Illegal or inappropriate content",
+        "malware": "File contains malware",
+        "copyright": "Copyright infringement",
+        "other": "Other"
+      }
+    },
+    "historyImagePresent": "had a cover",
+    "historyImageAbsent": "no cover",
+    "historyFields": {
+      "title": "Title",
+      "description": "Description",
+      "image": "Cover",
+      "file": "Attachment"
+    },
+    "manageHint": "You can manage this in the admin panel",
+    "adminHint": "Admins can edit the description or delete this resource.",
+    "goAdmin": "Open admin panel",
+    "fields": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. Skyblock modpack v2",
+      "description": "Description",
+      "descriptionPlaceholder": "Briefly describe the contents, version requirements and usage",
+      "image": "Cover image",
+      "pickImage": "Choose image",
+      "removeImage": "Remove image",
+      "imageHint": "Optional, 16:9 recommended, max 1MB",
+      "file": "File",
+      "pickFile": "Click to choose a file",
+      "keepFile": "Keep the current file",
+      "replaceFileHint": "Optional: choosing a new file replaces the attachment (max {max}MB) and is recorded in the history",
+      "fileHint": "Max {max}MB"
+    },
+    "errors": {
+      "titleRequired": "Please enter a title",
+      "descriptionRequired": "Please enter a description",
+      "fileRequired": "Please choose a file to upload",
+      "fileTooLarge": "File exceeds the {max}MB limit",
+      "imageTooLarge": "Cover image exceeds the {max}MB limit",
+      "imageType": "Cover image must be an image file",
+      "needLogin": "Please sign in before uploading",
+      "forbidden": "You don't have permission to modify this post",
+      "limitReached": "You have reached today's upload limit ({limit} per day) — please try again tomorrow",
+      "quotaExceeded": "Your daily upload limit ({limit}GB) is used up — please try again tomorrow",
+      "unknown": "Upload failed, please try again later"
+    }
+  },
+  "ban": {
+    "socialForever": "You are permanently banned and cannot like or comment",
+    "socialUntil": "You are banned until {date}; you cannot like or comment",
+    "uploadForever": "You are permanently banned and cannot publish resources",
+    "uploadUntil": "You are banned until {date}; you cannot publish resources",
+    "downloadForever": "You are permanently banned and cannot download resources",
+    "downloadUntil": "You are banned until {date}; you cannot download resources"
+  },
+  "profile": {
+    "title": "Player profile",
+    "anonymous": "Anonymous",
+    "notFound": "Player not found",
+    "joined": "Joined {date}",
+    "banned": "Banned",
+    "banReason": "Reason: {reason}",
+    "comments": "Comments",
+    "resources": "Resources",
+    "downloads": "Downloads",
+    "published": "Published resources",
+    "noResources": "This player has not published anything yet."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet. Likes and replies will show up here.",
+    "markAllRead": "Mark all read",
+    "dismiss": "Delete this notification",
+    "someone": "Someone",
+    "likedResource": "{name} liked your resource",
+    "likedComment": "{name} liked your comment",
+    "replied": "{name} replied to your comment",
+    "reportResolvedDismissed": "Your report was reviewed: no violation found",
+    "reportResolvedRemoved": "Your report was reviewed: the content was removed",
+    "reportResolvedBody": "Thanks for helping keep the community safe."
+  },
+  "server": {
+    "eyebrow": "Server",
+    "title": "Server information",
+    "description": "Everything you need to know before joining.",
+    "address": "Server address",
+    "version": "Minecraft version",
+    "platform": "Supported platforms",
+    "mode": "Game mode",
+    "maxPlayers": "Max players",
+    "onlinePlayers": "Players online",
+    "status": "Server status",
+    "opened": "Since",
+    "features": "Features",
+    "rulesSummary": "Rules at a glance"
+  },
+  "rules": {
+    "eyebrow": "Rules",
+    "title": "Server rules",
+    "description": "Please read the rules before joining. Following them keeps the community enjoyable for everyone.",
+    "behavior": {
+      "title": "General conduct",
+      "content": "Be respectful to other players. No harassment, hate speech or discrimination."
+    },
+    "gameplay": {
+      "title": "Game rules",
+      "content": "No cheating, hacking or exploiting. Play fairly and respect the spirit of the game."
+    },
+    "building": {
+      "title": "Building rules",
+      "content": "Do not grief or build on other players' land without permission."
+    },
+    "economy": {
+      "title": "Economy rules",
+      "content": "Fair trading only. No scamming or abusing the in-game economy."
+    },
+    "punishment": {
+      "title": "Penalties",
+      "content": "Breaking the rules may result in warnings, temporary bans or permanent bans depending on severity."
+    }
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Just create an account to take part. Linking Microsoft is an optional bonus.",
+    "microsoftButton": "Sign in with Microsoft",
+    "redirecting": "Redirecting to Microsoft…",
+    "privacy": "We never see or store your Microsoft password. Authentication is handled entirely by Microsoft.",
+    "whyTitle": "Why sign in?",
+    "why1": "Publish resources, comment, like and download",
+    "why2": "Enter your Minecraft ID in the dashboard — your avatar updates right away",
+    "why3": "Link Microsoft to earn an avatar frame",
+    "errors": {
+      "not_configured": { "title": "Microsoft login not configured", "description": "Please check the server configuration." },
+      "MICROSOFT_OAUTH_FAILED": { "title": "Microsoft authorization failed", "description": "Could not get authorization from Microsoft. Please try again." },
+      "XBL_AUTH_FAILED": { "title": "Xbox verification failed", "description": "Could not verify your Xbox identity." },
+      "XSTS_AUTH_FAILED": { "title": "Xbox authorization failed", "description": "Xbox services rejected the authorization request." },
+      "NO_XBOX_ACCOUNT": { "title": "No Xbox profile", "description": "Your Microsoft account is not linked to an Xbox profile." },
+      "REGION_NOT_SUPPORTED": { "title": "Region not supported", "description": "Your account region does not support Xbox Live." },
+      "MC_APP_NOT_APPROVED": { "title": "Minecraft login pending approval", "description": "Microsoft authorization succeeded, but Minecraft Services does not recognize this site's app registration yet. New applications must be added to Mojang's API allow list before sign-in can work. The approval request has been filed and is reviewed weekly — this is not an issue with your account. If it persists, contact enforce@minecraft.net." },
+      "MC_LOGIN_FAILED": { "title": "Minecraft verification failed", "description": "Microsoft authorization succeeded, but Minecraft Services rejected the sign-in request." },
+      "NO_MINECRAFT_PROFILE": { "title": "No Minecraft ownership", "description": "This Microsoft account does not own Minecraft (Java Edition)." },
+      "MC_PROFILE_FAILED": { "title": "Failed to load Minecraft profile", "description": "Could not load your Minecraft profile. Please try again." },
+      "invalid_state": { "title": "Invalid sign-in request", "description": "Sign-in state verification failed. Please try signing in again." },
+      "no_code": { "title": "Missing authorization code", "description": "The sign-in request is missing an authorization code. Please try again." },
+      "TIMEOUT": { "title": "Request timed out", "description": "The authentication service timed out. Please try again." },
+      "generic": { "title": "Authentication failed", "description": "Something went wrong during sign-in. Please try again." }
+    },
+    "retry": "Try signing in again",
+    "backHome": "Back to home",
+    "registerTitle": "Create an account",
+    "registerSubtitle": "All you need is a username, an email and a password. Linking Minecraft is optional.",
+    "username": "Username",
+    "usernameHint": "3–20 characters: letters, digits, underscore or hyphen",
+    "email": "Email",
+    "emailHint": "Used to sign in and to recover your account later",
+    "password": "Password",
+    "passwordHint": "At least 8 characters",
+    "confirmPassword": "Confirm password",
+    "identifier": "Username or email",
+    "identifierHint": "Username or email",
+    "loginButton": "Sign in",
+    "registerButton": "Create account",
+    "submitting": "Working…",
+    "loginSuccess": "Signed in",
+    "registerSuccess": "Account created — welcome aboard!",
+    "noAccount": "No account yet?",
+    "goRegister": "Create one",
+    "hasAccount": "Already have an account?",
+    "goLogin": "Sign in",
+    "orUseMicrosoft": "or use Microsoft",
+    "forgotPassword": "Forgot your password?",
+    "code": "Verification code",
+    "stepForm": "Your details",
+    "stepVerify": "Verify email",
+    "stepReset": "New password",
+    "codeSentTo": "Code sent to",
+    "codeValidFor": "expires in {time}",
+    "codeExpired": "Code expired — please send a new one",
+    "resendIn": "Resend in {seconds}s",
+    "hintsTitle": "Didn't get it?",
+    "hintSpam": "Check your spam / promotions folder first — it often lands there",
+    "hintWhitelist": "Add {email} to your contacts so future codes arrive",
+    "hintCooldown": "One send per mailbox per 60 seconds — wait a moment before resending",
+    "verifyTitle": "Verify your email",
+    "verifySubtitle": "We sent a code to {email}. It is valid for 10 minutes.",
+    "mustVerify": "Your account is created only after the code checks out — please keep this page open.",
+    "verifyButton": "Verify",
+    "verifying": "Verifying…",
+    "resend": "Send again",
+    "codeSent": "Code sent",
+    "verified": "Email verified",
+    "skipForNow": "Skip for now",
+    "backToForm": "Back",
+    "changeEmail": "Use a different email",
+    "devCodeNotice": "Development code",
+    "forgot": {
+      "title": "Reset password",
+      "emailHint": "Enter the email you signed up with and we will send you a code.",
+      "sendCode": "Send code",
+      "newPassword": "New password",
+      "resetButton": "Set new password",
+      "resetSuccess": "Password reset — you can sign in with the new one now.",
+      "mailNotConfiguredTitle": "Email cannot be sent here",
+      "mailNotConfiguredDescription": "SMTP is not configured, so the code is not actually delivered. In development it is printed to the server console and shown on this page."
+    },
+    "registerNotesTitle": "After you sign up",
+    "registerNote1": "**Verifying the email is required**: the account is created only after the code checks out",
+    "registerNote2": "Enter your Minecraft ID and UUID in the dashboard — your avatar updates right away",
+    "registerNote3": "Verifying your email enables password recovery; linking Microsoft also earns an avatar frame",
+    "formErrors": {
+      "generic": "Something went wrong, please try again",
+      "TOO_MANY": "Too many attempts — please try again in a few minutes",
+      "PASSWORD_MISMATCH": "The two passwords do not match",
+      "EMAIL_INVALID": "That email address is not valid",
+      "EMAIL_TAKEN": "That email is already registered",
+      "USERNAME_TAKEN": "That username is already taken",
+      "INVALID_CREDENTIALS": "Incorrect username or password",
+      "UUID_TAKEN": "That UUID is already linked to another account",
+      "UNKNOWN": "Something went wrong, please try again",
+      "USERNAME_TOO_SHORT": "Username must be at least 3 characters",
+      "USERNAME_TOO_LONG": "Username must be at most 20 characters",
+      "USERNAME_INVALID_CHARS": "Username may only contain letters, digits, underscore and hyphen",
+      "PASSWORD_TOO_SHORT": "Password must be at least 8 characters",
+      "PASSWORD_TOO_LONG": "Password is too long",
+      "NAME_TOO_SHORT": "Minecraft ID must be at least 3 characters",
+      "NAME_TOO_LONG": "Minecraft ID must be at most 16 characters",
+      "NAME_INVALID_CHARS": "Minecraft ID may only contain letters, digits and underscore",
+      "UUID_INVALID_UUID": "That UUID is not in a valid format",
+      "USERNAME_COOLDOWN": "You can change your username {count} time(s) per day — please try again tomorrow",
+      "UNAUTHORIZED": "Please sign in first",
+      "CODE_TOO_SOON": "A code was just sent — please wait 60 seconds",
+      "CODE_TOO_MANY": "Too many requests or attempts, please try again later",
+      "CODE_NOT_FOUND": "No pending code — please request one first",
+      "CODE_EXPIRED": "That code has expired, please request a new one",
+      "CODE_WRONG_CODE": "That code is not correct",
+      "CODE_INVALID_CODE": "The code is 6 digits",
+      "CODE_MAIL_NOT_CONFIGURED": "Email is not configured in this environment, so no code can be sent",
+      "CODE_MAIL_FAILED": "Could not send the code, please try again"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "subtitle": "Track your review status and manage your account and questionnaires.",
+    "account": "Account",
+    "accountName": "Username",
+    "email": "Email",
+    "accountInfo": "Account details",
+    "accountForm": {
+      "username": "Username",
+      "save": "Save",
+      "usernameSaved": "Username updated",
+      "usernameCooldown": "You can change your username {count} time(s) per day — please try again tomorrow",
+      "usernameLimitHint": "You can change your username once a day; the next change unlocks tomorrow.",
+      "usernameAdminHint": "You are an admin, so the once-a-day limit does not apply to you.",
+      "email": "Email",
+      "noEmail": "Not set",
+      "emailVerified": "Verified",
+      "emailUnverified": "Not verified",
+      "emailUnverifiedHint": "This email is not verified yet. Verification is required before it can be used for password recovery.",
+      "bind": "Bind",
+      "rebind": "Change",
+      "newEmail": "New email",
+      "sendCode": "Send code",
+      "cancel": "Cancel",
+      "emailPurpose": "Your email is the only way to recover your password, so it must be verified before it counts as bound."
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "description": "Closing your account cannot be undone.",
+      "hint": "Moving on? Closing your account signs you out immediately.",
+      "action": "Close account",
+      "consequence1": "The account stops working at once — you cannot sign in, and the email cannot be reused",
+      "consequence2": "Username, email, password, Microsoft link and Minecraft ID are all erased",
+      "consequence3": "Resources and comments you posted are **kept**, shown as “Deleted user”",
+      "consequence4": "Questionnaire submissions (which contain personal details) are deleted",
+      "confirmName": "Type the account name {name} to confirm",
+      "confirmMismatch": "That account name does not match",
+      "lastAdmin": "You are the last admin and cannot close your account. Promote someone else first.",
+      "cancel": "Cancel",
+      "submit": "Close my account",
+      "done": "Your account has been closed. Take care."
+    },
+    "identity": {
+      "description": "Just fill this in yourself — no Microsoft link required, and no review.",
+      "current": "Current identity:",
+      "notSet": "Not set yet",
+      "name": "Minecraft ID",
+      "nameHint": "Your in-game ID",
+      "uuid": "UUID",
+      "uuidHint": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "uuidHelp": "Saving without a UUID is fine, but only with one will your skin avatar show up. A UUID can only belong to one account.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "errors": {
+        "generic": "Could not save, please try again",
+        "UNKNOWN": "Could not save, please try again",
+        "UUID_TAKEN": "That UUID is already linked to another account",
+        "NAME_TOO_SHORT": "Minecraft ID must be at least 3 characters",
+        "NAME_TOO_LONG": "Minecraft ID must be at most 16 characters",
+        "NAME_INVALID_CHARS": "Minecraft ID may only contain letters, digits and underscore",
+        "UUID_INVALID_UUID": "That UUID is not in a valid format"
+      }
+    },
+    "frame": {
+      "title": "Avatar frame",
+      "cardDescription": "A reward for linking a Microsoft account — wear it or not, your choice.",
+      "bound": "Microsoft account linked",
+      "granted": "Avatar frame unlocked",
+      "notBoundHint": "No Microsoft account linked yet. A hand-typed ID / UUID cannot be verified, so there is no frame — your skin avatar still shows normally.",
+      "bindNow": "Link Microsoft to claim the frame",
+      "notConfigured": "Microsoft sign-in is not configured in this environment, so linking is unavailable.",
+      "wear": "Wear the avatar frame",
+      "description": "Turn it off any time; without it your avatar looks like everyone else's.",
+      "previewOn": "Worn",
+      "previewOff": "Not worn",
+      "failed": "Action failed, please try again",
+      "unbind": "Unlink",
+      "unbindConfirm": "Unlinking will remove your avatar frame. Continue?",
+      "unbindConfirmYes": "Yes, unlink",
+      "cancel": "Cancel",
+      "unbound": "Microsoft account unlinked"
+    },
+    "quote": {
+      "title": "A word",
+      "refresh": "Another one",
+      "loading": "Fetching a line…",
+      "fallback1": "Every meeting is a reunion after a long parting.",
+      "fallback2": "May you return still young at heart.",
+      "fallback3": "Put each block down carefully and the world takes shape."
+    },
+    "reviewStatus": "Review status",
+    "checkResult": "Check review result",
+    "role": "Account role",
+    "statQuestionnaires": "Questionnaires done",
+    "statSubmissions": "Submissions",
+    "statBinding": "Binding",
+    "statusNone": "No application yet",
+    "statusNoneDescription": "Complete the join questionnaire to enter review.",
+    "statusPending": "Under review",
+    "statusPendingDescription": "Your application was submitted. Please wait for an admin to review it.",
+    "statusApproved": "Approved",
+    "statusApprovedDescription": "Welcome aboard — your application has been approved.",
+    "statusRejected": "Not approved",
+    "statusRejectedDescription": "Your application was not approved. You may revise and resubmit.",
+    "minecraftIdentity": "Minecraft identity",
+    "username": "Minecraft username",
+    "uuid": "Minecraft UUID",
+    "binding": "Binding status",
+    "bound": "Bound",
+    "notBound": "Not bound",
+    "registered": "Registered",
+    "questionnaireStatus": "Questionnaires",
+    "notStarted": "Not started",
+    "submitted": "Submitted",
+    "submittedAt": "Submitted at",
+    "start": "Start",
+    "viewAnswers": "View my answers",
+    "noQuestionnaires": "There are no questionnaires available right now.",
+    "questionnaire": {
+      "title": "My questionnaires"
+    }
+  },
+  "questionnaire": {
+    "listTitle": "Questionnaires",
+    "listDescription": "Available questionnaires for you to complete.",
+    "questionCount": "{count} questions",
+    "start": "Start",
+    "continue": "Continue",
+    "viewSubmission": "View submission",
+    "completed": "Completed",
+    "notCompleted": "Not completed",
+    "question": "Question {current} of {total}",
+    "submittedAt": "Submitted at",
+    "progress": "Progress",
+    "requiredHint": "This question is required",
+    "multiSelectHint": "Select all that apply",
+    "singleSelectHint": "Select one option",
+    "yourAnswer": "Your answer",
+    "submitConfirmTitle": "Submit questionnaire?",
+    "submitConfirmDescription": "Once submitted, you cannot edit your answers. Please review before submitting.",
+    "submitSuccess": "Submitted successfully",
+    "submitSuccessDescription": "Your answers have been submitted.",
+    "submitError": "Submission failed",
+    "submitErrorDescription": "Please try again later.",
+    "validationError": "Please complete all required questions.",
+    "review": "Review answers"
+  },
+  "admin": {
+    "title": "Admin panel",
+    "panel": "Admin panel",
+    "backToSite": "Back to site",
+    "overviewGroup": "Overview",
+    "manageGroup": "Manage",
+    "dataGroup": "Data",
+    "resourcesNav": "Resources",
+    "reportsNav": "Reports",
+    "statsNav": "Statistics",
+    "auditNav": "Audit log",
+    "overview": "Overview",
+    "users": "Users",
+    "questionnaires": "Questionnaires",
+    "totalUsers": "Total users",
+    "boundUsers": "Minecraft bound",
+    "submissions": "Submissions",
+    "pendingReview": "Pending review",
+    "recentUsers": "Recent users",
+    "recentSubmissions": "Recent submissions",
+    "systemStatus": "System status",
+    "userManagement": {
+      "title": "User management",
+      "description": "View and manage registered users.",
+      "searchPlaceholder": "Search by username or UUID",
+      "role": "Role",
+      "roleUser": "User",
+      "roleAdmin": "Admin",
+      "registered": "Registered",
+      "submissionStatus": "Submission",
+      "username": "Username",
+      "count": "{count} users",
+      "status": "Status",
+      "active": "Active",
+      "banned": "Banned",
+      "noUsers": "No users found."
+    },
+    "ban": {
+      "action": "Ban",
+      "title": "Ban {name}",
+      "description": "Banned users cannot like, comment, download or publish resources. Temporary bans lift automatically when they expire.",
+      "duration": "Duration",
+      "presets": {
+        "1d": "1 day",
+        "3d": "3 days",
+        "7d": "7 days",
+        "30d": "30 days",
+        "forever": "Permanent"
+      },
+      "reason": "Reason (optional)",
+      "reasonPlaceholder": "Explain the reason, for future reference",
+      "cancel": "Cancel",
+      "submit": "Confirm ban",
+      "submitting": "Working…",
+      "thisUser": "this user",
+      "bannedForever": "Permanently banned",
+      "bannedUntil": "Banned until {date}",
+      "unban": "Unban",
+      "bannedToast": "Banned {name}",
+      "unbannedToast": "Unbanned {name}",
+      "cannotBanAdmin": "You cannot ban an admin",
+      "cannotBanSelf": "You cannot ban yourself",
+      "failed": "Action failed, please try again"
+    },
+    "deleteUser": {
+      "action": "Delete",
+      "title": "Delete {name}?",
+      "description": "This is a hard delete — unlike a user closing their own account, the content goes too.",
+      "consequence1": "The account is permanently removed and cannot be restored",
+      "consequence2": "**Every resource** they published is deleted",
+      "consequence3": "Their comments, likes, notifications and reports are cleared",
+      "consequence4": "Questionnaire submissions are deleted too (review history goes with them)",
+      "confirmName": "Type “{name}” to confirm",
+      "cancel": "Cancel",
+      "submit": "Delete permanently",
+      "done": "Deleted {name} and everything they posted",
+      "cannotDeleteSelf": "You cannot delete yourself",
+      "cannotDeleteAdmin": "You cannot delete an admin",
+      "lastAdmin": "This is the last admin and cannot be deleted",
+      "failed": "Delete failed, please try again"
+    },
+    "stats": {
+      "title": "Activity statistics",
+      "description": "Who commented, published and downloaded the most. Click any avatar to open that player's profile.",
+      "totalComments": "Total comments",
+      "totalResources": "Total resources",
+      "totalDownloads": "Total downloads",
+      "guestDownloads": "Guest downloads",
+      "chartUsers": "Activity ranking",
+      "chartUsersHint": "Sorted by comments + resources + downloads; top 10 only.",
+      "chartGuests": "Guest download ranking",
+      "noData": "No data yet.",
+      "byUser": "Signed-in users",
+      "user": "Player",
+      "role": "Role",
+      "comments": "Comments",
+      "resources": "Resources",
+      "downloads": "Downloads",
+      "viewProfile": "View profile",
+      "userCount": "{count} users",
+      "byGuest": "Guests (by IP)",
+      "guestHint": "Guests can only download, so their activity is counted per IP. Shared network exits are merged.",
+      "ip": "IP address",
+      "lastDownload": "Last download"
+    },
+    "audit": {
+      "title": "Audit log",
+      "description": "Every irreversible destructive action: who did it, when, and to what.",
+      "noticeTitle": "Why this page exists",
+      "notice": "We once lost every resource in the database and could not work out who deleted them, because nothing had been recorded. Since then, deleting a resource or a user, closing an account, and removing reported content all leave a row here.",
+      "empty": "No destructive actions recorded yet.",
+      "system": "System",
+      "by": "By {name}",
+      "count": "Latest {count}",
+      "actions": {
+        "resource_delete": "Deleted resource",
+        "user_purge": "Deleted user",
+        "user_anonymize": "Closed account",
+        "report_remove_content": "Removed reported content"
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "description": "Manage player uploads: edit titles and descriptions, or delete entries.",
+      "empty": "No resources yet.",
+      "updated": "Updated",
+      "deleted": "Deleted",
+      "editTitle": "Edit resource",
+      "editDescription": "Only the title and description change; ask the uploader to re-upload if the file itself needs replacing.",
+      "deleteTitle": "Delete this resource?",
+      "deleteDescription": "\"{title}\" and its attachment will be permanently deleted. This cannot be undone.",
+      "columns": {
+        "title": "Title",
+        "uploader": "Uploader",
+        "size": "Size",
+        "downloads": "Downloads",
+        "createdAt": "Uploaded"
+      },
+      "fields": {
+        "title": "Title",
+        "description": "Description"
+      }
+    },
+    "reports": {
+      "title": "Reports",
+      "description": "Reports submitted by players. Content is not removed automatically — you decide.",
+      "pending": "Pending",
+      "resolved": "Resolved",
+      "pendingCount": "{count} pending",
+      "empty": "No pending reports.",
+      "targets": {
+        "resource": "Resource",
+        "comment": "Comment"
+      },
+      "reportedBy": "reported by {name}",
+      "resourceLabel": "Reported resource",
+      "commentLabel": "Reported comment",
+      "detailLabel": "Reporter's note",
+      "targetGone": "This content has been deleted",
+      "dismiss": "Dismiss",
+      "removeContent": "Delete content",
+      "confirmRemove": "Delete the reported content? This cannot be undone.",
+      "dismissed": "Report dismissed",
+      "removed": "Reported content deleted",
+      "resolvedDismissed": "Dismissed",
+      "resolvedRemoved": "Content deleted"
+    },
+    "questionnaireManagement": {
+      "title": "Questionnaire management",
+      "description": "Create, edit and publish questionnaires.",
+      "new": "New questionnaire",
+      "title_": "Title",
+      "description_": "Description",
+      "submissions": "submissions",
+      "viewResults": "View results",
+      "pause": "Pause",
+      "publish": "Publish",
+      "resume": "Resume",
+      "noQuestionnaires": "No questionnaires yet. Create your first one.",
+      "deleteConfirm": "Delete this questionnaire? This action cannot be undone.",
+      "duplicate": "Duplicate",
+      "createdAt": "Created"
+    },
+    "editor": {
+      "title": "Edit questionnaire",
+      "back": "Back to questionnaires",
+      "question": "Question {index}",
+      "questionTitlePlaceholder": "Question title",
+      "questionType": "Question type",
+      "required": "Required",
+      "addOption": "Add option",
+      "optionPlaceholder": "Option {index}",
+      "addQuestion": "Add question",
+      "deleteQuestion": "Delete question",
+      "settings": "Settings",
+      "typeSingleChoice": "Single choice",
+      "typeMultipleChoice": "Multiple choice",
+      "typeText": "Short text",
+      "typeTextarea": "Long text",
+      "unsavedTitle": "Unsaved changes",
+      "unsavedDescription": "You have unsaved changes. Are you sure you want to leave?",
+      "saveSuccess": "Questionnaire saved",
+      "saveError": "Failed to save questionnaire",
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "titlePlaceholder": "Questionnaire title",
+      "descriptionPlaceholder": "Optional description"
+    },
+    "results": {
+      "title": "Results",
+      "submissions": "submissions",
+      "player": "Player",
+      "minecraftId": "Minecraft ID",
+      "submittedAt": "Submitted",
+      "noSubmissions": "No submissions yet.",
+      "view": "View answers",
+      "review": {
+        "title": "Submission detail",
+        "player": "Player",
+        "uuid": "UUID",
+        "submitted": "Submitted",
+        "answer": "Answer",
+        "pending": "Pending",
+        "approve": "Approve",
+        "reject": "Reject",
+        "statusUpdated": "Status updated",
+        "back": "Back to results"
+      }
+    },
+    "denied": "You do not have permission to access this page."
+  },
+  "footer": {
+    "tagline": "A Minecraft world for players.",
+    "navigation": "Navigation",
+    "resources": "Resources",
+    "community": "Community",
+    "copyright": "All rights reserved.",
+    "madeWith": "Built with care by the community."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "backHome": "Back to home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again later.",
+    "backHome": "Back to home"
+  }
+}

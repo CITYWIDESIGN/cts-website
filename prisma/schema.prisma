@@ -1,0 +1,528 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum QuestionnaireStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TEXT
+  TEXTAREA
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id String @id @default(cuid())
+
+  /**
+   * 本地账号（用户名 + 邮箱 + 密码）。
+   * 用 Microsoft 登录创建的老账号这三个字段可能为空 —— 它们仍然能正常登录。
+   */
+  username     String? @unique
+  email        String? @unique
+  /** 邮箱验证通过时间；null 表示还没验证过（此时邮箱不算"已绑定"） */
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  /** scrypt 哈希，格式见 src/server/password.ts；纯 Microsoft 账号为空 */
+  passwordHash String? @map("password_hash")
+
+  /**
+   * Minecraft 身份。
+   *   - 绑定了 Microsoft → 由 OAuth 自动写入（可信）
+   *   - 只注册了本地账号 → 由用户自己在个人中心手填（无人审核）
+   */
+  minecraftUuid      String?   @unique @map("minecraft_uuid")
+  minecraftUsername  String?   @map("minecraft_username")
+  microsoftAccountId String?   @unique @map("microsoft_account_id")
+
+  role      Role     @default(USER)
+
+  /**
+   * 是否佩戴头像框。
+   * 头像框是**绑定 Microsoft 的奖励**：只填了 ID/UUID 的人没有。
+   * 是否真的有框 = microsoftAccountId 非空 && wearFrame。
+   */
+  wearFrame Boolean  @default(true) @map("wear_frame")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /**
+   * 封禁。
+   *   - bannedAt 为空 → 从未被封禁
+   *   - bannedAt 有值、bannedUntil 为 null → **永久封禁**
+   *   - bannedAt 有值、bannedUntil 有值 → 到期自动失效（不需要定时任务解封）
+   * 是否"当前生效"由 src/server/ban.ts 的 isBanned() 统一判断。
+   */
+  bannedAt    DateTime? @map("banned_at")
+  bannedUntil DateTime? @map("banned_until")
+  banReason   String?   @map("ban_reason")
+
+  submissions Submission[]
+  resources   Resource[]
+
+  @@map("users")
+}
+
+model Questionnaire {
+  id          String              @id @default(cuid())
+  title       String
+  description String?
+  status      QuestionnaireStatus @default(DRAFT)
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  questions   Question[]
+  submissions Submission[]
+
+  @@map("questionnaires")
+}
+
+model Question {
+  id              String       @id @default(cuid())
+  questionnaireId String       @map("questionnaire_id")
+  type            QuestionType
+  title           String
+  required        Boolean      @default(true)
+  sortOrder       Int          @default(0) @map("sort_order")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire   @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  options       QuestionOption[]
+  answers       Answer[]
+
+  @@index([questionnaireId])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String @id @default(cuid())
+  questionId String @map("question_id")
+  text       String
+  sortOrder  Int    @default(0) @map("sort_order")
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("question_options")
+}
+
+model Submission {
+  id              String           @id @default(cuid())
+  questionnaireId String           @map("questionnaire_id")
+  userId          String           @map("user_id")
+  status          SubmissionStatus @default(PENDING)
+  submittedAt     DateTime         @default(now()) @map("submitted_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers       Answer[]
+
+  @@unique([questionnaireId, userId])
+  @@index([userId])
+  @@index([questionnaireId])
+  @@map("submissions")
+}
+
+model Answer {
+  id           String   @id @default(cuid())
+  submissionId String   @map("submission_id")
+  questionId   String   @map("question_id")
+  value        String   @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question   Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, questionId])
+  @@index([submissionId])
+  @@map("answers")
+}
+
+// ---------------------------------------------------------------------------
+// 资源分享（类似 MCBBS 的资源板块）
+// ---------------------------------------------------------------------------
+
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  /** 封面图（存 data URL，限制 1MB 以内，避免列表查询变重） */
+  imageUrl    String?  @map("image_url") @db.Text
+  /** 附件元数据 */
+  fileName    String   @map("file_name")
+  fileSize    Int      @map("file_size")
+  fileType    String   @map("file_type")
+  /** 下载次数 */
+  downloads   Int      @default(0)
+  /** 点赞 / 评论计数（冗余字段，列表展示用；写入时与明细表同事务） */
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
+  /** 已修改的版本号（初始 1，每次编辑 +1） */
+  version     Int      @default(1)
+  uploaderId  String   @map("uploader_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  uploader  User               @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  blob      ResourceBlob?
+  revisions ResourceRevision[]
+  likes     ResourceLike[]
+  comments  ResourceComment[]
+  /** 下载明细（统计用）；Resource.downloads 仍是列表页直接用的冗余计数 */
+  downloadRecords ResourceDownload[]
+
+  @@index([uploaderId])
+  @@index([createdAt])
+  @@map("resources")
+}
+
+/**
+ * 下载明细。
+ *
+ * 用途：统计「谁下载了多少次」。登录用户按 userId 记（subjectType="user"），
+ * 未登录访客按 IP 记（subjectType="ip"）—— 与 TransferUsage 同一套主体口径。
+ *
+ * 为什么不复用 TransferUsage：那张表记的是**字节数**（防流量滥用），
+ * 这里要的是**次数**（看活跃度），两个口径分开更清楚。
+ *
+ * Resource.downloads 那个冗余计数保留不动：列表页直接读，不必聚合这张表。
+ */
+model ResourceDownload {
+  id          String   @id @default(cuid())
+  resourceId  String   @map("resource_id")
+  /** "user" | "ip" */
+  subjectType String   @map("subject_type")
+  /** 用户 id 或 IP */
+  subjectKey  String   @map("subject_key")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+  @@index([subjectType, subjectKey])
+  @@index([createdAt])
+  @@map("resource_downloads")
+}
+
+/** 点赞：同一人对同一资源只能点一次（唯一键保证） */
+model ResourceLike {
+  id         String   @id @default(cuid())
+  resourceId String   @map("resource_id")
+  userId     String   @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, userId])
+  @@index([resourceId])
+  @@map("resource_likes")
+}
+
+/** 评论：支持一层回复（parentId 自引用），不做无限楼中楼 */
+model ResourceComment {
+  id         String   @id @default(cuid())
+  resourceId String   @map("resource_id")
+  userId     String   @map("user_id")
+  /** 冗余作者名，用户改名后旧评论仍可读 */
+  authorName String?  @map("author_name")
+  content    String   @db.Text
+  /** 父评论 id：为空表示顶层评论；回复只允许一层 */
+  parentId   String?  @map("parent_id")
+  /** 被回复者名字（冗余，便于显示"回复 xxx"） */
+  replyToName String? @map("reply_to_name")
+  /** 点赞数（明细见 CommentLike，写入时同事务） */
+  likeCount  Int      @default(0) @map("like_count")
+  /** 回复数（只统计直接回复） */
+  replyCount Int      @default(0) @map("reply_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  resource Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  parent   ResourceComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ResourceComment[] @relation("CommentReplies")
+  likes    CommentLike[]
+
+  @@index([resourceId])
+  @@index([parentId])
+  @@map("resource_comments")
+}
+
+/** 评论点赞 */
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String   @map("comment_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment ResourceComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@map("comment_likes")
+}
+
+/* 说明：早先有一个 ResourceRepost 模型用于"转发成新动态"，
+   后来确认需求是「分享 = 复制链接」，不落库、不计次，
+   因此该模型与 Resource.repostCount 一并移除。 */
+
+/**
+ * 资源修改记录（类似 git 的提交历史：谁、什么时候、改了什么）。
+ *
+ * 每次编辑写入一条，`changes` 里是字段级的 before/after，
+ * 便于事后追溯，也为将来加"回滚到某个版本"留好了数据。
+ */
+model ResourceRevision {
+  id         String   @id @default(cuid())
+  resourceId String   @map("resource_id")
+  /** 操作者（可能是上传者本人，也可能是管理员） */
+  editorId   String   @map("editor_id")
+  editorName String?  @map("editor_name")
+  /** 编辑后的版本号 */
+  version    Int
+  /** 字段级差异：[{ field, before, after }] */
+  changes    Json
+  /** 备注（例如"管理员编辑"） */
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+  @@map("resource_revisions")
+}
+
+/**
+ * 每日传输用量（上传 / 下载配额）。
+ *
+ * 主体区分两类：
+ *   - 已登录用户 → subjectType = "user"，subjectKey = 用户 id
+ *   - 未登录访客 → subjectType = "ip"，subjectKey = 规范化后的客户端 IP
+ * （管理员不计入，写代码时直接跳过配额检查，不落库。）
+ *
+ * 按「天」分行记录，天然实现"每天重置"：跨天后 (day, subjectType, subjectKey)
+ * 这个唯一键就是一条新记录，计数从 0 开始，不需要定时任务去清零。
+ */
+model TransferUsage {
+  id          String   @id @default(cuid())
+  /** 归属的 UTC 日期，格式 YYYY-MM-DD */
+  day         String
+  /** "user" | "ip" */
+  subjectType String   @map("subject_type")
+  /** 用户 id 或 IP */
+  subjectKey  String   @map("subject_key")
+  uploadBytes   BigInt @default(0) @map("upload_bytes")
+  downloadBytes BigInt @default(0) @map("download_bytes")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([day, subjectType, subjectKey], name: "day_subject")
+  @@index([day])
+  @@map("transfer_usage")
+}
+
+/**
+ * 每日**行为次数**限制（评论 / 发布资源）。
+ *
+ * 和 TransferUsage 的区别：那张表记的是字节数（防流量滥用），这张表记的是
+ * 条数（防刷屏）。两者都是「按天分行 + 主体做键」，跨天自然重新计数。
+ *
+ * 主体目前只有登录用户（评论与上传都要求登录，所以不需要 IP 那一档），
+ * subjectType 先留着，以后要给访客加限制时不用改表结构。
+ *
+ * 管理员完全跳过，不落库。
+ */
+model DailyAction {
+  id          String   @id @default(cuid())
+  /** 归属的 UTC 日期，格式 YYYY-MM-DD */
+  day         String
+  /** "user" | "ip" */
+  subjectType String   @map("subject_type")
+  /** 用户 id 或 IP */
+  subjectKey  String   @map("subject_key")
+  /** "comment" | "resource" */
+  kind        String
+  count       Int      @default(0)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([day, subjectType, subjectKey, kind], name: "day_subject_kind")
+  @@index([day])
+  @@map("daily_actions")
+}
+
+/**
+ * 邮箱验证码。
+ *
+ * 两种用途：
+ *   - "bind"  绑定 / 换绑邮箱（注册时也走这条）
+ *   - "reset" 忘记密码
+ *
+ * 安全设计：
+ *   - **只存 scrypt 哈希**，不存明文；6 位数字本身熵很低，明文落库等于没有
+ *   - 10 分钟过期、单次消费（consumedAt）、最多 5 次尝试
+ *   - 发送侧有冷却与配额，避免被当成邮件炸弹的跳板
+ */
+model EmailCode {
+  id         String    @id @default(cuid())
+  email      String
+  /** "bind" | "reset" */
+  purpose    String
+  codeHash   String    @map("code_hash")
+  /** 用于 reset：直接关联到用户；注册流程里可能还没有用户 */
+  userId     String?   @map("user_id")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+  @@map("email_codes")
+}
+
+/**
+ * 破坏性操作审计日志。
+ *
+ * 起因：有一次库里的资源全没了，谁也说不清是谁在什么时候删的 ——
+ * `pg_stat_user_tables` 只能告诉我"13 个资源被删过"，说不出操作者。
+ *
+ * 所以：**所有不可逆的操作都往这里写一条**。字段刻意冗余（actorName /
+ * targetLabel 直接存名字而不是只存 id），因为操作发生后目标很可能就不存在了，
+ * 再去 join 只会查到 null。
+ *
+ * 不记录隐私内容，只记"谁、什么时候、对什么、做了什么"。
+ */
+model AuditLog {
+  id          String   @id @default(cuid())
+  /** "resource.delete" | "user.purge" | "user.anonymize" | "report.remove_content" */
+  action      String
+  actorId     String?  @map("actor_id")
+  /** 冗余存名字：操作者之后可能被删 */
+  actorName   String?  @map("actor_name")
+  /** "resource" | "user" | "comment" */
+  targetType  String   @map("target_type")
+  targetId    String   @map("target_id")
+  /** 冗余存标题/玩家名，方便事后辨认 */
+  targetLabel String?  @map("target_label")
+  /** 附加上下文（例如删号时连带删了多少内容） */
+  detail      Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@index([actorId])
+  @@map("audit_logs")
+}
+
+/** 举报状态：只有"待处理"和"已处理"两种，够用且不啰嗦 */enum ReportStatus {
+  PENDING
+  RESOLVED
+}
+
+/** 举报对象类型 */
+enum ReportTarget {
+  RESOURCE
+  COMMENT
+}
+
+/**
+ * 举报：资源与评论共用一张表。
+ * 管理员在后台 /admin/reports 处理；处理结果记在 resolution 里。
+ */
+model Report {
+  id         String       @id @default(cuid())
+  targetType ReportTarget @map("target_type")
+  /** 资源 id 或评论 id */
+  targetId   String       @map("target_id")
+  /** 举报原因（枚举 key，由前端选择） */
+  reason     String
+  /** 补充说明（可空） */
+  detail     String?      @db.Text
+  reporterId String       @map("reporter_id")
+  reporterName String?    @map("reporter_name")
+  status     ReportStatus @default(PENDING)
+  /** 处理结果备注，例如 dismissed / removed */
+  resolution String?
+  handledBy  String?      @map("handled_by")
+  handledAt  DateTime?    @map("handled_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([targetType, targetId])
+  @@map("reports")
+}
+
+/** 消息类型 */
+enum NotificationType {
+  /** 自己提交的举报有处理结果 */
+  REPORT_RESOLVED
+  /** 自己的资源被点赞 */
+  LIKE
+  /** 自己的评论被点赞 */
+  COMMENT_LIKE
+  /** 自己的评论被回复 */
+  REPLY
+}
+
+/**
+ * 站内消息（右上角铃铛）。
+ *
+ * 只展示四类：举报进度、被点赞、被回复。
+ * **自己对自己的操作不产生消息**（在写入端过滤，见 lib/notify.ts）。
+ */
+model Notification {
+  id         String           @id @default(cuid())
+  /** 收件人 */
+  userId     String           @map("user_id")
+  type       NotificationType
+  /** 触发者（系统消息可为空） */
+  actorId    String?          @map("actor_id")
+  actorName  String?          @map("actor_name")
+  /** 关联资源，点击跳转用 */
+  resourceId String?          @map("resource_id")
+  /** 处理结果（举报通知用）：dismissed / removed */
+  resolution String?
+  readAt     DateTime?        @map("read_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+/**
+ * 附件二进制单独一张表。
+ *
+ * 为什么不直接放进 Resource：列表页要一次查多条记录，
+ * 如果把几 MB 的 blob 混在同一行里，Prisma 会把它们全部取回来，
+ * 列表查询会变得非常重。拆表后只有下载接口才碰 blob。
+ */
+model ResourceBlob {
+  resourceId String   @id @map("resource_id")
+  data       Bytes
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@map("resource_blobs")
+}
