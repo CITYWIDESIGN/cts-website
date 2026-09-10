@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import {
@@ -11,6 +12,7 @@ import {
   LayoutGrid,
   Rows3,
   Search,
+  X,
   Sparkles,
   User,
 } from "lucide-react";
@@ -109,13 +111,49 @@ const serverView = (): ViewMode => "grid";
  *   - feed  动态：像发动态一样，带作者头像、时间、正文与附件，按时间倒序
  *   - list  列表：一行一条，信息密度最高
  *
- * 视图选择写入 localStorage；搜索在前端过滤（资源量不大，
- * 避免每敲一个字都请求服务端）。
+ * 视图选择写入 localStorage。
+ *
+ * 搜索走**服务端**：列表已经分页，前端过滤只能搜到当前这一页，
+ * 会让人以为"站里没有这条资源"。所以搜索词由 URL 的 `?q=` 承载，
+ * 输入框做 350ms 防抖后更新 URL，服务端重新查询。
  */
-export function ResourceGrid({ items }: { items: ResourceCardItem[] }) {
+export function ResourceGrid({
+  items,
+  query,
+}: {
+  items: ResourceCardItem[];
+  /** 当前搜索词（来自 URL，服务端已按它筛过） */
+  query: string;
+}) {
   const t = useTranslations("resources");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [value, setValue] = React.useState(query);
+
+  /** 把搜索词写回 URL（服务端据此重新查询），并回到第 1 页 */
+  const applyQuery = React.useCallback(
+    (next: string) => {
+      const sp = new URLSearchParams(window.location.search);
+      const trimmed = next.trim();
+      if (trimmed) sp.set("q", trimmed);
+      else sp.delete("q");
+      sp.delete("page");
+      const qs = sp.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [pathname, router]
+  );
+
+  /* 防抖：停止输入 350ms 后才更新 URL。
+     effect 里没有 setState —— 只是排一个定时器，
+     不会触发 react-hooks/set-state-in-effect。 */
+  React.useEffect(() => {
+    if (value === query) return;
+    const id = window.setTimeout(() => applyQuery(value), 350);
+    return () => window.clearTimeout(id);
+  }, [value, query, applyQuery]);
+
   const reduce = useReducedMotion();
-  const [query, setQuery] = React.useState("");
   const view = React.useSyncExternalStore(subscribeView, readView, serverView);
 
   function changeView(next: ViewMode) {
@@ -127,18 +165,6 @@ export function ResourceGrid({ items }: { items: ResourceCardItem[] }) {
     // 通知所有订阅者（含本组件与其它标签页）
     viewListeners.forEach((fn) => fn());
   }
-
-  const filtered = React.useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (r) =>
-        r.title.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
-        (r.uploaderName ?? "").toLowerCase().includes(q) ||
-        r.fileName.toLowerCase().includes(q)
-    );
-  }, [items, query]);
 
   const views: Array<{ key: ViewMode; icon: typeof LayoutGrid; label: string }> = [
     { key: "grid", icon: LayoutGrid, label: t("viewGrid") },
@@ -153,12 +179,22 @@ export function ResourceGrid({ items }: { items: ResourceCardItem[] }) {
         <div className="relative w-full sm:max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
             placeholder={t("searchPlaceholder")}
             className="pl-9"
             aria-label={t("searchPlaceholder")}
           />
+          {value && (
+            <button
+              type="button"
+              onClick={() => setValue("")}
+              aria-label={t("clearSearch")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </div>
 
         <div
@@ -199,7 +235,7 @@ export function ResourceGrid({ items }: { items: ResourceCardItem[] }) {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
           <span className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted">
             <FileArchive className="size-5 text-muted-foreground" />
@@ -217,9 +253,9 @@ export function ResourceGrid({ items }: { items: ResourceCardItem[] }) {
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
             transition={{ duration: 0.28, ease: EASE_OUT }}
           >
-            {view === "grid" && <GridView items={filtered} />}
-            {view === "feed" && <FeedView items={filtered} />}
-            {view === "list" && <ListView items={filtered} />}
+            {view === "grid" && <GridView items={items} />}
+            {view === "feed" && <FeedView items={items} />}
+            {view === "list" && <ListView items={items} />}
           </motion.div>
         </AnimatePresence>
       )}

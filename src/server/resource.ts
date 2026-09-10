@@ -4,12 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { hasAvatarFrame } from "@/lib/frame";
 import { displayName } from "@/lib/display-name";
 import { isAllowedCoverDataUrl } from "@/lib/image-types";
-import type { Resource } from "@prisma/client";
+import { Prisma, type Resource } from "@prisma/client";
 
 /** 附件大小上限：5MB（与前端校验保持一致） */
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
-/** 封面图上限：1MB（存 data URL，避免列表查询变重） */
+/** 封面图上限：1MB */
 export const MAX_IMAGE_BYTES = 1024 * 1024;
+/** 资源列表每页条数 */
+export const RESOURCES_PAGE_SIZE = 12;
 
 export class ResourceError extends Error {
   constructor(
@@ -53,56 +55,46 @@ export type ResourceListItem = Pick<
   uploaderFramed: boolean;
 };
 
-/** 公开：列出全部资源（任何访客都能看 / 下载） */
-export async function listResources(options: {
-  search?: string;
-  uploaderId?: string;
-  take?: number;
-} = {}): Promise<ResourceListItem[]> {
-  const where: Record<string, unknown> = {};
-  if (options.uploaderId) where.uploaderId = options.uploaderId;
-  if (options.search) {
-    where.OR = [
-      { title: { contains: options.search, mode: "insensitive" } },
-      { description: { contains: options.search, mode: "insensitive" } },
-    ];
-  }
-
-  const rows = await prisma.resource.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: options.take ?? 100,
+/**
+ * 列表查询的 select。
+ *
+ * 集中在这里是有意的：**别让任何人在别处再写一份，然后把封面的 data URL
+ * 加回来**（那是曾经让列表一次拖 100MB+ 的原因，详见 ResourceImage 注释）。
+ *
+ * `image` 与 `blob` 都只取关系主键 —— 判断"有没有"，不取内容。
+ */
+const RESOURCE_LIST_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  fileName: true,
+  fileSize: true,
+  fileType: true,
+  downloads: true,
+  version: true,
+  likeCount: true,
+  commentCount: true,
+  createdAt: true,
+  uploaderId: true,
+  image: { select: { resourceId: true } },
+  uploader: {
     select: {
-      id: true,
-      title: true,
-      description: true,
-      fileName: true,
-      fileSize: true,
-      fileType: true,
-      downloads: true,
-      version: true,
-      likeCount: true,
-      commentCount: true,
-      createdAt: true,
-      uploaderId: true,
-      // ⚠️ 这里**只 select 关系主键**，不要 select 封面的 data URL。
-      // 曾经写成 imageUrl: true + Boolean(r.imageUrl)，等于把每张最大 1.4MB
-      // 的 base64 全捞回来只为判断"有没有" —— 100 条就是 100MB+ 的无效传输。
-      image: { select: { resourceId: true } },
-      uploader: {
-        select: {
-          username: true,
-          minecraftUsername: true,
-          minecraftUuid: true,
-          microsoftAccountId: true,
-          wearFrame: true,
-        },
-      },
+      username: true,
+      minecraftUsername: true,
+      minecraftUuid: true,
+      microsoftAccountId: true,
+      wearFrame: true,
     },
-  });
+  },
+} satisfies Prisma.ResourceSelect;
 
-  // description 可能很长，列表只取前 160 字
-  return rows.map((r) => ({
+type ResourceListRow = Prisma.ResourceGetPayload<{
+  select: typeof RESOURCE_LIST_SELECT;
+}>;
+
+/** 行 → 列表项。description 可能很长，列表只取前 160 字 */
+function toListItem(r: ResourceListRow): ResourceListItem {
+  return {
     id: r.id,
     title: r.title,
     description: r.description.slice(0, 160),
@@ -120,7 +112,87 @@ export async function listResources(options: {
     uploaderName: displayName(r.uploader),
     uploaderUuid: r.uploader.minecraftUuid,
     uploaderFramed: hasAvatarFrame(r.uploader),
-  }));
+  };
+}
+
+/** 列表 / 分页 / 计数共用的过滤条件，保证三者口径一致 */
+function resourceWhere(options: {
+  search?: string;
+  uploaderId?: string;
+}): Prisma.ResourceWhereInput {
+  const where: Prisma.ResourceWhereInput = {};
+  if (options.uploaderId) where.uploaderId = options.uploaderId;
+
+  const q = options.search?.trim();
+  if (q) {
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+      { fileName: { contains: q, mode: "insensitive" } },
+      { uploader: { username: { contains: q, mode: "insensitive" } } },
+      { uploader: { minecraftUsername: { contains: q, mode: "insensitive" } } },
+    ];
+  }
+  return where;
+}
+
+/**
+ * 公开：列出资源（任何访客都能看 / 下载）。
+ * 不分页的老接口，给"某个用户的全部资源"这类小集合用。
+ */
+export async function listResources(options: {
+  search?: string;
+  uploaderId?: string;
+  take?: number;
+} = {}): Promise<ResourceListItem[]> {
+  const rows = await prisma.resource.findMany({
+    where: resourceWhere(options),
+    orderBy: { createdAt: "desc" },
+    take: options.take ?? 100,
+    select: RESOURCE_LIST_SELECT,
+  });
+  return rows.map(toListItem);
+}
+
+export interface ResourcePage {
+  items: ResourceListItem[];
+  /** 满足条件的总条数（不是本页条数） */
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+/**
+ * 分页列出资源。
+ *
+ * 为什么要分页：原来固定 `take: 100`，第 101 条之后**静默消失** ——
+ * 用户看到的列表是"全部"，其实已经被截断了，没有任何提示。
+ *
+ * 越界的 page 会被夹回有效范围，而不是返回空列表（否则用户点到第 999 页
+ * 会以为站点坏了）。
+ */
+export async function listResourcesPaged(options: {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<ResourcePage> {
+  const pageSize = Math.max(1, options.pageSize ?? RESOURCES_PAGE_SIZE);
+  const where = resourceWhere(options);
+
+  const total = await prisma.resource.count({ where });
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, options.page ?? 1), totalPages);
+
+  const rows = await prisma.resource.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    select: RESOURCE_LIST_SELECT,
+  });
+
+  return { items: rows.map(toListItem), total, page, pageSize, totalPages };
 }
 
 export async function getResource(id: string) {

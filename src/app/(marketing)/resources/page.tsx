@@ -4,7 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { LogIn } from "lucide-react";
 import { getCurrentUser } from "@/server/auth";
 import { ResourceGrid, ResourceViewerProvider } from "@/components/resources/resource-grid";
-import { listResources } from "@/server/resource";
+import { listResourcesPaged } from "@/server/resource";
+import { Pagination } from "@/components/ui/pagination";
 import { getViewerState } from "@/server/social";
 import { UploadResourceDialog } from "@/components/resources/upload-resource-dialog";
 import { Button } from "@/components/ui/button";
@@ -23,22 +24,43 @@ export async function generateMetadata(): Promise<Metadata> {
  * - 浏览 / 下载：所有人（不需要登录）
  * - 上传：只要登录即可，**不要求通过入服审核**
  * - 管理（改/删）：仅管理员，入口在后台 /admin/resources
+ *
+ * 分页与搜索都放在 URL 上（`?q=&page=`），这样能前进后退、能收藏、能分享；
+ * 搜索必须在服务端做 —— 只在前端过滤的话，用户只能搜到当前这一页，
+ * 会以为"站里没有这条资源"。
  */
-export default async function ResourcesPage() {
+export default async function ResourcesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
   const t = await getTranslations("resources");
+  const params = await searchParams;
+  const query = params.q?.trim() ?? "";
+  const page = Number(params.page) || 1;
 
   // 用 getCurrentUser 而不是 requireUser：游客也要能看列表、下载，
   // 不能被弹到登录页
-  const [user, resources] = await Promise.all([
+  const [user, result] = await Promise.all([
     getCurrentUser(),
-    listResources(),
+    listResourcesPaged({ search: query, page }),
   ]);
+  const resources = result.items;
 
-  // 当前用户对这批资源的点赞 / 转发状态，一次查出，避免每条动态各查一次
+  // 当前用户对这批资源的点赞状态，一次查出，避免每条动态各查一次
   const viewerState = await getViewerState(
     resources.map((r) => r.id),
     user?.id ?? null
   );
+
+  /** 保留搜索词、只改页码 */
+  const hrefForPage = (n: number) => {
+    const sp = new URLSearchParams();
+    if (query) sp.set("q", query);
+    if (n > 1) sp.set("page", String(n));
+    const qs = sp.toString();
+    return qs ? `/resources?${qs}` : "/resources";
+  };
 
   return (
     <PageEnter className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
@@ -78,6 +100,7 @@ export default async function ResourcesPage() {
       <div className="mt-10">
         <ResourceViewerProvider viewerId={user?.id ?? null}>
           <ResourceGrid
+            query={query}
             items={resources.map((r) => ({
               id: r.id,
               title: r.title,
@@ -98,6 +121,23 @@ export default async function ResourcesPage() {
             }))}
           />
         </ResourceViewerProvider>
+      </div>
+
+      {/* 分页：只在多于一页时渲染 */}
+      <div className="mt-10 flex flex-col items-center gap-3">
+        <Pagination
+          page={result.page}
+          totalPages={result.totalPages}
+          hrefFor={hrefForPage}
+          labels={{ prev: t("prevPage"), next: t("nextPage") }}
+        />
+        {result.total > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {query
+              ? t("searchResultCount", { count: result.total })
+              : t("totalCount", { count: result.total })}
+          </p>
+        )}
       </div>
     </PageEnter>
   );
