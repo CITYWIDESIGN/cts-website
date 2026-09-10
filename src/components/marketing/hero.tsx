@@ -55,11 +55,19 @@ export async function Hero() {
         gap={30}
         className="relative flex flex-col pb-12 pt-24 sm:pb-14 sm:pt-32"
       >
-        <div className="mx-auto flex max-w-4xl flex-col items-center px-4 text-center sm:px-6">
+        <div className="mx-auto flex max-w-5xl flex-col items-center px-4 text-center sm:px-6">
           <StaggerItem index={0} className="w-full">
+            {/*
+              主标题**保持单行**：字号按断点阶梯放大，而不是一上来就给
+              text-6xl —— 之前 6xl 从 sm 就开始用，标题在 640–1024px 之间
+              必然折成两行。max-w-5xl 是配合英文版（比中文长）给的余量。
+              文案本身也控制在 ~13em 以内，超出这个宽度任何字号都排不下。
+              基准用 1.75rem 而不是 text-3xl(1.875rem)：英文版在 375px 宽
+              的手机上正好差几个像素，会掉到第二行。
+            */}
             <SplitHeading
               text={t("title")}
-              className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl"
+              className="text-balance text-[1.75rem] font-semibold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
             />
           </StaggerItem>
 
