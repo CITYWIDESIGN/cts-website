@@ -120,6 +120,31 @@ services:
       TZ: Asia/Shanghai
     networks: [internal]
 
+  # ------------------------------------------------------------------
+  # 建表 / 同步 schema。**不会跟着 `up -d` 起来**（profiles 把它排除在默认之外）。
+  #
+  #   docker compose -f docker-compose.prod.yml run --rm migrate
+  #
+  # 为什么单独一个服务而不是在 app 容器里跑：Prisma CLI 需要完整的
+  # node_modules，而 app 用的是 standalone 产物（只含应用真正 import 到的模块），
+  # 在里面 `npx prisma db push` 会报 MODULE_NOT_FOUND。
+  # 这个服务基于 builder 阶段构建，用完即弃。
+  # ------------------------------------------------------------------
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    image: cts-website-migrate:latest
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cts}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-cts_website}
+      TZ: Asia/Shanghai
+    networks: [internal]
+
 volumes:
   cts_web_pgdata:
 

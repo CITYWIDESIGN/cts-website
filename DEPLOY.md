@@ -88,7 +88,8 @@ docker compose -f docker-compose.prod.yml build
 docker compose -f docker-compose.prod.yml up -d db
 
 # 3. 建表。**必须在 app 起来之前跑**，否则首次访问会报列不存在。
-docker compose -f docker-compose.prod.yml run --rm app npx prisma db push
+#    用 migrate 服务（profile tools），它不是常驻容器，跑完就退出。
+docker compose -f docker-compose.prod.yml run --rm migrate
 
 # 4. 起 app + tunnel
 docker compose -f docker-compose.prod.yml up -d
@@ -122,8 +123,13 @@ docker compose -f docker-compose.prod.yml exec app node scripts/cleanup.mts
 git pull
 docker compose -f docker-compose.prod.yml build app
 docker compose -f docker-compose.prod.yml up -d app
-docker compose -f docker-compose.prod.yml run --rm app npx prisma db push
+# schema 有变化时（比如加了列）再跑一次
+docker compose -f docker-compose.prod.yml run --rm migrate
 ```
+
+> **别在 app 容器里跑 `npx prisma db push`** —— app 用的是 standalone 产物，
+> 只含应用真正 import 到的模块，Prisma CLI 的传递依赖不在里面，会报
+> `MODULE_NOT_FOUND`。建表统一走 `migrate` 服务（基于 builder 阶段，用完即弃）。
 
 > `scripts/backup.mjs` 也能用（它会自动退回 `docker compose exec db pg_dump`），
 > 但容器名和卷名对不上时不如上面那条直接。二选一，别两个都用。

@@ -45,15 +45,24 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Prisma engine for alpine
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# ⚠️ 这一份 CLI **在 runner 里跑不起来** —— standalone 只保留应用真正 import 到的
+# 模块，而 Prisma CLI 自己要一堆传递依赖（@prisma/config 等的 require 会失败）。
+# 建表请用下面的 `migrate` target，不要在这里 `npx prisma db push`。
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
-# schema 也要带上：否则容器里跑不了 `npx prisma db push`（首次部署建表要用）。
-# 之前只 COPY 了 node_modules 里的 prisma，命令能起来但找不到 schema。
+# schema 也带上，方便进容器查看
 COPY --from=builder /app/prisma ./prisma
 
-# 健康检查用 wget（busybox 自带），不需要额外的 HEALTHCHECK 指令
 USER nextjs
 
 EXPOSE 3000
 
 CMD ["node", "server.js"]
+
+# ---------- Schema sync ----------
+# 只给 `prisma db push` 用的一次性镜像：基于 builder，所以 node_modules 是完整的。
+# 不进最终镜像，也就不会把编译工具链带到生产。
+#
+#   docker compose -f docker-compose.prod.yml run --rm migrate
+FROM builder AS migrate
+CMD ["npx", "prisma", "db", "push"]
