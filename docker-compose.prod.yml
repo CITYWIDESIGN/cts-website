@@ -53,6 +53,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # ⚠️ **必须显式写 target**。Dockerfile 里最后一个 stage 是 `migrate`，
+      # 不指定 target 的话 `docker compose build app` 会构建成那个 ——
+      # app 镜像的 CMD 变成 `prisma db push`，跑完就退出、无限重启。
+      target: runner
     image: cts-website:latest
     container_name: cts-web-app
     restart: unless-stopped
