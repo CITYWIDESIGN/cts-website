@@ -162,7 +162,7 @@ export function QuestionnaireForm({
           {questionnaire.title}
         </h1>
         {questionnaire.description && (
-          <p className="text-sm text-muted-foreground">
+          <p className="whitespace-pre-wrap text-sm text-muted-foreground">
             {questionnaire.description}
           </p>
         )}
@@ -204,7 +204,7 @@ export function QuestionnaireForm({
           className="mt-8"
         >
           <div className="flex items-start gap-2">
-            <h2 className="text-base font-medium sm:text-lg">{current.title}</h2>
+            <h2 className="whitespace-pre-wrap text-base font-medium sm:text-lg">{current.title}</h2>
             {current.required && (
               <span className="mt-0.5 text-sm text-destructive">*</span>
             )}

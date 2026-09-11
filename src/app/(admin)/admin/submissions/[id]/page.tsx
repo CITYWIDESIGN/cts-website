@@ -111,7 +111,7 @@ export default async function SubmissionDetailPage({
                     <span className="mr-2 font-mono text-xs text-muted-foreground">
                       Q{i + 1}
                     </span>
-                    {answer.question.title}
+                    <span className="whitespace-pre-wrap">{answer.question.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

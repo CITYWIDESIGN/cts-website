@@ -68,7 +68,7 @@ export default async function SubmissionResultPage({
                     <span className="mr-2 font-mono text-xs text-muted-foreground">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    {answer.question.title}
+                    <span className="whitespace-pre-wrap">{answer.question.title}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
