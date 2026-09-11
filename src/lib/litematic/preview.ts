@@ -125,8 +125,15 @@ export async function renderLitematicPreview(
     const images: string[] = [];
     for (const view of PREVIEW_VIEWS) {
       for (const theme of PREVIEW_THEMES) {
-        // 背景色是按主题烤进图里的，所以每张都要重设
-        three.setSunlight({ sky: theme.sky });
+        // 背景色是按主题烤进图里的，所以每张都要重设。
+        //
+        // 同时把太阳和星星关掉：我们要的是**纯色底**，天空里挂个发光的球
+        // 或者一片星点都是噪音。lodestone 的 SunDiscOptions 没有 enabled
+        // 开关，但强度归零就等于不可见（叠加渲染，乘 0 什么都不加）。
+        three.setSunlight({
+          sky: { ...theme.sky, stars: { enabled: false } },
+          disc: { coreIntensity: 0, glowIntensity: 0 },
+        });
         const frame = frameCamera(built.meta.size, 45, view.yawDeg);
         three.setCamera({
           position: frame.position,

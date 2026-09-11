@@ -85,7 +85,21 @@ writeFileSync(TARGET, source.replace(ORIGINAL, PATCHED).replace(LEGACY, PATCHED)
  *
  * 这个常量保留成空数组，是为了让下面的 applyPatches 逻辑不用改分支。
  */
-const ALPHA_PATCHES = [];
+const ALPHA_PATCHES = [
+  {
+    /*
+     * 关掉太阳。
+     *
+     * lodestone 在绘制时会显式 `setOverlayVisibility({ ..., sunDisc: true })`
+     * —— 光把 `disc.coreIntensity` 设成 0 是"理论上不可见"，但可见性那一行
+     * 摆在那儿，属于靠渲染细节兜底。预览要的是纯色底，太阳（和它那圈辉光）
+     * 是纯噪音，直接在可见性上关死更可靠。
+     */
+    name: "关掉太阳",
+    from: "sunDisc: true",
+    to: "sunDisc: false",
+  },
+];
 
 const RENDERER = path.join(
   ROOT,
