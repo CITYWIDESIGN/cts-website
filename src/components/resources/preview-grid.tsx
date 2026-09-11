@@ -2,10 +2,13 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PREVIEW_VIEWS } from "@/lib/litematic/build-structure";
+
+/** 关闭动画时长，和下面 motion 的 transition 对齐 */
+const CLOSE_MS = 150;
 
 /**
  * 四个方向的等轴测预览 + 站内放大。
@@ -27,12 +30,36 @@ export function PreviewGrid({
 }) {
   const t = useTranslations("resources");
   const [open, setOpen] = React.useState<number | null>(null);
+  /** 正在播关闭动画 —— 播完才真的卸载 */
+  const [closing, setClosing] = React.useState(false);
+
+  /**
+   * 播放关闭动画后再卸载。
+   *
+   * ⚠️ **没有用 AnimatePresence。** 它和 `createPortal` 搭配是出了名的容易
+   * 失效 —— Motion 要靠 context 把"正在退出"传给子组件，而 portal 会打断
+   * 这条链，站长反馈"放大动画压根不触发"就是这个。
+   *
+   * 换成手动驱动：closing 一变 true，motion 的 animate 目标就变成缩小 + 透明；
+   * 动画播完再 setOpen(null) 真正卸载。进出两个方向都走 animate，
+   * 不依赖卸载时机。
+   */
+  const close = React.useCallback(() => {
+    setClosing((already) => {
+      if (already) return already;
+      window.setTimeout(() => {
+        setOpen(null);
+        setClosing(false);
+      }, CLOSE_MS);
+      return true;
+    });
+  }, []);
 
   // Esc 关闭。打开期间锁住页面滚动，免得浮层下面的内容跟着滚。
   React.useEffect(() => {
     if (open === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(null);
+      if (e.key === "Escape") close();
     };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -41,7 +68,7 @@ export function PreviewGrid({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open]);
+  }, [open, close]);
 
   const shown = (i: number) => srcs[i] ?? srcs[0] ?? null;
 
@@ -84,60 +111,46 @@ export function PreviewGrid({
         `fixed inset-0` 是相对**视口**定位的 —— 但只要祖先里有任何元素带
         transform / filter / will-change，它就会退化成"相对那个祖先"。
         详情页外面包着 Motion 的 Stagger / StaggerItem（动画会留下 transform），
-        所以浮层被关在了卡片里（站长："不是铺满卡片屏幕，是铺满显示器屏幕"）。
-
-        portal 把浮层挂到 body 下，彻底脱离那些祖先。
+        于是浮层被关在了卡片里。
       */}
-      {/*
-        放大/缩小动画用 AnimatePresence 包住 —— 它是**退出动画**的前提：
-        没有它的话 open 一变 null 组件立刻被卸载，exit 根本来不及播。
-        浮层淡入淡出 + 图片从 0.92 弹到 1，收起来时反向。
-      */}
-      <AnimatePresence>
       {open !== null &&
         createPortal(
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.16, ease: "easeOut" }}
             role="dialog"
-          aria-modal="true"
-          aria-label={title}
-          // 点浮层任意处退出；stopPropagation 保证点图片本身不会误关
-          onClick={() => setOpen(null)}
-          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-background/95 p-6 backdrop-blur-sm"
-        >
-          <button
-            type="button"
-            aria-label={t("previewClose")}
-            className="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            aria-modal="true"
+            aria-label={title}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: closing ? 0 : 1 }}
+            transition={{ duration: CLOSE_MS / 1000, ease: "easeOut" }}
+            // 点浮层任意处退出；图片自己 stopPropagation，点图不会误关
+            onClick={close}
+            className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-background/95 p-6 backdrop-blur-sm"
           >
-            <X className="size-5" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {/*
-            ⚠️ 必须写 h-full w-full，不能只写 max-h-full max-w-full。
-            后者只会**限制**尺寸、不会**放大** —— img 的盒子默认等于图片的
-            自然尺寸（1080×720），所以在大屏上它一直就那么点，
-            浮层显得空荡荡的（站长就是这个反馈）。
-            盒子撑满视口之后，object-contain 才会按比例缩放到贴合，
-            同时还保持不变形。
-          */}
-          <motion.img
-            src={shown(open) ?? ""}
-            alt={title}
-            onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.92, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.94, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 360, damping: 32, mass: 0.7 }}
-            className="h-full w-full cursor-default object-contain"
-          />
+            <button
+              type="button"
+              aria-label={t("previewClose")}
+              className="absolute right-4 top-4 rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <X className="size-5" />
+            </button>
+            {/*
+              ⚠️ 必须写 h-full w-full，不能只写 max-h-full max-w-full。
+              后者只会**限制**尺寸、不会**放大** —— img 的盒子默认等于图片的
+              自然尺寸，所以在大屏上它一直就那么点。
+              盒子撑满视口之后，object-contain 才会按比例缩放到贴合。
+            */}
+            <motion.img
+              src={shown(open) ?? ""}
+              alt={title}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: closing ? 0.94 : 1, opacity: closing ? 0 : 1 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30, mass: 0.7 }}
+              className="h-full w-full cursor-default object-contain"
+            />
           </motion.div>,
           document.body
         )}
-      </AnimatePresence>
     </>
   );
 }
