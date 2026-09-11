@@ -30,6 +30,29 @@ const DEFAULT_HEIGHT = 480;
 
 export type PreviewStage = "parsing" | "loading-pack" | "merging" | "rendering";
 
+/**
+ * 材质包缓存。
+ *
+ * 一次要拉 1.5MB 的 assets.json + 1.4MB 的 atlas.png，还得解码成 ImageData ——
+ * 走 Cloudflare 隧道要好几秒。同一个页面里连着传第二个投影时不该再拉一遍。
+ * 存 Promise 而不是结果：并发调用也只会发一次请求。
+ */
+let packPromise: Promise<Awaited<ReturnType<typeof loadPack>>> | null = null;
+
+async function loadPack() {
+  const { loadDefaultPackResources } = await import("@mattzh72/lodestone");
+  return loadDefaultPackResources({ baseUrl: packBaseUrl() });
+}
+
+function getPack() {
+  packPromise ??= loadPack().catch((err) => {
+    // 失败不要缓存住，下次还能重试
+    packPromise = null;
+    throw err;
+  });
+  return packPromise;
+}
+
 export type PreviewMeta = LitematicPreviewMeta;
 
 /**
@@ -81,7 +104,7 @@ export async function renderLitematicPreview(
     if (!built) return null;
 
     stage("loading-pack");
-    const { resources } = await loadDefaultPackResources({ baseUrl: packBaseUrl() });
+    const { resources } = await getPack();
 
     stage("rendering");
     const canvas = document.createElement("canvas");

@@ -117,7 +117,20 @@ export function UploadResourceDialog() {
         setPreviewStage("parsing");
         try {
           const { renderLitematicPreview } = await import("@/lib/litematic/preview");
-          const preview = await renderLitematicPreview(file, { onStage: setPreviewStage });
+          /*
+            看门狗。
+
+            预览是**纯附加品**，绝不能让"提交"等它 —— 8 帧渲染 + 3MB 材质包
+            + 大投影的结构构建，几秒到十几秒都正常，但用户看到的就是按钮一直转。
+
+            超过 20 秒就不等了，直接提交（那份渲染在后台跑完会被丢掉）。
+            这也是为什么这里用 Promise.race 而不是给渲染内部加中断：
+            结构构建那几段循环是同步的，塞不进去检查点。
+          */
+          const preview = await Promise.race([
+            renderLitematicPreview(file, { onStage: setPreviewStage }),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 20_000)),
+          ]);
           // 三张图打包成一个 JSON 数组提交（multipart 里塞三个同名字段反而更难校验）
           if (preview) body.set("preview", JSON.stringify(preview.images));
         } catch (err) {
