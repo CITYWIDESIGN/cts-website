@@ -33,15 +33,25 @@ export function PreviewGallery({
         const index = previewIndex(direction, theme);
         return (
           <figure key={view.key} className="space-y-1.5">
-            <div className="overflow-hidden rounded-lg border bg-white dark:bg-black">
+            {/*
+              点开看大图：直接新标签页打开接口地址。
+              不做站内弹层是因为那个要自己写遮罩/键盘/焦点陷阱，而这里
+              浏览器自带的图片查看器（缩放、另存为）已经够用。
+            */}
+            <a
+              href={`/api/resources/${resourceId}/preview?i=${index}`}
+              target="_blank"
+              rel="noreferrer"
+              className="block overflow-hidden rounded-lg border bg-white transition-opacity hover:opacity-90 dark:bg-black"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/resources/${resourceId}/preview?i=${index}`}
                 alt={`${title} — ${t(view.key)}`}
-                className="aspect-[3/2] w-full object-cover"
+                className="aspect-[3/2] w-full cursor-zoom-in object-cover"
                 loading="lazy"
               />
-            </div>
+            </a>
             <figcaption className="text-center text-xs text-muted-foreground">
               {t(view.key)}
             </figcaption>

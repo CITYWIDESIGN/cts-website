@@ -112,10 +112,17 @@ export async function authenticateLocal(
   password: string
 ): Promise<{ id: string; sessionVersion: number }> {
   const raw = identifier.trim();
-  const lower = raw.toLowerCase();
 
+  /*
+    用户名**大小写敏感**（站长定的规则），所以按原样精确匹配；
+    邮箱仍然归一化成小写（邮箱本身大小写不敏感）。
+
+    这里曾经是把两者都转小写再查 —— 用户名改成大小写敏感之后，
+    注册 \`Alice\` 的人会永远登不进去（库里存的是 Alice，查询找的是 alice），
+    而且不会报"用户名不存在"，只会一直提示密码错误，极难排查。
+  */
   const user = await prisma.user.findFirst({
-    where: { OR: [{ username: lower }, { email: lower }] },
+    where: { OR: [{ username: raw }, { email: raw.toLowerCase() }] },
     select: { id: true, passwordHash: true, sessionVersion: true },
   });
 
