@@ -32,6 +32,21 @@ const securityHeaders = [
   },
 ];
 
+/**
+ * HSTS **只在生产加**。
+ *
+ * 生产确认是 HTTPS（Cloudflare 边缘终结 TLS，见 DEPLOY.md），所以可以让浏览器
+ * 记住"这个站只能用 HTTPS"，挡掉 SSL 降级。
+ *
+ * 为什么不带 `includeSubDomains`：本站只占 `web.ctserver.top` 一个主机名，
+ * 而 `ctserver.top` 上挂着 7 个 MC 端口 —— 少写一个指令就少一份误伤的可能。
+ * 为什么开发环境不加：本地是 http://localhost，加上会让浏览器之后拒绝走 HTTP。
+ */
+const hstsHeader = {
+  key: "Strict-Transport-Security",
+  value: "max-age=31536000",
+};
+
 const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: ["127.0.0.1"],
@@ -56,7 +71,11 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    const headers =
+      process.env.NODE_ENV === "production"
+        ? [...securityHeaders, hstsHeader]
+        : securityHeaders;
+    return [{ source: "/:path*", headers }];
   },
 };
 
