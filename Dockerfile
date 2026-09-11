@@ -47,6 +47,11 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
+# schema 也要带上：否则容器里跑不了 `npx prisma db push`（首次部署建表要用）。
+# 之前只 COPY 了 node_modules 里的 prisma，命令能起来但找不到 schema。
+COPY --from=builder /app/prisma ./prisma
+
+# 健康检查用 wget（busybox 自带），不需要额外的 HEALTHCHECK 指令
 USER nextjs
 
 EXPOSE 3000

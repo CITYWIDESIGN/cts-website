@@ -30,7 +30,9 @@ export function CountUp({
 
   const mv = useMotionValue(0);
   const display = useTransform(mv, (v) =>
-    `${Math.round(v).toLocaleString()}${suffix}`
+    // 显式指定 locale：不指定时用的是"运行时默认 locale"，
+    // 服务端（容器）和浏览器可能不一样，千分位会渲染出两种结果
+    `${Math.round(v).toLocaleString("en-US")}${suffix}`
   );
 
   React.useEffect(() => {

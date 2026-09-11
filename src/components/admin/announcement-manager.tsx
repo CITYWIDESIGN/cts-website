@@ -11,6 +11,7 @@ import {
   adminDeleteAnnouncement,
   adminUpdateAnnouncement,
 } from "@/lib/actions/admin-announcements";
+import { siteToday } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -53,7 +54,8 @@ function emptyDraft(): Draft {
     body: { zh: "", en: "" },
     tag: { zh: "", en: "" },
     published: true,
-    publishedAt: new Date().toISOString().slice(0, 10),
+    // 用站点时区（本地时区在容器里是 UTC，会填成"昨天"）
+    publishedAt: siteToday(),
   };
 }
 

@@ -33,6 +33,8 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# 生产环境变量**模板**（只有占位符，没有真密钥）—— 填好的 .env 仍然被忽略
+!.env.production.example
 
 # 本地私密文件：含服务器公网 IP、端口扫描结果、ICP 备案状态、Azure 租户 ID
 # 以及 AppID 审核策略。**仓库以后要转公开**，所以这些不能进版本库。

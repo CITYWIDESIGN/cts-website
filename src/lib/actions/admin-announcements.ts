@@ -9,6 +9,7 @@ import {
   updateAnnouncement,
 } from "@/server/announcement";
 import { AnnouncementInputSchema } from "@/lib/validators/content";
+import { siteToday } from "@/lib/format";
 import { recordAudit } from "@/server/audit";
 import type { ActionState } from "./admin";
 
@@ -21,7 +22,8 @@ function parseDay(day: string): Date {
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  // 用站点时区。UTC 的话北京时间 0:00–8:00 之间会填成"昨天"
+  return siteToday();
 }
 
 export async function adminCreateAnnouncement(

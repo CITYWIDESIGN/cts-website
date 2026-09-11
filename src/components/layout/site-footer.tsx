@@ -2,12 +2,14 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Logo } from "./logo";
 import { siteConfig } from "@/config/site";
+import { siteYear } from "@/lib/format";
 
 export async function SiteFooter() {
   const t = await getTranslations("footer");
   const nav = await getTranslations("nav");
 
-  const year = new Date().getFullYear();
+  // 用站点时区，不用本地时区：容器跑 UTC 时元旦当天会显示成去年
+  const year = siteYear();
 
   return (
     <footer className="relative border-t bg-muted/40">

@@ -7,6 +7,7 @@ import {
 } from "@/components/admin/announcement-manager";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
+import { siteToday } from "@/lib/format";
 
 /**
  * 后台：公告管理。
@@ -31,7 +32,8 @@ export default async function AdminAnnouncementsPage() {
     tagZh: r.tagZh,
     tagEn: r.tagEn,
     published: r.published,
-    publishedAt: r.publishedAt.toISOString().slice(0, 10),
+    // 用站点时区：UTC 的话晚上发的公告在表单里会显示成前一天
+    publishedAt: siteToday(r.publishedAt),
   }));
 
   return (
