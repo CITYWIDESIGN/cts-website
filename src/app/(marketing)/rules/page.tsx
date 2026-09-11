@@ -18,7 +18,7 @@ const ruleSections = [
   "behavior",
   "gameplay",
   "building",
-  "economy",
+  "redstone",
   "punishment",
 ] as const;
 

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { SplitHeading } from "@/components/motion/split-heading";
-import { PseudoQr } from "@/components/community/pseudo-qr";
+import { QqQrCode } from "@/components/community/qq-qr";
 import { siteConfig } from "@/config/site";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -86,10 +86,12 @@ export default async function CommunityPage() {
                     {t(`channels.${channel.key}.description`)}
                   </p>
 
-                  {/* QQ 群：二维码 + 群号 */}
+                  {/* QQ 群：二维码 + 群号。
+                      默认用内置的矢量二维码（站点配色、跟随主题）；
+                      想换成自备图片就把 siteConfig 的 qqQrImage 指过去。 */}
                   {channel.key === "qq" && (
                     <div className="mt-auto flex flex-col gap-3">
-                      <div className="mx-auto rounded-xl border bg-background p-3">
+                      <div className="mx-auto rounded-xl border bg-background p-3 text-foreground">
                         {links.qqQrImage ? (
                           <Image
                             src={links.qqQrImage}
@@ -99,7 +101,7 @@ export default async function CommunityPage() {
                             className="size-[148px] rounded-md object-contain"
                           />
                         ) : (
-                          <PseudoQr className="size-[148px] text-foreground/80" />
+                          <QqQrCode className="size-[148px]" />
                         )}
                       </div>
                       <p className="text-center text-xs text-muted-foreground">

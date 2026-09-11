@@ -32,7 +32,12 @@ export default async function ServerPage() {
         .join(" · "),
     },
     { icon: ServerIcon, label: t("version"), value: server.version },
-    { icon: Gamepad2, label: t("mode"), value: server.gameModes.join(", ") },
+    {
+      icon: Gamepad2,
+      label: t("mode"),
+      // gameModes 里存的是 i18n 键，这里再翻译成展示文案
+      value: server.gameModes.map((m) => t(`modes.${m}`)).join(" · "),
+    },
     { icon: Users, label: t("maxPlayers"), value: String(server.maxPlayers) },
     {
       icon: CalendarDays,
@@ -45,7 +50,7 @@ export default async function ServerPage() {
     "behavior",
     "gameplay",
     "building",
-    "economy",
+    "redstone",
     "punishment",
   ] as const;
 

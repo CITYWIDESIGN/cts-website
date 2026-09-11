@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Minecraft 服务器 — 官方网站",
-    "description": "服务器信息、社区规则与加入流程。支持 Microsoft 账号登录与正版身份验证。"
+    "title": "CTS服务器 · 原版生电与建筑",
+    "description": "Fabric 服务端，原版机制，以生电（红石与自动化）和建筑为主要玩法。没有经济系统，也没有插件。"
   },
   "common": {
     "loading": "加载中…",
@@ -76,9 +76,9 @@
   },
   "home": {
     "hero": {
-      "eyebrow": "Minecraft Server",
-      "title": "Minecraft 生存服务器",
-      "subtitle": "面向正版玩家开放。长期运营、规则透明、社区友好。",
+      "eyebrow": "CTS Server",
+      "title": "CTS 原版生电服务器",
+      "subtitle": "Fabric 服务端，不改动原版机制。以红石生电与建筑为主要玩法，没有经济系统，也没有插件。",
       "ctaPrimary": "加入服务器",
       "ctaSecondary": "了解服务器"
     },
@@ -92,43 +92,43 @@
       "bedrock": "基岩版"
     },
     "features": {
-      "eyebrow": "选择理由",
-      "title": "服务器特色",
-      "survival": {
-        "title": "生存",
-        "description": "在长期保留的世界中自由探索，按自己的节奏推进。"
-      },
-      "community": {
-        "title": "社区",
-        "description": "友善、包容，欢迎每一位新玩家加入。"
-      },
-      "fair": {
-        "title": "公平",
-        "description": "规则统一执行，对所有玩家一视同仁。"
-      },
+      "eyebrow": "服务器特色",
+      "title": "原版、生电、建筑",
       "stable": {
-        "title": "稳定",
-        "description": "长期运行的基础设施与稳定的服务保障。"
+        "title": "长期稳定",
+        "description": "存档长期保留，不删档、不重置，服务器持续运行。"
+      },
+      "vanilla": {
+        "title": "原版机制",
+        "description": "只加载性能优化与修复类模组，不改动任何原版游戏机制。"
+      },
+      "technical": {
+        "title": "生电",
+        "description": "红石机械、自动化农场与刷怪塔，用原版机制解决问题。"
+      },
+      "building": {
+        "title": "建筑",
+        "description": "从个人基地到大型公共建筑，注重比例、材质与长期规划。"
       }
     },
     "intro": {
       "eyebrow": "关于服务器",
-      "title": "关于这个世界",
+      "title": "关于 CTS 服务器",
       "world": {
         "title": "世界设定",
-        "description": "经过规划的世界，支持长期建造与探索。"
+        "description": "一个长期保留的主世界，地形与建筑全部由玩家塑造，不删档、不重置。"
       },
       "gameplay": {
-        "title": "游戏玩法",
-        "description": "生存、建筑、探索与社区活动，一应俱全。"
+        "title": "玩法",
+        "description": "以生电与建筑为主：机械负责效率，建筑负责表达。"
       },
       "community": {
         "title": "社区",
-        "description": "活跃的玩家群体、响应及时的管理团队与定期举办的社区活动。"
+        "description": "以技术交流为主，鼓励分享思路、图纸与存档。"
       },
       "events": {
         "title": "活动",
-        "description": "定期举办季节活动、竞赛与协作项目，所有玩家均可参与。"
+        "description": "定期举办建筑评比与红石挑战，所有玩家均可参与。"
       }
     },
     "cta": {
@@ -145,49 +145,49 @@
       "items": {
         "slide1": {
           "title": "世界的起点",
-          "description": "从一片草原开始，所有建筑均由玩家自行建造。"
+          "description": "从一片草原开始，所有建筑都由玩家亲手建造。"
         },
         "slide2": {
-          "title": "社区协作工程",
-          "description": "跨服协作、红石机械与大型建筑，由社区共同完成。"
+          "title": "协作工程",
+          "description": "多人共同完成的红石与建筑工程。"
         },
         "slide3": {
-          "title": "组队探索",
-          "description": "下界探索、末地远征与其他冒险，均可组队进行。"
+          "title": "自动化农场",
+          "description": "用原版机制搭出的全自动农场与刷怪塔。"
         },
         "slide4": {
-          "title": "领地申请",
-          "description": "申请专属领地，按自己的规划逐步建设。"
+          "title": "个人基地",
+          "description": "每位玩家按自己的规划建设的长期基地。"
         },
         "slide5": {
-          "title": "主城夜景",
-          "description": "夜间照明系统启用后的主城全景。"
+          "title": "公共建筑夜景",
+          "description": "主城与公共设施在夜间的照明效果。"
         },
         "slide6": {
-          "title": "跨服活动",
-          "description": "限时玩法与团队竞赛，全年参与度最高的活动。"
+          "title": "建筑评比",
+          "description": "定期举办的建筑评比与作品展示。"
         },
         "slide7": {
-          "title": "农业与自动化",
-          "description": "从单格农田到全自动流水线，红石与自动化系统建设。"
+          "title": "红石机械",
+          "description": "大型机械、流水线与高频红石的设计与实现。"
         },
         "slide8": {
-          "title": "建筑作品",
-          "description": "注重对称、比例与材质搭配的建筑作品。"
+          "title": "大型建筑",
+          "description": "注重比例、材质与结构的建筑作品。"
         },
         "slide9": {
-          "title": "下界交通网络",
-          "description": "以冰道与隧道连接各区域的下界交通系统。"
+          "title": "下界交通",
+          "description": "以冰道与隧道连接各区域的下界交通网络。"
         },
         "slide10": {
           "title": "社区合影",
-          "description": "历次活动合影，记录社区的发展历程。"
+          "description": "历次活动合影，记录服务器的发展。"
         }
       }
     },
     "stats": {
       "eyebrow": "服务器数据",
-      "title": "持续增长的玩家社区",
+      "title": "一台持续运行的服务器",
       "players": "累计玩家",
       "builds": "建筑作品",
       "members": "社区成员",
@@ -195,11 +195,11 @@
     },
     "howtojoin": {
       "eyebrow": "加入流程",
-      "title": "三步加入服务器",
+      "title": "三步完成申请",
       "description": "完整流程通常可在几分钟内完成。",
       "step1": {
-        "title": "使用 Microsoft 登录",
-        "description": "通过 Microsoft 账号验证 Minecraft 正版身份。"
+        "title": "注册并登录",
+        "description": "用邮箱注册本站账号。绑定 Microsoft 账号可验证 Minecraft 正版身份。"
       },
       "step2": {
         "title": "填写入服问卷",
@@ -215,20 +215,20 @@
       "title": "最新公告",
       "readMore": "查看详情",
       "item1": {
-        "title": "服务器已更新至 Minecraft 1.21",
-        "description": "服务器现已运行最新版本，带来全新内容。",
+        "title": "CTS 服务器网站上线",
+        "description": "官网正式开放，入服申请与资源分享同步启用。",
         "date": "2026-09-05",
-        "tag": "更新"
+        "tag": "公告"
       },
       "item2": {
-        "title": "冬季建筑大赛开启报名",
-        "description": "展示你的建筑才华，赢取独家奖励。",
+        "title": "建筑评比开始征集",
+        "description": "提交你的建筑作品，由社区投票评选。",
         "date": "2026-08-20",
         "tag": "活动"
       },
       "item3": {
-        "title": "全新生存世界正式开放",
-        "description": "一个崭新的世界已向所有玩家开放探索。",
+        "title": "服务器升级至 Minecraft 1.21",
+        "description": "服务端已更新至 1.21.x，世界与建筑完整保留。",
         "date": "2026-08-01",
         "tag": "公告"
       }
@@ -238,23 +238,23 @@
       "title": "常见问题",
       "item1": {
         "q": "如何加入服务器？",
-        "a": "点击首页的「加入服务器」，使用 Microsoft 账号登录并填写入服问卷。"
+        "a": "注册本站账号并提交入服问卷，审核通过后即可连接服务器。"
       },
       "item2": {
         "q": "需要正版 Minecraft 吗？",
-        "a": "需要。你的身份通过 Microsoft 官方认证验证，因此必须拥有正版账号。"
+        "a": "需要。服务器只接受 Java 版正版账号，登录时可通过绑定 Microsoft 账号验证正版身份。"
       },
       "item3": {
-        "q": "服务器支持什么版本？",
-        "a": "目前支持 Java 版 1.21.x。"
+        "q": "服务器是什么版本、什么端？",
+        "a": "Java 版 1.21.x，Fabric 服务端。只加载性能优化与修复类模组，不改动原版游戏机制。"
       },
       "item4": {
-        "q": "如何成为管理员？",
-        "a": "长期活跃并参与社区建设的玩家，可能会收到管理团队的邀请。"
+        "q": "有经济系统、商店或者插件吗？",
+        "a": "没有。服务器不设经济系统、不做商店、不装插件，玩法完全围绕原版红石与建筑展开。"
       },
       "item5": {
-        "q": "遇到问题怎么办？",
-        "a": "可通过 Discord 提交工单，管理团队会尽快处理。"
+        "q": "需要装模组才能进吗？",
+        "a": "不需要，原版客户端即可进入。允许使用性能优化类模组，禁止任何影响游戏平衡的辅助模组。"
       }
     }
   },
@@ -273,7 +273,7 @@
       "qq": {
         "badge": "推荐",
         "title": "QQ 群",
-        "description": "面向国内玩家，可通过扫码或搜索群号加入，日常交流主要在此进行。",
+        "description": "面向国内玩家，可通过搜索群号加入，日常交流主要在此进行。",
         "groupLabel": "群号",
         "qrAlt": "QQ 群二维码"
       },
@@ -461,7 +461,7 @@
   },
   "server": {
     "eyebrow": "服务器",
-    "title": "服务器信息",
+    "title": "CTS 服务器",
     "description": "申请加入前需要了解的信息。",
     "address": "服务器地址",
     "version": "Minecraft 版本",
@@ -472,7 +472,12 @@
     "status": "服务器状态",
     "opened": "开服时间",
     "features": "服务器特色",
-    "rulesSummary": "规则速览"
+    "rulesSummary": "规则速览",
+    "modes": {
+      "survival": "原版生存",
+      "technical": "生电",
+      "building": "建筑"
+    }
   },
   "rules": {
     "eyebrow": "规则",
@@ -484,19 +489,19 @@
     },
     "gameplay": {
       "title": "游戏规则",
-      "content": "禁止作弊、外挂或利用漏洞。公平游戏，尊重游戏精神。"
+      "content": "禁止作弊、外挂或利用漏洞。允许使用原版机制内的自动化与红石设计。"
     },
     "building": {
       "title": "建筑规则",
-      "content": "未经允许，不得破坏他人领地或在他人土地上建造。"
-    },
-    "economy": {
-      "title": "经济规则",
-      "content": "仅允许公平交易。禁止诈骗或滥用游戏经济系统。"
+      "content": "未经允许，不得破坏他人建筑或占用他人已规划的用地。"
     },
     "punishment": {
       "title": "处罚规则",
       "content": "违反规则视情节轻重，可能面临警告、临时封禁或永久封禁。"
+    },
+    "redstone": {
+      "title": "红石与机械",
+      "content": "允许建造机械与自动化设施；禁止以消耗服务器性能为目的的装置，例如超大量实体堆叠或高频红石卡服。"
     }
   },
   "auth": {
@@ -1145,7 +1150,7 @@
     "denied": "你没有权限访问此页面。"
   },
   "footer": {
-    "tagline": "长期稳定运营的 Minecraft 服务器。",
+    "tagline": "CTS服务器 —— 原版机制下的生电与建筑。",
     "navigation": "导航",
     "resources": "资源",
     "community": "社区",

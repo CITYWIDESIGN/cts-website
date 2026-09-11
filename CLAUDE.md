@@ -78,6 +78,10 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
   列表里用 `li`，否则会出现 `<tr>` 嵌在 `<ul>` 里的 hydration 报错。
 - **后台页面标题统一用 `AdminPageHeader`**，表格样式在 `src/components/ui/table.tsx`。
   分页统一用 `src/components/ui/pagination.tsx`（别再手写）。
+- **QQ 群二维码是生成物**：`src/components/community/qq-qr.tsx` 里的模块矩阵
+  是从 QQ 导出的那张截图**还原**出来的（不是直接贴图）。要换二维码得重新提取，
+  别手改那串 path。两个坑写在组件头注释里：定位图案必须按规范写死（QQ 画的是
+  圆角，照抄会得到坏图案）、中间留空不能比原图 logo 更大（那块靠纠错码兜底）。
 
 ## 五、文案规范
 
@@ -93,9 +97,12 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
 
 ## 六、当前状态 / 待办
 
-**数据库已清空**，只留一份真实问卷「入服申请」（`qst_join_application`，
-4 题 8 选项，PUBLISHED）。**用户数为 0** —— 第一个注册的账号要用
-`debug.bat` 菜单 `p`（提升为管理员）或 `m`（提升 + 生成会话 cookie）。
+**数据库**：只留一份真实问卷「入服申请」（`qst_join_application`，4 题 8 选项，
+PUBLISHED）。用户是站长自己的账号 `ciiity`（**role = USER**，要进后台得先
+`debug.bat` 菜单 `p` 提升）—— 别当成测试数据删掉。
+
+站点定位：**CTS 服务器 / CTServer**，Fabric 服务端，原版机制，主打生电
+（红石与自动化）与建筑，**没有经济系统、没有插件**。文案和数据都以这个为准。
 
 待办（也写在 README 的「已知待办」里）：
 

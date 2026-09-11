@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Trees, Users, Scale, ShieldCheck } from "lucide-react";
+import { Boxes, Zap, Building2, ShieldCheck } from "lucide-react";
 import { SectionHeading } from "./section-heading";
 import { Card } from "@/components/ui/card";
 import { Reveal } from "@/components/motion/reveal";
@@ -9,16 +9,16 @@ export async function Features() {
 
   const features = [
     {
-      key: "survival",
-      icon: Trees,
+      key: "vanilla",
+      icon: Boxes,
     },
     {
-      key: "community",
-      icon: Users,
+      key: "technical",
+      icon: Zap,
     },
     {
-      key: "fair",
-      icon: Scale,
+      key: "building",
+      icon: Building2,
     },
     {
       key: "stable",

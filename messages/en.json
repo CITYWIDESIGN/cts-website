@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Minecraft Server — Official Website",
-    "description": "Server information, community rules and the application process. Microsoft sign-in with genuine-account verification."
+    "title": "CTS Server · Vanilla technical & building",
+    "description": "A Fabric server running vanilla mechanics, focused on technical redstone and building. No economy, no plugins."
   },
   "common": {
     "loading": "Loading…",
@@ -76,9 +76,9 @@
   },
   "home": {
     "hero": {
-      "eyebrow": "Minecraft Server",
-      "title": "Minecraft survival server",
-      "subtitle": "Open to players with a genuine account. Long-running, transparently moderated, and welcoming.",
+      "eyebrow": "CTS Server",
+      "title": "CTS vanilla technical server",
+      "subtitle": "A Fabric server with untouched vanilla mechanics, focused on technical redstone and building. No economy, no plugins.",
       "ctaPrimary": "Join the server",
       "ctaSecondary": "Learn more"
     },
@@ -92,43 +92,43 @@
       "bedrock": "Bedrock Edition"
     },
     "features": {
-      "eyebrow": "Why this server",
-      "title": "What we offer",
-      "survival": {
-        "title": "Survival",
-        "description": "Explore a world that is kept long term, at your own pace."
-      },
-      "community": {
-        "title": "Community",
-        "description": "Friendly and inclusive — every new player is welcome."
-      },
-      "fair": {
-        "title": "Fair play",
-        "description": "One set of rules, applied equally to everyone."
-      },
+      "eyebrow": "What sets it apart",
+      "title": "Vanilla, technical, building",
       "stable": {
-        "title": "Stable",
-        "description": "Long-running infrastructure and dependable service."
+        "title": "Built to last",
+        "description": "The world is kept for good — no wipes, no resets, and the server keeps running."
+      },
+      "vanilla": {
+        "title": "Vanilla mechanics",
+        "description": "Only performance and bug-fix mods — no vanilla mechanic is changed."
+      },
+      "technical": {
+        "title": "Technical play",
+        "description": "Redstone machines, automated farms and mob towers — problems solved with vanilla mechanics."
+      },
+      "building": {
+        "title": "Building",
+        "description": "From individual bases to large public builds, with attention to proportion, materials and long-term planning."
       }
     },
     "intro": {
       "eyebrow": "About the server",
-      "title": "About the world",
+      "title": "About CTS Server",
       "world": {
         "title": "The world",
-        "description": "A planned world built for long-term building and exploration."
+        "description": "A world kept for the long term. Every build is player-made, and nothing is ever wiped or reset."
       },
       "gameplay": {
         "title": "Gameplay",
-        "description": "Survival, building, exploration and community events, all in one place."
+        "description": "Technical redstone and building, in equal measure — machines for efficiency, builds for expression."
       },
       "community": {
         "title": "Community",
-        "description": "An active player base, a responsive staff team, and regularly scheduled community events."
+        "description": "Built around technical discussion; sharing designs, schematics and worlds is encouraged."
       },
       "events": {
         "title": "Events",
-        "description": "Seasonal events, competitions and collaborative projects, open to every player."
+        "description": "Regular building showcases and redstone challenges, open to every player."
       }
     },
     "cta": {
@@ -145,61 +145,61 @@
       "items": {
         "slide1": {
           "title": "Where the world began",
-          "description": "Starting from open plains; everything built here was built by players."
+          "description": "Starting from open plains — everything here was built by players."
         },
         "slide2": {
-          "title": "Community builds",
-          "description": "Cross-server collaboration, redstone machinery and large builds, completed together."
+          "title": "Collaborative builds",
+          "description": "Redstone and building projects completed by several players together."
         },
         "slide3": {
-          "title": "Exploring together",
-          "description": "Nether runs, End expeditions and other adventures, all done in groups."
+          "title": "Automated farms",
+          "description": "Fully automatic farms and mob towers, built entirely from vanilla mechanics."
         },
         "slide4": {
-          "title": "Land claims",
-          "description": "Claim your own area and develop it according to your own plan."
+          "title": "Individual bases",
+          "description": "Long-term bases, each developed to its owner's own plan."
         },
         "slide5": {
-          "title": "The capital at night",
-          "description": "The capital in full view, with its night lighting active."
+          "title": "Public builds at night",
+          "description": "The main area and shared facilities under their night lighting."
         },
         "slide6": {
-          "title": "Cross-server events",
-          "description": "Timed game modes and team competitions — our most attended events of the year."
+          "title": "Building showcases",
+          "description": "Regular showcases where builds are put up for the community to judge."
         },
         "slide7": {
-          "title": "Farms and automation",
-          "description": "From a single wheat plot to fully automated production lines."
+          "title": "Redstone machinery",
+          "description": "The design and construction of large machines, production lines and fast clocks."
         },
         "slide8": {
-          "title": "Architecture",
-          "description": "Builds that pay attention to symmetry, proportion and material choice."
+          "title": "Large builds",
+          "description": "Builds that pay close attention to proportion, materials and structure."
         },
         "slide9": {
-          "title": "Nether transit network",
-          "description": "An ice-boat and tunnel network connecting every region through the Nether."
+          "title": "Nether transit",
+          "description": "An ice-boat and tunnel network linking every area through the Nether."
         },
         "slide10": {
           "title": "Community snapshots",
-          "description": "Group photos from past events, recording how the community has grown."
+          "description": "Group photos from past events, recording how the server has grown."
         }
       }
     },
     "stats": {
       "eyebrow": "Server stats",
-      "title": "A steadily growing community",
-      "players": "Players joined",
-      "builds": "Builds created",
+      "title": "A server that keeps running",
+      "players": "Players so far",
+      "builds": "Builds",
       "members": "Community members",
       "days": "Days online"
     },
     "howtojoin": {
       "eyebrow": "How to join",
-      "title": "Three steps to get started",
+      "title": "Apply in three steps",
       "description": "The whole process usually takes only a few minutes.",
       "step1": {
-        "title": "Sign in with Microsoft",
-        "description": "Verify your genuine Minecraft ownership through a Microsoft account."
+        "title": "Register and sign in",
+        "description": "Create an account with your email. Linking a Microsoft account verifies your Minecraft ownership."
       },
       "step2": {
         "title": "Complete the application",
@@ -215,22 +215,22 @@
       "title": "Announcements",
       "readMore": "Read more",
       "item1": {
-        "title": "Server updated to Minecraft 1.21",
-        "description": "The server is now running the latest version with brand new content.",
+        "title": "The CTS Server website is live",
+        "description": "The official site is open, with applications and resource sharing enabled.",
         "date": "2026-09-05",
-        "tag": "Update"
+        "tag": "Announcement"
       },
       "item2": {
-        "title": "Winter building contest is open",
-        "description": "Show off your building skills and win exclusive rewards.",
+        "title": "Building showcase is open for entries",
+        "description": "Submit your build and let the community vote on it.",
         "date": "2026-08-20",
         "tag": "Event"
       },
       "item3": {
-        "title": "A brand new survival world",
-        "description": "A fresh world is now open for everyone to explore.",
+        "title": "Server updated to Minecraft 1.21",
+        "description": "The server now runs 1.21.x, with the world and every build preserved.",
         "date": "2026-08-01",
-        "tag": "News"
+        "tag": "Announcement"
       }
     },
     "faq": {
@@ -238,23 +238,23 @@
       "title": "Frequently asked questions",
       "item1": {
         "q": "How do I join the server?",
-        "a": "Click “Join the server” on the homepage, sign in with your Microsoft account and complete the application form."
+        "a": "Register on this site and submit the application form. Once approved, you can connect."
       },
       "item2": {
         "q": "Do I need a genuine copy of Minecraft?",
-        "a": "Yes. Your identity is verified through Microsoft's official authentication, so a genuine account is required."
+        "a": "Yes. Only genuine Java Edition accounts can join; linking a Microsoft account verifies ownership when you sign in."
       },
       "item3": {
-        "q": "Which version does the server support?",
-        "a": "We currently support Java Edition 1.21.x."
+        "q": "Which version and server software do you run?",
+        "a": "Java Edition 1.21.x on Fabric. Only performance and bug-fix mods are loaded — no vanilla mechanics are changed."
       },
       "item4": {
-        "q": "How can I become staff?",
-        "a": "Players who stay active and contribute to the community may be invited to join the staff team."
+        "q": "Is there an economy, a shop or any plugins?",
+        "a": "No. There is no economy, no shop and no plugins — gameplay is built entirely around vanilla redstone and building."
       },
       "item5": {
-        "q": "I need help. Where do I go?",
-        "a": "Open a ticket on Discord and the staff team will respond as soon as possible."
+        "q": "Do I need mods to join?",
+        "a": "No, a vanilla client works. Performance mods are fine; anything that affects game balance is not."
       }
     }
   },
@@ -273,7 +273,7 @@
       "qq": {
         "badge": "Popular",
         "title": "QQ group",
-        "description": "For players in mainland China. Join by scanning the code or searching the group number.",
+        "description": "For players in mainland China. Join by searching the group number — most day-to-day chat happens here.",
         "groupLabel": "Group",
         "qrAlt": "QQ group QR code"
       },
@@ -461,18 +461,23 @@
   },
   "server": {
     "eyebrow": "Server",
-    "title": "Server information",
+    "title": "CTS Server",
     "description": "What you need to know before applying.",
     "address": "Server address",
     "version": "Minecraft version",
-    "platform": "Supported platforms",
-    "mode": "Game mode",
+    "platform": "Platform",
+    "mode": "Game modes",
     "maxPlayers": "Max players",
     "onlinePlayers": "Players online",
     "status": "Server status",
     "opened": "Since",
     "features": "Features",
-    "rulesSummary": "Rules at a glance"
+    "rulesSummary": "Rules at a glance",
+    "modes": {
+      "survival": "Vanilla survival",
+      "technical": "Technical",
+      "building": "Building"
+    }
   },
   "rules": {
     "eyebrow": "Rules",
@@ -484,19 +489,19 @@
     },
     "gameplay": {
       "title": "Game rules",
-      "content": "No cheating, hacking or exploiting. Play fairly and respect the spirit of the game."
+      "content": "Cheating, hacked clients and bug exploitation are not allowed. Automation and redstone built from vanilla mechanics are."
     },
     "building": {
       "title": "Building rules",
-      "content": "Do not grief or build on other players' land without permission."
-    },
-    "economy": {
-      "title": "Economy rules",
-      "content": "Fair trading only. No scamming or abusing the in-game economy."
+      "content": "Do not damage other players' builds or occupy land they have already claimed, without permission."
     },
     "punishment": {
       "title": "Penalties",
       "content": "Breaking the rules may result in warnings, temporary bans or permanent bans depending on severity."
+    },
+    "redstone": {
+      "title": "Redstone and machines",
+      "content": "Machines and automation are welcome. Devices whose only purpose is to consume server performance — huge entity stacks, fast clocks used to lag the server — are not."
     }
   },
   "auth": {
@@ -1145,7 +1150,7 @@
     "denied": "You do not have permission to access this page."
   },
   "footer": {
-    "tagline": "A Minecraft server built to run for the long term.",
+    "tagline": "CTS Server — vanilla technical play and building.",
     "navigation": "Navigation",
     "resources": "Resources",
     "community": "Community",
