@@ -684,7 +684,7 @@ async function doPromoteAdmin(username) {
   await prisma.$disconnect();
 }
 
-async function genSessionCookie(userId) {
+async function genSessionCookie(user) {
   loadEnv();
   const { sealData } = await import("iron-session");
   const secret = envValue("SESSION_SECRET");
@@ -692,7 +692,19 @@ async function genSessionCookie(userId) {
     log.err("SESSION_SECRET 未配置，无法生成会话。");
     return null;
   }
-  return sealData({ userId }, { password: secret, ttl: 60 * 60 * 24 * 30 });
+  /*
+    ⚠️ **必须带上 sessionVersion。**
+    会话 cookie 是无状态的，服务端靠对比 User.sessionVersion 来判断它有没有
+    被作废（改密码时会 +1，见 src/server/auth.ts 的 getSessionUser）。
+    这里只封 { userId } 的话，版本号是 undefined、和库里的 1 对不上，
+    生成的 cookie 会**立刻被判为未登录** —— 调试入口等于失效。
+
+    传用户行（而不是只传 id），这样调用方拿到的就是最新的版本号。
+  */
+  return sealData(
+    { userId: user.id, sessionVersion: user.sessionVersion },
+    { password: secret, ttl: 60 * 60 * 24 * 30 }
+  );
 }
 
 /**
@@ -939,8 +951,8 @@ async function doSession(username) {
   if (!user) {
     return reportMissingUser(prisma, username);
   }
-  await prisma.$disconnect();
-  const sealed = await genSessionCookie(user.id);
+  // findUserByUsername 用的是 findUnique（全字段），sessionVersion 已经在里面
+  const sealed = await genSessionCookie(user);
   if (!sealed) return 1;
   hr();
   log.ok(`为用户 ${user.minecraftUsername} 生成调试会话（30 天有效）：`);
