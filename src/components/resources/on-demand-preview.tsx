@@ -3,8 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
-import { PREVIEW_VIEWS, previewIndex } from "@/lib/litematic/build-structure";
+import { PREVIEW_THEMES, PREVIEW_VIEWS, previewIndex } from "@/lib/litematic/build-structure";
 
 /**
  * 查看时现场渲染预览。
@@ -28,9 +27,6 @@ export function OnDemandPreview({
   title: string;
 }) {
   const t = useTranslations("resources");
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
   const [state, setState] = React.useState<"rendering" | "ready" | "error">("rendering");
   const [images, setImages] = React.useState<string[]>([]);
 
@@ -92,34 +88,47 @@ export function OnDemandPreview({
     );
   }
 
-  const theme = isDark ? "dark" : "light";
+  /*
+    用 CSS 的 dark: 变体切图，而不是 useTheme().resolvedTheme。
+
+    一开始是后者，**不工作**：resolvedTheme 在挂载完成前是 undefined，
+    而主题是用户在客户端切的 —— 切了主题图不换（站长报的就是这个）。
+    CSS 方案下切主题只是给 <html> 换 class，浏览器立刻重算，
+    不经过 React，也没有 hydration 时机问题。
+  */
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {PREVIEW_VIEWS.map((view, direction) => {
-        const src = images[previewIndex(direction, theme)] ?? images[0];
-        if (!src) return null;
-        return (
-          <figure key={view.key} className="space-y-1.5">
-            {/* 点开看原图：新标签页打开这张图的接口地址 */}
-            <a
-              href={`/api/resources/${resourceId}/preview?i=${previewIndex(direction, theme)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="block overflow-hidden rounded-lg border bg-white transition-opacity hover:opacity-90 dark:bg-black"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={src}
-                alt={`${title} — ${t(view.key)}`}
-                className="aspect-[3/2] w-full cursor-zoom-in object-cover"
-              />
-            </a>
-            <figcaption className="text-center text-xs text-muted-foreground">
-              {t(view.key)}
-            </figcaption>
-          </figure>
-        );
-      })}
+      {PREVIEW_VIEWS.map((view, direction) => (
+        <figure key={view.key} className="space-y-1.5">
+          <a
+            href={`/api/resources/${resourceId}/preview?i=${previewIndex(direction, "light")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="block overflow-hidden rounded-lg border bg-white transition-opacity hover:opacity-90 dark:bg-black"
+          >
+            {PREVIEW_THEMES.map((theme) => {
+              const src = images[previewIndex(direction, theme.key)] ?? images[0];
+              if (!src) return null;
+              return (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={theme.key}
+                  src={src}
+                  alt={`${title} — ${t(view.key)}`}
+                  className={
+                    theme.key === "dark"
+                      ? "hidden aspect-[3/2] w-full cursor-zoom-in object-cover dark:block"
+                      : "block aspect-[3/2] w-full cursor-zoom-in object-cover dark:hidden"
+                  }
+                />
+              );
+            })}
+          </a>
+          <figcaption className="text-center text-xs text-muted-foreground">
+            {t(view.key)}
+          </figcaption>
+        </figure>
+      ))}
     </div>
   );
 }

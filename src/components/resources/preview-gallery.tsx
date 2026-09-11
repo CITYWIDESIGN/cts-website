@@ -1,19 +1,22 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 import { PREVIEW_THEMES, PREVIEW_VIEWS, previewIndex } from "@/lib/litematic/build-structure";
 
 /**
  * 四个方向的等轴测预览。
  *
  * 白天/黑夜是**两套分别渲染好的图**（背景是渲染进 PNG 的，不是 CSS 能改的），
- * 所以这里要按当前主题选对应那一张 —— 索引规则见 `previewIndex`，
- * 服务端和这里共用同一个函数，免得两边各算各的。
+ * 所以这里把两张都渲染出来，用 **CSS 的 `dark:` 变体**决定显示哪张。
  *
- * `resolvedTheme` 在挂载前是 undefined（服务端不知道用户选了什么）。
- * 这时先按白天渲染：图片地址会因此变一次，但两张图都在同一台服务器上、
- * 也都是长缓存，代价可接受。用 `mounted` 状态会让首屏空一下，更糟。
+ * ⚠️ 一开始是用 `useTheme().resolvedTheme` 在 JS 里选 `?i=` 的，**不工作**：
+ * next-themes 的 `resolvedTheme` 在挂载完成前是 `undefined`，而主题又是
+ * 用户在客户端切的 —— 结果切了主题图不换（站长就是这个反馈）。
+ * 用 CSS 就没有这个问题：切主题只是给 `<html>` 换 class，浏览器立刻重算，
+ * 不经过 React，也不存在 hydration 时机的问题。
+ *
+ * 代价是浏览器会同时请求明暗两组图（4 张变 8 张）。都是同源、可缓存的
+ * 静态响应，而且只在有这个卡片时才请求，可以接受。
  */
 export function PreviewGallery({
   resourceId,
@@ -23,44 +26,41 @@ export function PreviewGallery({
   title: string;
 }) {
   const t = useTranslations("resources");
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  const theme = isDark ? "dark" : "light";
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {PREVIEW_VIEWS.map((view, direction) => {
-        const index = previewIndex(direction, theme);
-        return (
-          <figure key={view.key} className="space-y-1.5">
-            {/*
-              点开看大图：直接新标签页打开接口地址。
-              不做站内弹层是因为那个要自己写遮罩/键盘/焦点陷阱，而这里
-              浏览器自带的图片查看器（缩放、另存为）已经够用。
-            */}
-            <a
-              href={`/api/resources/${resourceId}/preview?i=${index}`}
-              target="_blank"
-              rel="noreferrer"
-              className="block overflow-hidden rounded-lg border bg-white transition-opacity hover:opacity-90 dark:bg-black"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+      {PREVIEW_VIEWS.map((view, direction) => (
+        <figure key={view.key} className="space-y-1.5">
+          {/*
+            点开看大图：新标签页打开接口地址。不做站内弹层是因为那个要自己写
+            遮罩/键盘/焦点陷阱，而浏览器自带的图片查看器（缩放、另存为）够用。
+          */}
+          <a
+            href={`/api/resources/${resourceId}/preview?i=${previewIndex(direction, "light")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="block overflow-hidden rounded-lg border bg-white transition-opacity hover:opacity-90 dark:bg-black"
+          >
+            {PREVIEW_THEMES.map((theme) => (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={`/api/resources/${resourceId}/preview?i=${index}`}
+                key={theme.key}
+                src={`/api/resources/${resourceId}/preview?i=${previewIndex(direction, theme.key)}`}
                 alt={`${title} — ${t(view.key)}`}
-                className="aspect-[3/2] w-full cursor-zoom-in object-cover"
                 loading="lazy"
+                className={
+                  theme.key === "dark"
+                    ? "hidden aspect-[3/2] w-full cursor-zoom-in object-cover dark:block"
+                    : "block aspect-[3/2] w-full cursor-zoom-in object-cover dark:hidden"
+                }
               />
-            </a>
-            <figcaption className="text-center text-xs text-muted-foreground">
-              {t(view.key)}
-            </figcaption>
-          </figure>
-        );
-      })}
+            ))}
+          </a>
+          <figcaption className="text-center text-xs text-muted-foreground">
+            {t(view.key)}
+          </figcaption>
+        </figure>
+      ))}
     </div>
   );
 }
-
-/** 供别处引用，避免重复写主题列表 */
-export { PREVIEW_THEMES };
