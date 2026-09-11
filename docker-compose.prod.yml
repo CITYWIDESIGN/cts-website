@@ -24,6 +24,44 @@
 
 name: cts-website
 
+# ---------------------------------------------------------------------------
+# app 与 migrate 共用同一份环境变量。
+#
+# 为什么 migrate 也要：`docker compose run --rm migrate node scripts/dev.mjs …`
+# 是提权 / 建号的入口，而 `session`、`makeadmin` 要读 SESSION_SECRET 才能签
+# 会话 cookie。只给 DATABASE_URL 的话它会静默地生成不出 cookie
+# （"SESSION_SECRET 未配置"），排查起来很不直观。
+# ---------------------------------------------------------------------------
+x-app-env: &app-env
+  NODE_ENV: production
+  TZ: Asia/Shanghai
+  # 容器之间用服务名互相访问
+  DATABASE_URL: postgresql://${POSTGRES_USER:-cts}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-cts_website}
+
+  SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET 必须设置}
+  NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.ctserver.top}
+  NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-CTS 服务器}
+
+  MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+  MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+  MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI:-https://web.ctserver.top/api/auth/callback}
+
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-}
+  SMTP_SECURE: ${SMTP_SECURE:-}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASS: ${SMTP_PASS:-}
+  SMTP_FROM: ${SMTP_FROM:-}
+
+  # 源站只有 Cloudflare 一条入站路径 → 它强制覆写的 cf-connecting-ip 可信
+  TRUST_PROXY: "1"
+  TRUST_CF_CONNECTING_IP: "1"
+
+  # 服务器状态卡片的真实在线人数。
+  # MC 的端口映射绑在宿主机上，容器里要通过 host-gateway 访问。
+  MC_PING_HOST: ${MC_PING_HOST:-host.docker.internal}
+  MC_PING_PORT: ${MC_PING_PORT:-25565}
+
 services:
   db:
     image: postgres:16-alpine
@@ -64,35 +102,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      NODE_ENV: production
-      TZ: Asia/Shanghai
-      # 容器之间用服务名互相访问
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cts}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-cts_website}
-
-      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET 必须设置}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.ctserver.top}
-      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-CTS 服务器}
-
-      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
-      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
-      MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI:-https://web.ctserver.top/api/auth/callback}
-
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-}
-      SMTP_SECURE: ${SMTP_SECURE:-}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_FROM: ${SMTP_FROM:-}
-
-      # 源站只有 Cloudflare 一条入站路径 → 它强制覆写的 cf-connecting-ip 可信
-      TRUST_PROXY: "1"
-      TRUST_CF_CONNECTING_IP: "1"
-
-      # 服务器状态卡片的真实在线人数。
-      # MC 的端口映射绑在宿主机上，容器里要通过 host-gateway 访问。
-      MC_PING_HOST: ${MC_PING_HOST:-host.docker.internal}
-      MC_PING_PORT: ${MC_PING_PORT:-25565}
+    environment: *app-env
     extra_hosts:
       # Linux 上 host.docker.internal 需要显式声明才有
       - "host.docker.internal:host-gateway"
@@ -151,10 +161,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cts}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-cts_website}
-      TZ: Asia/Shanghai
-    networks: [dbnet]
+    # 和 app 同一份环境（锚点）—— `session` / `makeadmin` 要 SESSION_SECRET
+    environment: *app-env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: [outbound, dbnet]
 
 volumes:
   cts_web_pgdata:
