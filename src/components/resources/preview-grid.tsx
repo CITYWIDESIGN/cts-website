@@ -83,7 +83,7 @@ export function PreviewGrid({
           aria-label={title}
           // 点浮层任意处退出；stopPropagation 保证点图片本身不会误关
           onClick={() => setOpen(null)}
-          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-background/95 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex cursor-zoom-out items-center justify-center bg-background/95 p-6 backdrop-blur-sm"
         >
           <button
             type="button"
@@ -93,11 +93,19 @@ export function PreviewGrid({
             <X className="size-5" />
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/*
+            ⚠️ 必须写 h-full w-full，不能只写 max-h-full max-w-full。
+            后者只会**限制**尺寸、不会**放大** —— img 的盒子默认等于图片的
+            自然尺寸（1080×720），所以在大屏上它一直就那么点，
+            浮层显得空荡荡的（站长就是这个反馈）。
+            盒子撑满视口之后，object-contain 才会按比例缩放到贴合，
+            同时还保持不变形。
+          */}
           <img
             src={shown(open) ?? ""}
             alt={title}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-full max-w-full cursor-default object-contain"
+            className="h-full w-full cursor-default object-contain"
           />
         </div>
       )}

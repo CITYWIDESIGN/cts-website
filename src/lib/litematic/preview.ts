@@ -23,9 +23,15 @@ import {
 } from "./build-structure";
 import { packBaseUrl } from "./pack-url";
 
-/** 预览图默认尺寸。够看清形体，又不至于让 data URL 太大。 */
-const DEFAULT_WIDTH = 720;
-const DEFAULT_HEIGHT = 480;
+/**
+ * 预览图尺寸。
+ *
+ * 从 720×480 提到 1080×720：这张图现在会被点开铺满整个屏幕，
+ * 720 宽放大到 1080 以上就糊了。平面配色的体素图 PNG 压缩率很高，
+ * 体积增长可以接受（上限相应放宽到 6MB）。
+ */
+const DEFAULT_WIDTH = 1080;
+const DEFAULT_HEIGHT = 720;
 
 export type PreviewStage = "parsing" | "loading-pack" | "merging" | "rendering";
 
