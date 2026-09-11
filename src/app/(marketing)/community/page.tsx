@@ -15,11 +15,12 @@ import { cn } from "@/lib/utils";
 /**
  * 二维码尺寸。
  *
- * 用 `w-full max-w-[280px]` 而不是固定像素：宽屏时吃满 280px，窄屏自动缩到
- * 卡片内宽，不会溢出。`aspect-square` 保证是正方形（SVG 本身有 viewBox 比例，
- * 这里显式写明，避免依赖浏览器推断）。
+ * `w-full` 而不是固定像素：窄屏自动缩到卡片内宽，不会溢出。
+ *
+ * 外面那层白底框**不加内边距** —— 二维码 SVG 自带 4 个模块的安静区（约 11%），
+ * 那本身就是天然留白；再叠一层 p-3 只会白吃掉 24px，二维码就小了。
  */
-const QR_CLASS = "aspect-square w-full max-w-[280px] rounded-md";
+const QR_CLASS = "aspect-square w-full";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("community");
@@ -49,7 +50,7 @@ export default async function CommunityPage() {
   ] as const;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
       {/* 页头 */}
       <Stagger inView={false} stagger={0.11} className="flex flex-col gap-3">
         <StaggerItem index={0}>
@@ -69,26 +70,16 @@ export default async function CommunityPage() {
         </StaggerItem>
       </Stagger>
 
-      {/*
-        渠道卡片。
-        QQ 群是主角（要扫码），所以它独占一整行并横排：左二维码、右文字。
-        OOPZ 与 Discord 只是两个外链按钮，排在第二行各占一半。
-        两列网格 + QQ 跨两列，刚好拼成"1 大 + 2 小"，不会留下空格子。
-      */}
+      {/* 渠道卡片 */}
       <Stagger
         inView
         stagger={0.09}
-        className="mt-10 grid gap-5 lg:grid-cols-2"
+        className="mt-10 grid gap-5 lg:grid-cols-3"
       >
         {channels.map((channel, i) => {
           const Icon = channel.icon;
-          const isQq = channel.key === "qq";
           return (
-            <StaggerItem
-              key={channel.key}
-              index={i}
-              className={cn("h-full", isQq && "lg:col-span-2")}
-            >
+            <StaggerItem key={channel.key} index={i} className="h-full">
               <Card className="group h-full transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-md">
                 <CardHeader className="gap-3">
                   <div className="flex items-center justify-between">
@@ -101,18 +92,21 @@ export default async function CommunityPage() {
                     {t(`channels.${channel.key}.title`)}
                   </CardTitle>
                 </CardHeader>
+                <CardContent className="flex flex-1 flex-col gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t(`channels.${channel.key}.description`)}
+                  </p>
 
-                <CardContent
-                  className={cn(
-                    "flex flex-1 flex-col gap-4",
-                    isQq && "lg:flex-row lg:items-center lg:gap-8"
-                  )}
-                >
-                  {/* QQ 群：二维码 + 群号。默认用内置的矢量二维码（站点配色、
-                      跟随主题）；想换成自备图片就把 siteConfig 的 qqQrImage 指过去。 */}
-                  {isQq && (
-                    <div className="mx-auto flex w-full max-w-[280px] shrink-0 flex-col gap-3 lg:mx-0">
-                      <div className="rounded-xl border bg-background p-3 text-foreground">
+                  {/* QQ 群：二维码 + 群号。
+                      默认用内置的矢量二维码（站点配色、跟随主题）；
+                      想换成自备图片就把 siteConfig 的 qqQrImage 指过去。
+
+                      `-mx-3` 是向卡片左右内边距各借 12px：**卡片本身的尺寸、
+                      网格、内边距都不动**，只是让二维码多吃一点空间。
+                      配合去掉白底框的内边距，二维码从 197px 提到约 259px。 */}
+                  {channel.key === "qq" && (
+                    <div className="mt-auto flex flex-col gap-3">
+                      <div className="-mx-3 overflow-hidden rounded-xl border bg-background text-foreground">
                         {links.qqQrImage ? (
                           <Image
                             src={links.qqQrImage}
@@ -134,47 +128,41 @@ export default async function CommunityPage() {
                     </div>
                   )}
 
-                  <div className="flex flex-1 flex-col gap-4">
-                    <p className="text-sm text-muted-foreground">
-                      {t(`channels.${channel.key}.description`)}
-                    </p>
-
-                    {/* OOPZ 跳转按钮 */}
-                    {channel.key === "oopz" && (
-                      <div className="mt-auto">
-                        <Button asChild className="group/btn w-full">
-                          <a
-                            href={links.oopz}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {t("channels.oopz.button")}
-                            <ArrowRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
-                          </a>
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Discord 跳转按钮 */}
-                    {channel.key === "discord" && (
-                      <div className="mt-auto">
-                        <Button
-                          asChild
-                          variant="outline"
-                          className="group/btn w-full"
+                  {/* OOPZ 跳转按钮 */}
+                  {channel.key === "oopz" && (
+                    <div className="mt-auto">
+                      <Button asChild className="group/btn w-full">
+                        <a
+                          href={links.oopz}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          <a
-                            href={links.discord}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {t("channels.discord.button")}
-                            <ArrowRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
-                          </a>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+                          {t("channels.oopz.button")}
+                          <ArrowRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
+                        </a>
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Discord 跳转按钮 */}
+                  {channel.key === "discord" && (
+                    <div className="mt-auto">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="group/btn w-full"
+                      >
+                        <a
+                          href={links.discord}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t("channels.discord.button")}
+                          <ArrowRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" />
+                        </a>
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </StaggerItem>
