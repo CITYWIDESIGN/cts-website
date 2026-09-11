@@ -38,7 +38,9 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - cts_web_pgdata:/var/lib/postgresql/data
-    # ⚠️ 故意不写 ports：数据库只在内部网络可达。
+    # ⚠️ 故意不写 ports：数据库只在 dbnet 上可达。
+    #    dbnet 标了 internal，所以**连局域网都连不进来**（实测过没隔离时
+    #    172.20.0.2:5432 从 LAN 是通的）。
     #    需要连进去看数据就用 docker compose exec db psql -U cts cts_website
     healthcheck:
       # pg_isready 比 tcp 检查准：能区分"端口开着但还没接受连接"
@@ -47,7 +49,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-    networks: [internal]
+    networks: [dbnet]
 
   app:
     build:
@@ -103,8 +105,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
-    # 同样的理由：不发布端口，只有 cloudflared 能访问它
-    networks: [internal]
+    # 同样的理由：不发布端口，只有 cloudflared 能访问它。
+    # 两张网：outbound 用来发邮件（默认路由走它），dbnet 用来连数据库。
+    networks:
+      outbound:
+        priority: 100
+      dbnet:
+        priority: 10
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -122,7 +129,8 @@ services:
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN 必须设置}
       TZ: Asia/Shanghai
-    networks: [internal]
+    # 只需要能连到 app:3000 + 出网连 Cloudflare，不需要碰数据库
+    networks: [outbound]
 
   # ------------------------------------------------------------------
   # 建表 / 同步 schema。**不会跟着 `up -d` 起来**（profiles 把它排除在默认之外）。
@@ -147,10 +155,26 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-cts}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-cts_website}
       TZ: Asia/Shanghai
-    networks: [internal]
+    networks: [dbnet]
 
 volumes:
   cts_web_pgdata:
 
 networks:
-  internal:
+  # 对外那条：有 NAT，app 靠它发验证码邮件，cloudflared 靠它连 Cloudflare。
+  outbound:
+
+  # ------------------------------------------------------------------
+  # 数据库专用网络，**标记 internal**。
+  #
+  # 为什么不能三个服务共用一张网：Docker 发布的端口**不走 INPUT 链**
+  # （DNAT 之后走 FORWARD，而 FORWARD 默认是 ACCEPT），所以宿主机那套
+  # "INPUT 默认 DROP" 的手写规则**盖不住容器网络**。实测过：不隔离的话，
+  # 局域网里任意一台机器都能直接连到 `172.20.0.2:5432`。
+  #
+  # internal: true 会让 Docker 自己加上"只允许本子网"的规则，
+  # 而且这些规则是声明式的 —— 重建 compose、重启 docker 都不会丢，
+  # 比手工往 DOCKER-USER 里塞一条（还依赖容器 IP）可靠得多。
+  # ------------------------------------------------------------------
+  dbnet:
+    internal: true
