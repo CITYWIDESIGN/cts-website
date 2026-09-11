@@ -11,10 +11,14 @@
  * 因为 `LitematicLoader` 只在主入口导出，而主入口 import 了这个文件。
  *
  * 补丁：把那句换成我们自己的公开路径。我们**本来就显式传 baseUrl**
- * （见 src/lib/litematic/preview.ts），这句只是兜底默认值；换成
- * `/lodestone-pack/` 之后即使有人忘了传也能正确指向构建时拷过去的材质包。
+ * （见 src/lib/litematic/preview.ts），这句只是兜底默认值。
  *
- * 幂等，可以重复跑。构建前自动执行（package.json 的 postinstall）。
+ * ⚠️ 这里必须构造**绝对地址**：lodestone 内部拿它当 `new URL('assets.json', base)`
+ * 的 base，而 URL 构造器不接受相对路径 —— 给 `'/lodestone-pack/'` 会直接抛
+ * `Invalid base URL`。所以拼上 origin（Node 环境下没有 location，退回占位值，
+ * 反正那种情况下也不会真的去 fetch）。
+ *
+ * 幂等，可以重复跑。构建前自动执行（package.json 的 prebuild）。
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
@@ -30,7 +34,10 @@ if (!existsSync(TARGET)) {
 }
 
 const ORIGINAL = /const base = new URL\([^)]*import\.meta\.url\)\.toString\(\);/;
-const PATCHED = "const base = '/lodestone-pack/';";
+/** 上一版补丁留下的形态（绝对地址那个修正之前）—— 也要能升级掉 */
+const LEGACY = /const base = '\/lodestone-pack\/';/;
+const PATCHED =
+  "const base = new URL('/lodestone-pack/', globalThis.location?.origin ?? 'http://localhost').toString();";
 
 const source = readFileSync(TARGET, "utf8");
 
@@ -39,7 +46,7 @@ if (source.includes(PATCHED)) {
   process.exit(0);
 }
 
-if (!ORIGINAL.test(source)) {
+if (!ORIGINAL.test(source) && !LEGACY.test(source)) {
   // lodestone 升级后这行变了 —— 别猜，直接报出来让人看一眼
   console.error("[patch-lodestone] 找不到要替换的那行，lodestone 可能改过结构了。");
   console.error("  文件:", path.relative(ROOT, TARGET));
@@ -47,5 +54,5 @@ if (!ORIGINAL.test(source)) {
   process.exit(1);
 }
 
-writeFileSync(TARGET, source.replace(ORIGINAL, PATCHED));
+writeFileSync(TARGET, source.replace(ORIGINAL, PATCHED).replace(LEGACY, PATCHED));
 console.log("[patch-lodestone] 已替换默认材质包路径为 /lodestone-pack/");

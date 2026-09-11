@@ -29,10 +29,16 @@ type NbtCompound = import("@mattzh72/lodestone/nbt").NbtCompound;
 /**
  * 原版材质包的位置。
  *
- * **必须显式给 baseUrl**：不传的话 lodestone 会按 `import.meta.url` 相对找，
- * 打包后那个路径下没有资源，会 404。见 scripts/copy-lodestone-pack.mjs。
+ * ⚠️ **必须是绝对地址。** lodestone 内部是 `new URL('assets.json', base)`，
+ * 而 URL 构造器**不接受相对路径当 base** —— 传 `/lodestone-pack/` 会抛
+ * `Failed to construct 'URL': Invalid base URL`。所以补上 origin。
+ *
+ * 放在函数里算：模块顶层在 SSR 阶段也可能被求值，那时没有 window。
  */
-const PACK_BASE_URL = "/lodestone-pack/";
+function packBaseUrl(): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin}/lodestone-pack/`;
+}
 
 /** 和服务端 MAX_PREVIEW_VOLUME 保持一致：超了就不生成，别把浏览器卡死 */
 const MAX_VOLUME = 20_000_000;
@@ -156,7 +162,7 @@ export async function renderLitematicPreview(
     }
 
     stage("loading-pack");
-    const { resources } = await loadDefaultPackResources({ baseUrl: PACK_BASE_URL });
+    const { resources } = await loadDefaultPackResources({ baseUrl: packBaseUrl() });
 
     stage("rendering");
     const canvas = document.createElement("canvas");
