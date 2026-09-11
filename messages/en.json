@@ -441,7 +441,9 @@
     "viewBack": "Back",
     "viewOther": "Other side",
     "previewRendering": "Rendering schematic preview — first view takes a few seconds…",
-    "previewError": "Could not render a preview for this schematic"
+    "previewError": "Could not render a preview for this schematic",
+    "previewZoom": "Zoom in",
+    "previewClose": "Close"
   },
   "ban": {
     "socialForever": "You are permanently banned and cannot like or comment",

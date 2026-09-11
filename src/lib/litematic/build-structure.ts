@@ -163,68 +163,14 @@ export const PREVIEW_VIEWS: { key: string; yawDeg: number }[] = [
 ];
 
 /**
- * 白天 / 黑夜两套**纯色背景**。
+ * 第 direction 个方向那张图的索引，也就是 `/api/resources/<id>/preview?i=<n>`。
  *
- * 为什么要两套：背景是渲染进 PNG 的，不是 CSS 能改的 —— 只烤一套的话，
- * 用户切主题时底色是死的。
- *
- * 为什么三层颜色填一样的值：lodestone 的天空是从天顶 → 地平线 → 地面
- * **渐变**的，三层同色就塌成一个纯色底，正好当背景用。这样不用去碰
- * 渲染器内部（不需要"跳过天空"那种补丁），也不需要 alpha 通道。
- *
- * 用**纯白 / 纯黑**而不是去凑主题的灰色：前端的容器直接写
- * \`bg-white dark:bg-black\` 就能和图片**逐像素对齐**，不存在"渲染出来的灰
- * 和主题的灰差一点点"那种缝。
- *
- * 颜色是 \`[r, g, b]\`（0~1）—— lodestone 的 \`Color\` 就是这个形状。
+ * 背景是**透明**的，明暗主题由页面自己的底色体现，所以不再有"主题"这一维
+ * —— 4 个方向就是 4 张图。
  */
-export const PREVIEW_THEMES: {
-  key: "light" | "dark";
-  sky: {
-    zenithColor: [number, number, number];
-    horizonColor: [number, number, number];
-    groundColor: [number, number, number];
-  };
-}[] = [
-  {
-    key: "light",
-    /*
-      ⚠️ 这里填 1.45 而不是 1。
-
-      实测（把生成好的 PNG 取回来量像素）：
-        天空填 [0,0,0] → 出来是 0,0,0        ✓ 纯黑，对
-        天空填 [1,1,1] → 出来是 178,178,178  ✗ 中灰，不是白
-      178/255 = 0.698，也就是说天空着色器把颜色**乘了大约 0.7**
-      （不是在三层之间插值 —— 三层同色本该是纯色，但亮度被压了）。
-
-      补偿办法：填 1.45，1.45 × 0.7 = 1.015，写进帧缓冲时被截到 1.0，
-      正好是纯白。Three 的 Color 不做 clamp，所以大于 1 的值能传进着色器。
-    */
-    sky: {
-      zenithColor: [1.45, 1.45, 1.45],
-      horizonColor: [1.45, 1.45, 1.45],
-      groundColor: [1.45, 1.45, 1.45],
-    },
-  },
-  {
-    key: "dark",
-    sky: {
-      zenithColor: [0, 0, 0],
-      horizonColor: [0, 0, 0],
-      groundColor: [0, 0, 0],
-    },
-  },
-];
-
-/**
- * 8 张图的索引：`方向 * 2 + 主题`。
- *
- * 0..7 → `/api/resources/<id>/preview?i=<n>`。
- * 把这套映射写在服务端和客户端共用的地方，免得两边各算各的算错。
- */
-export function previewIndex(direction: number, theme: "light" | "dark"): number {
-  return direction * PREVIEW_THEMES.length + (theme === "dark" ? 1 : 0);
+export function previewIndex(direction: number): number {
+  return direction;
 }
 
 /** 一共会生成多少张 */
-export const PREVIEW_COUNT = PREVIEW_VIEWS.length * PREVIEW_THEMES.length;
+export const PREVIEW_COUNT = PREVIEW_VIEWS.length;

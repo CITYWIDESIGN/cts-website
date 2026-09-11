@@ -19,7 +19,6 @@ import {
   buildStructureFromLitematic,
   frameCamera,
   PREVIEW_VIEWS,
-  PREVIEW_THEMES,
   type LitematicPreviewMeta,
 } from "./build-structure";
 import { packBaseUrl } from "./pack-url";
@@ -134,78 +133,22 @@ export async function renderLitematicPreviews(
     three.drawStructure();
 
     /*
-      4 个方向 × 2 套主题 = 8 帧。
+      4 个方向各一帧。背景是透明的，所以不需要为明暗主题各渲一套
+      —— 页面自己的底色会透过来。
 
-      同一个 renderer、同一份网格，只换相机和天空颜色 —— 网格只在
-      whenReady 里建一次，比建八次场景快得多。
-
-      顺序必须是 `方向 * 2 + 主题`（和 previewIndex 一致）：
-      前端按主题选图时直接 +1，不用再查表。
+      同一个 renderer、同一份网格，只换相机 —— 网格只在 whenReady 里建一次。
     */
     const images: string[] = [];
     for (const view of PREVIEW_VIEWS) {
-      for (const theme of PREVIEW_THEMES) {
-        // 背景色是按主题烤进图里的，所以每张都要重设。
-        //
-        // 同时把太阳和星星关掉：我们要的是**纯色底**，天空里挂个发光的球
-        // 或者一片星点都是噪音。lodestone 的 SunDiscOptions 没有 enabled
-        // 开关，但强度归零就等于不可见（叠加渲染，乘 0 什么都不加）。
-        /*
-          要的是**干净纯色底**，所以要关三样东西 —— 它们是三套独立的机制，
-          光关太阳球没用（站长就是发现"莫名其妙的光源还在"）：
-            1. sunDisc      天空里那个发光的球（已在补丁里关掉可见性）
-            2. sunGlowIntensity  天空着色器自带的辉光，**默认 0.6**，
-                                 和太阳球无关，是背景上那片亮斑的来源
-            3. postProcess  后处理里的 bloom + godRays（丁达尔光），
-                             "莫名其妙的光源"多半就是它 —— 一片斜射的光柱
-          整个 postProcess 关掉最省事，而且能省下 SSAO/bloom/godRays 好几遍
-          全屏 pass，渲染更快。
-        */
-        three.setSunlight({
-          sky: { ...theme.sky, stars: { enabled: false }, sunGlowIntensity: 0 },
-          disc: { coreIntensity: 0, glowIntensity: 0 },
-          postProcess: { enabled: false },
-
-          /*
-            中性平光。
-
-            lodestone 的默认光照是一套**黄昏配色**，四个方向的观感差很多 ——
-            站长报"另一侧普遍发黄"就是这个：
-              color(直射)   [1.0, 0.75, 0.45]  暖橙
-              rimColor(轮廓) [1.0, 0.55, 0.25]  更橙
-              fillColor(补光) [0.35, 0.28, 0.5] 紫
-              fog.color      [0.85, 0.6, 0.4]   暖雾
-
-            相机转到暖光正对镜头的那一面，整张图就偏黄。预览是给人看形体的，
-            不该带上"黄昏"这层滤镜，所以四路光全部改成纯白，
-            并把权重压到"以环境光为主"—— 保留一点点方向感让方块之间有
-            明暗区分（全平的话方块会糊成一片），但四个方向的差异几乎看不出来。
-          */
-          color: [1, 1, 1],
-          ambientColor: [1, 1, 1],
-          fillColor: [1, 1, 1],
-          rimColor: [1, 1, 1],
-          intensity: 0.85,
-          ambientIntensity: 0.9,
-          fillIntensity: 0.35,
-          rimIntensity: 0,
-
-          // 雾会把远处染成暖色，直接关掉
-          fog: { density: 0 },
-
-          // 阴影会让背光面明显变暗 —— 预览不需要这层戏剧性，也省一遍渲染
-          shadow: { enabled: false },
-        });
-        const frame = frameCamera(built.meta.size, 45, view.yawDeg);
-        three.setCamera({
-          position: frame.position,
-          target: frame.target,
-          up: [0, 1, 0],
-          fov: 45,
-        });
-        three.drawStructure();
-        images.push(canvas.toDataURL("image/png"));
-      }
+      const frame = frameCamera(built.meta.size, 45, view.yawDeg);
+      three.setCamera({
+        position: frame.position,
+        target: frame.target,
+        up: [0, 1, 0],
+        fov: 45,
+      });
+      three.drawStructure();
+      images.push(canvas.toDataURL("image/png"));
     }
     return { images, meta: built.meta };
   } catch (err) {

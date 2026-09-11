@@ -86,19 +86,23 @@ writeFileSync(TARGET, source.replace(ORIGINAL, PATCHED).replace(LEGACY, PATCHED)
  * 这个常量保留成空数组，是为了让下面的 applyPatches 逻辑不用改分支。
  */
 const ALPHA_PATCHES = [
+  { name: "alpha 通道", from: "alpha: false,", to: "alpha: true," },
+  { name: "清除色改为全透明", from: "setClearColor(0x000000, 1);", to: "setClearColor(0x000000, 0);" },
   {
     /*
-     * 关掉太阳。
+     * 跳过天空。
      *
-     * lodestone 在绘制时会显式 `setOverlayVisibility({ ..., sunDisc: true })`
-     * —— 光把 `disc.coreIntensity` 设成 0 是"理论上不可见"，但可见性那一行
-     * 摆在那儿，属于靠渲染细节兜底。预览要的是纯色底，太阳（和它那圈辉光）
-     * 是纯噪音，直接在可见性上关死更可靠。
+     * 用**全局替换**（all: true）而不是逐条匹配上下文 —— 天空在
+     * "直接绘制" 和 "后处理" 两条路径里各渲染一次，而这两处的注释和
+     * 相邻代码在 lodestone 的小版本之间会漂移（已经踩过一次：按上下文
+     * 匹配的那条静默失配，天空只关掉了一半）。整行删掉最稳。
      */
-    name: "关掉太阳",
-    from: "sunDisc: true",
-    to: "sunDisc: false",
+    name: "跳过天空",
+    from: "this.renderer.render(this.skyScene, this.skyCamera);",
+    to: "/* [patched] 天空已跳过：预览要透明背景 */",
+    all: true,
   },
+  { name: "关掉太阳", from: "sunDisc: true", to: "sunDisc: false", all: true },
 ];
 
 const RENDERER = path.join(
@@ -125,7 +129,8 @@ function applyPatches() {
   }
 
   for (const p of pending) {
-    source = source.replace(p.from, p.to);
+    // all: true 用 split/join 做全局替换（String.replace 只换第一处）
+    source = p.all ? source.split(p.from).join(p.to) : source.replace(p.from, p.to);
     console.log(`[patch-lodestone] 已应用：${p.name}`);
   }
   writeFileSync(RENDERER, source);

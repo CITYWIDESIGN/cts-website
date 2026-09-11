@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { PREVIEW_THEMES, PREVIEW_VIEWS, previewIndex } from "@/lib/litematic/build-structure";
+import { PreviewGrid } from "./preview-grid";
 
 /**
  * 查看时现场渲染预览。
@@ -88,47 +88,6 @@ export function OnDemandPreview({
     );
   }
 
-  /*
-    用 CSS 的 dark: 变体切图，而不是 useTheme().resolvedTheme。
-
-    一开始是后者，**不工作**：resolvedTheme 在挂载完成前是 undefined，
-    而主题是用户在客户端切的 —— 切了主题图不换（站长报的就是这个）。
-    CSS 方案下切主题只是给 <html> 换 class，浏览器立刻重算，
-    不经过 React，也没有 hydration 时机问题。
-  */
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {PREVIEW_VIEWS.map((view, direction) => (
-        <figure key={view.key} className="space-y-1.5">
-          <a
-            href={`/api/resources/${resourceId}/preview?i=${previewIndex(direction, "light")}`}
-            target="_blank"
-            rel="noreferrer"
-            className="block overflow-hidden rounded-lg border bg-white transition-opacity hover:opacity-90 dark:bg-black"
-          >
-            {PREVIEW_THEMES.map((theme) => {
-              const src = images[previewIndex(direction, theme.key)] ?? images[0];
-              if (!src) return null;
-              return (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={theme.key}
-                  src={src}
-                  alt={`${title} — ${t(view.key)}`}
-                  className={
-                    theme.key === "dark"
-                      ? "hidden aspect-[3/2] w-full cursor-zoom-in object-cover dark:block"
-                      : "block aspect-[3/2] w-full cursor-zoom-in object-cover dark:hidden"
-                  }
-                />
-              );
-            })}
-          </a>
-          <figcaption className="text-center text-xs text-muted-foreground">
-            {t(view.key)}
-          </figcaption>
-        </figure>
-      ))}
-    </div>
-  );
+  // 图和已缓存那条路完全一样，只是数据在内存里而不是从接口取
+  return <PreviewGrid title={title} srcs={images} />;
 }
