@@ -39,8 +39,7 @@ services:
     volumes:
       - cts_web_pgdata:/var/lib/postgresql/data
     # ⚠️ 故意不写 ports：数据库只在 dbnet 上可达。
-    #    dbnet 标了 internal，所以**连局域网都连不进来**（实测过没隔离时
-    #    172.20.0.2:5432 从 LAN 是通的）。
+    #    dbnet 标了 internal，跨网络的流量会被 DOCKER-INTERNAL 挡掉。
     #    需要连进去看数据就用 docker compose exec db psql -U cts cts_website
     healthcheck:
       # pg_isready 比 tcp 检查准：能区分"端口开着但还没接受连接"
@@ -167,14 +166,20 @@ networks:
   # ------------------------------------------------------------------
   # 数据库专用网络，**标记 internal**。
   #
-  # 为什么不能三个服务共用一张网：Docker 发布的端口**不走 INPUT 链**
-  # （DNAT 之后走 FORWARD，而 FORWARD 默认是 ACCEPT），所以宿主机那套
-  # "INPUT 默认 DROP" 的手写规则**盖不住容器网络**。实测过：不隔离的话，
-  # 局域网里任意一台机器都能直接连到 `172.20.0.2:5432`。
+  # Docker 的容器网络**不走 INPUT 链**（跨网络转发走 FORWARD，而宿主机
+  # FORWARD 策略是 ACCEPT），所以宿主机那套"INPUT 默认 DROP"的手写规则
+  # **管不到容器网络** —— 隔离必须由网络自己讲清楚。
   #
-  # internal: true 会让 Docker 自己加上"只允许本子网"的规则，
-  # 而且这些规则是声明式的 —— 重建 compose、重启 docker 都不会丢，
-  # 比手工往 DOCKER-USER 里塞一条（还依赖容器 IP）可靠得多。
+  # internal: true 会让 Docker 自动写两条 DOCKER-INTERNAL 规则：
+  #   源不在本子网、目标是本子网  → DROP（外面进不来）
+  #   来自本子网、目标不是本子网  → DROP（数据库也出不去）
+  # 声明式，重建 compose、重启 docker 都不会丢 —— 比手工往 DOCKER-USER 里
+  # 塞一条（依赖容器 IP、网络重建就漂）可靠得多。
+  #
+  # 实测方式：在**另一张 docker 网络**里起个容器去连 172.21.0.2:5432，
+  # 不通；同一个容器连宿主机 25565 是通的（对照组）。
+  # 注意别用 Windows 那台机器测 —— 它上面跑着 mihomo TUN，会假装应答任意
+  # TCP 连接，连一个没监听的端口都报"通"，得出来的结论是错的。
   # ------------------------------------------------------------------
   dbnet:
     internal: true
