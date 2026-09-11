@@ -1,5 +1,17 @@
-import { getResourcePreview } from "@/server/resource";
-import { parseDataUrl, ALLOWED_COVER_MIME } from "@/lib/image-types";
+import { getCurrentUser } from "@/server/auth";
+import {
+  canManageResource,
+  getResource,
+  getResourceBlobById,
+  getResourcePreview,
+  saveResourcePreview,
+} from "@/server/resource";
+import {
+  describeLitematic,
+  isLitematicFileName,
+  MAX_PREVIEW_CHARS,
+} from "@/server/litematic";
+import { parseDataUrl, ALLOWED_COVER_MIME, isAllowedCoverDataUrl } from "@/lib/image-types";
 
 /**
  * .litematic 投影的自动预览图（三个方向的等轴测）。
@@ -77,4 +89,77 @@ export async function GET(
       "Cache-Control": "public, max-age=300",
     },
   });
+}
+
+/* ---------------------------------------------------------------------------
+ * 现场渲染好的图回存
+ * ------------------------------------------------------------------------- */
+
+/**
+ * 为什么需要它：预览改成"查看时按需渲染"之后，第一个打开的人要现场渲一遍
+ * （拉 3MB 材质包 + 渲 8 帧）。把他渲出来的结果存下来，后面的人就秒开 ——
+ * 代价只落在第一个感兴趣的人身上，而不是每个上传者身上。
+ *
+ * 权限：**只有上传者本人和管理员**能写。这是别人作品的展示内容，
+ * 不能谁都能改。复用 `canManageResource`，和编辑资源是同一套判断。
+ *
+ * 校验和上传时那套一致：类型白名单、张数上限、总体积上限；
+ * 并且**服务端重新解析一遍文件**确认它确实是投影 —— 客户端说什么不算数。
+ */
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+
+  const resource = await getResource(id);
+  if (!resource) {
+    return Response.json({ ok: false, error: "not_found" }, { status: 404 });
+  }
+  if (!canManageResource(resource, user)) {
+    return Response.json({ ok: false, error: "forbidden" }, { status: 403 });
+  }
+  if (!isLitematicFileName(resource.fileName)) {
+    return Response.json({ ok: false, error: "not_litematic" }, { status: 415 });
+  }
+
+  const row = await getResourceBlobById(id);
+  const meta = row ? describeLitematic(new Uint8Array(row.data)) : null;
+  if (!meta) {
+    return Response.json({ ok: false, error: "not_litematic" }, { status: 415 });
+  }
+
+  // 先看 Content-Length：route handler 没有 Server Action 那种 bodySizeLimit
+  const declared = Number(request.headers.get("content-length") ?? "");
+  if (Number.isFinite(declared) && declared > MAX_PREVIEW_CHARS + 4096) {
+    return Response.json({ ok: false, error: "too_large" }, { status: 413 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ ok: false, error: "invalid_json" }, { status: 400 });
+  }
+
+  const images = (body as { images?: unknown })?.images;
+  if (!Array.isArray(images) || images.length === 0 || images.length > 8) {
+    return Response.json({ ok: false, error: "invalid_images" }, { status: 400 });
+  }
+  if (!images.every((v) => isAllowedCoverDataUrl(v))) {
+    return Response.json({ ok: false, error: "invalid_image_type" }, { status: 415 });
+  }
+
+  const packed = JSON.stringify(images);
+  if (packed.length > MAX_PREVIEW_CHARS) {
+    return Response.json({ ok: false, error: "too_large" }, { status: 413 });
+  }
+
+  await saveResourcePreview(id, packed, meta);
+  return Response.json({ ok: true });
 }

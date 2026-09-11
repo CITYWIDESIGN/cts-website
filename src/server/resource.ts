@@ -244,6 +244,24 @@ export async function getResourceImage(id: string) {
  * 和封面一样，列表页**不能**顺带把它捞出来 —— 一张预览的 base64 也是几百 KB，
  * 列表一次几十条就是几十 MB。列表只判断"有没有"（见 RESOURCE_LIST_SELECT）。
  */
+/**
+ * 写入/覆盖投影预览（现场渲染完回存时用）。
+ *
+ * 走 upsert：第一个看的人渲完存进来，后面的人直接读；换过附件之后
+ * 重新渲染也会覆盖掉旧的。
+ */
+export async function saveResourcePreview(
+  id: string,
+  data: string,
+  meta: LitematicMeta
+) {
+  await prisma.resourcePreview.upsert({
+    where: { resourceId: id },
+    create: { resourceId: id, data, meta: meta as unknown as Prisma.InputJsonValue },
+    update: { data, meta: meta as unknown as Prisma.InputJsonValue },
+  });
+}
+
 export async function getResourcePreview(id: string) {
   return prisma.resourcePreview.findUnique({
     where: { resourceId: id },

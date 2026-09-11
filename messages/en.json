@@ -439,7 +439,9 @@
     "viewFront": "Front",
     "viewSide": "Side",
     "viewBack": "Back",
-    "viewOther": "Other side"
+    "viewOther": "Other side",
+    "previewRendering": "Rendering schematic preview — first view takes a few seconds…",
+    "previewError": "Could not render a preview for this schematic"
   },
   "ban": {
     "socialForever": "You are permanently banned and cannot like or comment",

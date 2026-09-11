@@ -75,8 +75,8 @@ export interface PreviewResult {
  * 任何失败都返回 null（不抛）—— 预览是附加品，不能因为它让上传失败。
  * 调用方拿到 null 就当"这个文件没有预览"，照常上传。
  */
-export async function renderLitematicPreview(
-  file: File,
+export async function renderLitematicPreviews(
+  bytes: Uint8Array,
   options: {
     width?: number;
     height?: number;
@@ -90,9 +90,6 @@ export async function renderLitematicPreview(
   let renderer: { dispose(): void } | null = null;
 
   try {
-    stage("parsing");
-    const bytes = new Uint8Array(await file.arrayBuffer());
-
     // 动态引入：three.js 只在上传投影时才加载
     const { ThreeStructureRenderer, loadDefaultPackResources } = await import(
       "@mattzh72/lodestone"

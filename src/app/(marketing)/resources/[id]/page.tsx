@@ -33,6 +33,8 @@ import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { ResourceEditActions } from "@/components/resources/resource-edit-actions";
 import { RevisionHistory } from "@/components/resources/revision-history";
 import { PreviewMetaList } from "@/components/resources/preview-meta";
+import { OnDemandPreview } from "@/components/resources/on-demand-preview";
+import { isLitematicFileName } from "@/lib/litematic/file-name";
 import { PreviewGallery } from "@/components/resources/preview-gallery";
 import { formatBytes, formatDateTime } from "@/lib/format";
 
@@ -242,8 +244,8 @@ export default async function ResourceDetailPage({
           </div>
         </StaggerItem>
 
-        {/* 投影预览：.litematic 上传时自动生成的等轴测图 + 元信息 */}
-        {resource.preview && (
+        {/* 投影预览：有已渲染的图就直接显示，否则现场渲（见 OnDemandPreview） */}
+        {(resource.preview || isLitematicFileName(resource.fileName)) && (
           <StaggerItem index={4}>
             <Card>
               <CardHeader>
@@ -251,8 +253,12 @@ export default async function ResourceDetailPage({
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* 4 个方向的等轴测图；白天/黑夜各烤了一套，组件按当前主题选 */}
-                <PreviewGallery resourceId={resource.id} title={resource.title} />
-                <PreviewMetaList meta={resource.preview.meta} />
+                {resource.preview ? (
+                  <PreviewGallery resourceId={resource.id} title={resource.title} />
+                ) : (
+                  <OnDemandPreview resourceId={resource.id} title={resource.title} />
+                )}
+                {resource.preview && <PreviewMetaList meta={resource.preview.meta} />}
               </CardContent>
             </Card>
           </StaggerItem>
