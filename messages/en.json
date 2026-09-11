@@ -872,7 +872,7 @@
     "userManagement": {
       "title": "User management",
       "description": "View and manage registered users.",
-      "searchPlaceholder": "Search by username or UUID",
+      "searchPlaceholder": "Search account, player name or UUID",
       "role": "Role",
       "roleUser": "User",
       "roleAdmin": "Admin",
@@ -883,7 +883,8 @@
       "status": "Status",
       "active": "Active",
       "banned": "Banned",
-      "noUsers": "No users found."
+      "noUsers": "No users found.",
+      "account": "Account"
     },
     "ban": {
       "action": "Ban",

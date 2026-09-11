@@ -872,7 +872,7 @@
     "userManagement": {
       "title": "用户管理",
       "description": "查看和管理已注册用户。",
-      "searchPlaceholder": "按玩家名或 UUID 搜索",
+      "searchPlaceholder": "搜索账号名、玩家名或 UUID",
       "role": "角色",
       "roleUser": "用户",
       "roleAdmin": "管理员",
@@ -883,7 +883,8 @@
       "status": "状态",
       "active": "正常",
       "banned": "已封禁",
-      "noUsers": "未找到用户。"
+      "noUsers": "未找到用户。",
+      "account": "账号名"
     },
     "ban": {
       "action": "封禁",

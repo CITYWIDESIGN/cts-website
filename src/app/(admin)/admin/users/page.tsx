@@ -66,6 +66,7 @@ export default async function AdminUsersPage({
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("username")}</TableHead>
+                  <TableHead>{t("account")}</TableHead>
                   <TableHead>UUID</TableHead>
                   <TableHead>{t("role")}</TableHead>
                   <TableHead>{t("submissionStatus")}</TableHead>
@@ -107,6 +108,10 @@ export default async function AdminUsersPage({
                               {user.minecraftUsername ?? "—"}
                             </Link>
                           </span>
+                        </TableCell>
+                        {/* 登录用的账号名。和玩家名是两回事，之前后台看不到 */}
+                        <TableCell className="font-mono text-xs">
+                          {user.username ?? "—"}
                         </TableCell>
                         <TableCell className="font-mono text-xs text-muted-foreground">
                           {formatUuid(user.minecraftUuid)}

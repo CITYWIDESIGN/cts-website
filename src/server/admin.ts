@@ -58,7 +58,16 @@ export async function listUsers(options: {
   const where: Prisma.UserWhereInput = {};
 
   if (options.search) {
+    /*
+      检索覆盖**账号名**、玩家名、UUID 三样。
+
+      账号名是后补的：这个框原来的占位提示就是"搜索玩家名或 UUID"，
+      但站长在用户管理里找账号名时搜不到 —— 而登录用的恰恰是账号名。
+      账号名现在是大小写敏感的（见 validators/auth.ts），但**检索不该敏感** ——
+      管理员在搜索框里不该还要记得当初注册时的大小写。
+    */
     where.OR = [
+      { username: { contains: options.search, mode: "insensitive" } },
       { minecraftUsername: { contains: options.search, mode: "insensitive" } },
       { minecraftUuid: { contains: options.search, mode: "insensitive" } },
     ];
