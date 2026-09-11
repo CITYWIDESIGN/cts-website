@@ -42,9 +42,8 @@ const PATCHED =
 const source = readFileSync(TARGET, "utf8");
 
 if (source.includes(PATCHED)) {
-  console.log("[patch-lodestone] 已经是打过补丁的状态");
-  process.exit(0);
-}
+  console.log("[patch-lodestone] 路径补丁已经是打过补丁的状态");
+} else {
 
 if (!ORIGINAL.test(source) && !LEGACY.test(source)) {
   // lodestone 升级后这行变了 —— 别猜，直接报出来让人看一眼
@@ -55,4 +54,71 @@ if (!ORIGINAL.test(source) && !LEGACY.test(source)) {
 }
 
 writeFileSync(TARGET, source.replace(ORIGINAL, PATCHED).replace(LEGACY, PATCHED));
-console.log("[patch-lodestone] 已替换默认材质包路径为 /lodestone-pack/");
+  console.log("[patch-lodestone] 已替换默认材质包路径为 /lodestone-pack/");
+}
+
+/**
+ * 第二个补丁：**透明背景**。
+ *
+ * lodestone 的渲染器把背景写死了：
+ *   - `new THREE.WebGLRenderer({ alpha: false })`  → canvas 没有 alpha 通道
+ *   - `setClearColor(0x000000, 1)`                  → 清除色是不透明黑
+ *   - 每次绘制都先渲染一层天空四边形（skyScene）
+ *
+ * 于是导出的 PNG **一定带底色**，卡片和详情页上就是一块突兀的方块，
+ * 而且没法跟随明暗主题。设置里也没有"关掉天空"的开关。
+ *
+ * 改动三处：
+ *   1. alpha: true                       —— 让 canvas 有 alpha 通道
+ *   2. setClearColor(0x000000, 0)        —— 清除为**全透明**
+ *   3. 跳过天空那一遍（两处：直接绘制 + 后处理路径）
+ *
+ * 只动主渲染器那一次 setClearColor；另外两处（1850/1858 附近的黑/白）
+ * 是**阴影贴图**的清屏色，改了会破坏阴影，不碰。
+ */
+const ALPHA_PATCHES = [
+  { name: "alpha 通道", from: "alpha: false,", to: "alpha: true," },
+  { name: "清除色改为全透明", from: "setClearColor(0x000000, 1);", to: "setClearColor(0x000000, 0);" },
+  {
+    name: "跳过天空（直接绘制路径）",
+    from: "// 1. Render sky background (fullscreen quad, no depth)\n        this.renderer.render(this.skyScene, this.skyCamera);",
+    to: "// [patched] 天空已跳过：预览要透明背景",
+  },
+  {
+    name: "跳过天空（后处理路径）",
+    from: "this.renderer.render(this.skyScene, this.skyCamera);\n        this.renderer.render(this.structureScene, this.camera);",
+    to: "// [patched] 天空已跳过：预览要透明背景\n        this.renderer.render(this.structureScene, this.camera);",
+  },
+];
+
+const RENDERER = path.join(
+  ROOT,
+  "node_modules",
+  "@mattzh72",
+  "lodestone",
+  "lib",
+  "render",
+  "ThreeStructureRenderer.js"
+);
+
+function applyPatches() {
+  if (!existsSync(RENDERER)) {
+    console.log("[patch-lodestone] 没找到渲染器文件，跳过透明背景补丁");
+    return;
+  }
+  let source = readFileSync(RENDERER, "utf8");
+  const pending = ALPHA_PATCHES.filter((p) => source.includes(p.from));
+
+  if (pending.length === 0) {
+    console.log("[patch-lodestone] 透明背景补丁已就位");
+    return;
+  }
+
+  for (const p of pending) {
+    source = source.replace(p.from, p.to);
+    console.log(`[patch-lodestone] 已应用：${p.name}`);
+  }
+  writeFileSync(RENDERER, source);
+}
+
+applyPatches();
