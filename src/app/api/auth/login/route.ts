@@ -5,11 +5,12 @@ import {
   generateOAuthState,
   isMicrosoftConfigured,
 } from "@/lib/auth/microsoft";
+import { absoluteUrl, oauthRedirectUri } from "@/lib/public-origin";
 import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export async function GET(request: Request) {
   if (!isMicrosoftConfigured()) {
-    const url = new URL("/login", request.url);
+    const url = absoluteUrl(request, "/login");
     url.searchParams.set("error", "not_configured");
     return NextResponse.redirect(url);
   }
@@ -21,8 +22,12 @@ export async function GET(request: Request) {
     "/dashboard"
   );
 
-  // 动态匹配请求地址，避免 localhost / 127.0.0.1 混用导致 cookie 域不一致
-  const redirectUri = `${new URL(request.url).origin}/api/auth/callback`;
+  /*
+    别用 `new URL(request.url).origin`：容器里它是 `https://0.0.0.0:3000`
+    （Dockerfile 的 HOSTNAME/PORT），微软会直接以 redirect_uri 不匹配拒掉。
+    详见 @/lib/public-origin。
+  */
+  const redirectUri = oauthRedirectUri(request);
 
   const cookieStore = await cookies();
   cookieStore.set("oauth_redirect", redirectTo, {

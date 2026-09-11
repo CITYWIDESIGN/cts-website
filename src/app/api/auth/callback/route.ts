@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth/microsoft";
 import { generateAttemptId } from "@/lib/auth/logger";
 import { safeRedirectPath } from "@/lib/safe-redirect";
+import { absoluteUrl, oauthRedirectUri } from "@/lib/public-origin";
 import { recordAudit } from "@/server/audit";
 
 export async function GET(request: Request) {
@@ -34,20 +35,21 @@ export async function GET(request: Request) {
   const stateCookie = cookieStore.get("oauth_state")?.value ?? null;
   if (!state || !verifyOAuthState(state, stateCookie)) {
     console.error("[auth] invalid_state");
-    return redirectError(url, "invalid_state");
+    return redirectError(request, "invalid_state");
   }
 
   // state 一次性：用过就清掉，重放同一条链接不会再通过
   cookieStore.delete("oauth_state");
 
   if (!code) {
-    return redirectError(url, "no_code");
+    return redirectError(request, "no_code");
   }
 
   const attemptId = generateAttemptId();
 
   try {
-    const redirectUri = `${url.origin}/api/auth/callback`;
+    // 必须和授权请求里用的那个**逐字符相同**，否则换 token 会被拒
+    const redirectUri = oauthRedirectUri(request);
     const profile = await authenticateWithMicrosoft(code, redirectUri, attemptId);
 
     // 以 Microsoft 账号为登录身份，更新 / 关联 Minecraft 身份
@@ -62,11 +64,11 @@ export async function GET(request: Request) {
     // 清除临时 OAuth cookie
     cookieStore.delete("oauth_redirect");
 
-    return NextResponse.redirect(new URL(redirectTo, url.origin));
+    return NextResponse.redirect(absoluteUrl(request, redirectTo));
   } catch (err) {
     const codeName = err instanceof AuthError ? err.code : "unknown";
     console.error(`[auth:${attemptId}] ${codeName} — ${describe(err)}`);
-    return redirectError(url, codeName);
+    return redirectError(request, codeName);
   }
 }
 
@@ -195,8 +197,8 @@ async function upsertUser(
   }
 }
 
-function redirectError(url: URL, error: string) {
-  const loginUrl = new URL("/login", url.origin);
+function redirectError(request: Request, error: string) {
+  const loginUrl = absoluteUrl(request, "/login");
   loginUrl.searchParams.set("error", error);
   return NextResponse.redirect(loginUrl);
 }
