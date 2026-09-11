@@ -89,7 +89,10 @@ const QUESTIONS: Seed[] = [
   },
   { type: "TEXT", title: "您如何评价自己的「肝度」？" },
   { type: "TEXT", title: "您的年龄是？" },
-  { type: "TEXT", title: "您的 QQ 昵称及 QQ 号码是？（请按「昵称 / 号码」的格式填写）" },
+  // QQ 昵称和号码拆成两题：合并成一题的话审核员要自己从一段文字里
+  // 分辨哪个是昵称、哪个是号码，而号码是要用来拉群/加好友的，不能有歧义
+  { type: "TEXT", title: "您的 QQ 昵称是？" },
+  { type: "TEXT", title: "您的 QQ 号码是？" },
   {
     type: "TEXTAREA",
     title: `请简单介绍一下自己
