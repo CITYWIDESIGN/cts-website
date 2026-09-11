@@ -443,7 +443,9 @@
     "previewRendering": "正在渲染投影预览，首次打开需要几秒…",
     "previewError": "无法渲染这个投影的预览",
     "previewZoom": "放大查看",
-    "previewClose": "关闭"
+    "previewClose": "关闭",
+    "previewExpand": "展开",
+    "previewCollapse": "收起"
   },
   "ban": {
     "socialForever": "你已被永久封禁，无法点赞或评论",

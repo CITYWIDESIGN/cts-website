@@ -32,10 +32,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { ResourceEditActions } from "@/components/resources/resource-edit-actions";
 import { RevisionHistory } from "@/components/resources/revision-history";
-import { PreviewMetaList } from "@/components/resources/preview-meta";
-import { OnDemandPreview } from "@/components/resources/on-demand-preview";
+import { PreviewSection } from "@/components/resources/preview-section";
 import { isLitematicFileName } from "@/lib/litematic/file-name";
-import { PreviewGallery } from "@/components/resources/preview-gallery";
 import { formatBytes, formatDateTime } from "@/lib/format";
 
 export async function generateMetadata({
@@ -244,21 +242,17 @@ export default async function ResourceDetailPage({
           </div>
         </StaggerItem>
 
-        {/* 投影预览：有已渲染的图就直接显示，否则现场渲（见 OnDemandPreview） */}
+        {/* 投影预览：默认折叠，展开才渲染（见 PreviewSection 的说明） */}
         {(resource.preview || isLitematicFileName(resource.fileName)) && (
           <StaggerItem index={4}>
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">{t("previewLabel")}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* 4 个方向的等轴测图；白天/黑夜各烤了一套，组件按当前主题选 */}
-                {resource.preview ? (
-                  <PreviewGallery resourceId={resource.id} title={resource.title} />
-                ) : (
-                  <OnDemandPreview resourceId={resource.id} title={resource.title} />
-                )}
-                {resource.preview && <PreviewMetaList meta={resource.preview.meta} />}
+              <CardContent className="pt-6">
+                <PreviewSection
+                  resourceId={resource.id}
+                  title={resource.title}
+                  hasPreview={Boolean(resource.preview)}
+                  meta={resource.preview?.meta}
+                />
               </CardContent>
             </Card>
           </StaggerItem>
