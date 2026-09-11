@@ -2,10 +2,10 @@ import "server-only";
 
 import {
   randomBytes,
-  createHash,
   createHmac,
   generateKeyPairSync,
   sign,
+  timingSafeEqual,
   type KeyObject,
 } from "node:crypto";
 import { createAuthLogger, type AuthLogger } from "./logger";
@@ -98,16 +98,40 @@ export function generateOAuthState(): string {
   return `${raw}.${signState(raw)}`;
 }
 
-export function verifyOAuthState(state: string): boolean {
+/** 定长比较，避免用响应时间逐字节猜签名 */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * 校验 state。
+ *
+ * 两件事都要成立：
+ *   1. **签名有效** —— 这个 state 确实是我们签发的（挡住伪造）
+ *   2. **与 cookie 里的那一份完全一致** —— 挡住 **login CSRF**
+ *
+ * 为什么第 2 条不能省：签名是**无状态**的，任何一次合法的
+ * `GET /api/auth/login` 都会产出一个永久有效的 state。攻击者可以自己走一遍
+ * 授权流程，拿到 `code` + `state`，再诱导受害者访问
+ * `/api/auth/callback?code=…&state=…` —— 受害者的会话就被写成了**攻击者的账号**，
+ * 之后他在这个站里上传的东西、发的评论全落到攻击者名下。
+ *
+ * 把 state 同时写进一个 httpOnly cookie（双提交），第 2 条就不成立了：
+ * 攻击者伪造的链接里带的 state 和受害者浏览器里的 cookie 对不上。
+ */
+export function verifyOAuthState(
+  state: string,
+  cookieState: string | null | undefined
+): boolean {
   const parts = state.split(".");
   if (parts.length !== 2) return false;
   const [raw, sig] = parts;
-  const expected = signState(raw);
-  if (sig.length !== expected.length) return false;
-  return createHash("sha256")
-    .update(sig)
-    .digest()
-    .equals(createHash("sha256").update(expected).digest());
+  if (!safeEqual(sig, signState(raw))) return false;
+  if (!cookieState) return false;
+  return safeEqual(state, cookieState);
 }
 
 /** 生成 Microsoft OAuth 授权 URL（redirect_uri 动态匹配请求地址） */

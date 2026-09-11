@@ -30,6 +30,7 @@ const KNOWN_ERRORS = new Set([
   "MC_LOGIN_FAILED",
   "NO_MINECRAFT_PROFILE",
   "MC_PROFILE_FAILED",
+  "ACCOUNT_CONFLICT",
   "invalid_state",
   "no_code",
   "TIMEOUT",

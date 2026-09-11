@@ -4,6 +4,7 @@ import { randomInt } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "./password";
 import { isMailConfigured, sendMail, verificationMail } from "./mailer";
+import { takeToken } from "./rate-limit";
 import { CODE_LENGTH, CODE_TTL_MINUTES } from "@/lib/code";
 
 /**
@@ -22,6 +23,14 @@ const TTL_MINUTES = CODE_TTL_MINUTES;
 const MAX_ATTEMPTS = 5;
 const RESEND_COOLDOWN_MS = 60_000;
 const MAX_PER_HOUR = 5;
+/**
+ * 同一个 IP 每小时最多发多少封。
+ *
+ * 为什么不能只按邮箱限：冷却是**按邮箱**算的，换一个邮箱就是一份新额度 ——
+ * 拿一份邮箱列表就能让本站变成给陌生人群发验证码的跳板。
+ * 按 IP 兜一层，两个维度都要过。
+ */
+const MAX_PER_IP_PER_HOUR = 15;
 
 /**
  * 验证码用途：
@@ -90,6 +99,16 @@ export async function issueEmailCode(input: {
     where: { email, purpose: input.purpose, createdAt: { gt: new Date(now - 3_600_000) } },
   });
   if (lastHour >= MAX_PER_HOUR) {
+    throw new EmailCodeError("Too many codes requested.", "TOO_MANY");
+  }
+
+  /*
+    按 IP 的兜底：只按邮箱限的话，换一个邮箱就是一份新额度 ——
+    拿一份邮箱列表就能让本站变成给陌生人群发验证码的跳板。
+    这里是**进程内**的滑动窗口（和登录限流同一个取舍：重启清零、多实例不共享），
+    够挡住脚本批量刷；真要严格得换 Redis 或加一张计数表。
+  */
+  if (input.ip && !takeToken(`email-code:${input.ip}`, MAX_PER_IP_PER_HOUR, 3_600_000)) {
     throw new EmailCodeError("Too many codes requested.", "TOO_MANY");
   }
 

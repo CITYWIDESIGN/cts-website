@@ -443,7 +443,8 @@
     "resources": "Resources",
     "downloads": "Downloads",
     "published": "Published resources",
-    "noResources": "This player has not published anything yet."
+    "noResources": "This player has not published anything yet.",
+    "moreResources": "View all {count} resources"
   },
   "notifications": {
     "title": "Notifications",
@@ -570,6 +571,10 @@
       "generic": {
         "title": "Authentication failed",
         "description": "Something went wrong during sign-in. Please try again."
+      },
+      "ACCOUNT_CONFLICT": {
+        "title": "That Minecraft profile is taken",
+        "description": "This profile is already linked to another account. If it is yours, sign in with that account instead; if someone else claimed it, please contact an administrator."
       }
     },
     "retry": "Try signing in again",

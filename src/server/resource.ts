@@ -231,16 +231,38 @@ export async function getResourceImage(id: string) {
   });
 }
 
-/** 只取附件本体，用于下载接口 */
-export async function getResourceBlob(id: string) {
-  return prisma.resource.findUnique({
+/**
+ * 只取附件的**元信息**（文件名 / 类型 / 大小），不碰字节。
+ *
+ * 下载接口的配额检查必须能在不读 blob 的前提下完成 —— 否则每个被额度挡住的
+ * 请求也要先从数据库搬几 MB 出来。fileSize 是普通列，读它几乎不要钱。
+ */
+export async function getResourceFileMeta(id: string) {
+  const row = await prisma.resource.findUnique({
     where: { id },
     select: {
       id: true,
       fileName: true,
       fileType: true,
-      blob: { select: { data: true } },
+      fileSize: true,
+      blob: { select: { resourceId: true } },
     },
+  });
+  // 记录在、但附件没上传成功（blob 缺失）时也当"没有"，免得下载到半个文件
+  if (!row?.blob) return null;
+  return {
+    id: row.id,
+    fileName: row.fileName,
+    fileType: row.fileType,
+    fileSize: row.fileSize,
+  };
+}
+
+/** 只取附件本体，用于下载接口（配额通过之后才调用） */
+export async function getResourceBlobById(id: string) {
+  return prisma.resourceBlob.findUnique({
+    where: { resourceId: id },
+    select: { data: true },
   });
 }
 

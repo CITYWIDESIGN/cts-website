@@ -443,7 +443,8 @@
     "resources": "资源",
     "downloads": "下载",
     "published": "发布的资源",
-    "noResources": "这位玩家还没有发布资源。"
+    "noResources": "这位玩家还没有发布资源。",
+    "moreResources": "查看全部 {count} 个资源"
   },
   "notifications": {
     "title": "消息",
@@ -570,6 +571,10 @@
       "generic": {
         "title": "认证失败",
         "description": "登录过程中出现问题，请重试。"
+      },
+      "ACCOUNT_CONFLICT": {
+        "title": "这个 Minecraft 角色已被占用",
+        "description": "该角色已经绑定到另一个账号上了。如果是你自己的账号，请先用那个账号登录；如果是被别人先填了，请联系管理员处理。"
       }
     },
     "retry": "重新登录",

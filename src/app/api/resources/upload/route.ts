@@ -43,6 +43,30 @@ export async function POST(request: Request) {
   }
 
   let form: FormData;
+
+  /*
+    先看 Content-Length 再决定要不要解析。
+
+    `request.formData()` 会把**整个请求体**收进内存才开始返回；route handler 又
+    没有 Server Action 那种 bodySizeLimit。于是一个 2GB 的 POST 会让进程先把
+    2GB 读进内存，之后我们才有机会说"文件太大了" —— 这是个能被打爆内存的入口。
+    下面 `file.size > maxFileBytes` 那道检查发生在**解析之后**，拦不住它。
+
+    所以这里按「附件上限 + 封面 base64 + multipart 边框」估一个上限，超了直接
+    413，连 body 都不读。
+  */
+  const limits = await getLimits();
+  const { maxFileBytes, maxImageBytes } = limitsToBytes(limits);
+  // multipart 会带边界、字段名和一小段开销；封面是 data URL 文本（base64 约 1.37 倍）
+  const roughLimit = maxFileBytes + Math.ceil(maxImageBytes * 1.4) + 64 * 1024;
+  const declared = Number(request.headers.get("content-length") ?? "");
+  if (Number.isFinite(declared) && declared > roughLimit) {
+    return NextResponse.json(
+      { ok: false, error: "file_too_large", max: maxFileBytes },
+      { status: 413 }
+    );
+  }
+
   try {
     form = await request.formData();
   } catch {
@@ -56,8 +80,6 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "invalid_meta" }, { status: 400 });
   }
-
-  const { maxFileBytes, maxImageBytes } = limitsToBytes(await getLimits());
 
   const file = form.get("file");
   if (!(file instanceof File) || file.size === 0) {

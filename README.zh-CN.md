@@ -494,7 +494,10 @@ npm run start       # 监听 :3000，前置 nginx/caddy 处理 HTTPS
 ## 已知待办
 
 - **迁移 Prisma seed 配置**：`package.json#prisma` 已废弃（会提示 `The configuration property package.json#prisma is deprecated`）。Prisma 6 上仍正常工作，**不影响认证**。升级到 Prisma 7 前需迁移到 `prisma.config.ts`。
-- **评论列表仍是定长取用**（`listComments` 的 `take`），条数超过后会静默截断，尚未分页。
+- **评论列表每个资源最多取 100 条顶层评论**（`listComments`），回复按线程单独取，所以不会出现"回复数对不上"的半截线程；超过上限后更旧的线程不再渲染，分页尚未实现。
+- **未开启 HSTS**：生产是否一定跑 HTTPS 属于部署决定，所以 `next.config.ts` 的 `securityHeaders` 里**故意没加** `Strict-Transport-Security` —— 盲目开启会把纯 HTTP 的部署锁死。域名与证书就绪后再加。
+- **验证码的按 IP 上限是进程内的**（`src/server/rate-limit.ts`），和登录限流同一个取舍：重启清零、多实例不共享。多实例部署时这两处一起换成 Redis 或计数表。
+- **`getActivityStats` 会读出全部用户再在内存里排序**（后台统计页）。当前规模没问题，用户量上千后再把排序下推到 SQL。
 - **域名上线后配置 SPF / DKIM**，否则验证码邮件容易进垃圾箱。
 - **Minecraft AppID 审批**未完成前，Microsoft 登录会在最后一步 403（见上文），本地账号不受影响。
 

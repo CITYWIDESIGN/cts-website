@@ -66,7 +66,7 @@ export default async function UserProfilePage({
 
   const stats = [
     { key: "comments", icon: MessageSquare, value: profile.comments },
-    { key: "resources", icon: FolderArchive, value: profile.resources.length },
+    { key: "resources", icon: FolderArchive, value: profile.resourceCount },
     { key: "downloads", icon: Download, value: profile.downloads },
   ] as const;
 
@@ -190,7 +190,7 @@ export default async function UserProfilePage({
           <h2 className="text-sm font-semibold">
             {t("published")}
             <span className="ml-2 text-muted-foreground tabular-nums">
-              {profile.resources.length}
+              {profile.resourceCount}
             </span>
           </h2>
 
@@ -199,37 +199,48 @@ export default async function UserProfilePage({
               {t("noResources")}
             </p>
           ) : (
-            <ul className="flex flex-col gap-2">
-              {profile.resources.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    href={`/resources/${r.id}`}
-                    className="group/row flex items-center gap-4 rounded-xl border px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-accent/40"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{r.title}</span>
-                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                        {formatBytes(r.fileSize)} · {formatDateTime(r.createdAt)}
+            <>
+              <ul className="flex flex-col gap-2">
+                {profile.resources.map((r) => (
+                  <li key={r.id}>
+                    <Link
+                      href={`/resources/${r.id}`}
+                      className="group/row flex items-center gap-4 rounded-xl border px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-accent/40"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">{r.title}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                          {formatBytes(r.fileSize)} · {formatDateTime(r.createdAt)}
+                        </span>
                       </span>
-                    </span>
-                    <span className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <Heart className="size-3.5" />
-                        <span className="tabular-nums">{r.likeCount}</span>
+                      <span className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Heart className="size-3.5" />
+                          <span className="tabular-nums">{r.likeCount}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <MessageSquare className="size-3.5" />
+                          <span className="tabular-nums">{r.commentCount}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Download className="size-3.5" />
+                          <span className="tabular-nums">{r.downloads}</span>
+                        </span>
                       </span>
-                      <span className="inline-flex items-center gap-1">
-                        <MessageSquare className="size-3.5" />
-                        <span className="tabular-nums">{r.commentCount}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Download className="size-3.5" />
-                        <span className="tabular-nums">{r.downloads}</span>
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {/* 只展示最近 N 条，剩下的给出入口 —— 不声不响地截断会让人以为"就这么多" */}
+              {profile.truncated && (
+                <Link
+                  href="/resources"
+                  className="self-start text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  {t("moreResources", { count: profile.resourceCount })}
+                </Link>
+              )}
+            </>
           )}
         </StaggerItem>
 

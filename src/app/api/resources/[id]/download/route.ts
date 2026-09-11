@@ -1,5 +1,9 @@
 import { getCurrentUser } from "@/server/auth";
-import { getResourceBlob, incrementDownloads } from "@/server/resource";
+import {
+  getResourceBlobById,
+  getResourceFileMeta,
+  incrementDownloads,
+} from "@/server/resource";
 import { addUsage, checkQuota, clientIp } from "@/server/quota";
 import { isBanned } from "@/server/ban";
 import { recordDownload } from "@/server/stats";
@@ -13,8 +17,18 @@ import { recordDownload } from "@/server/stats";
  *
  * 计数口径用「记录里的 fileSize」而不是实际写出的字节数：
  * 响应可能因为客户端中断而少发，但按文件大小计更稳定、也更好解释。
+ *
+ * **性能：配额检查在取二进制之前做。** 原来是一次 findUnique 把 blob 和
+ * 元数据一起捞回来再判配额 —— 等于每个被拒绝的请求也要先从数据库搬几 MB
+ * 出来。现在先只查元信息（fileSize 是普通列），通过了才读字节。
  */
 export const runtime = "nodejs";
+
+/** 这个响应是附件下载，不该被当成任何东西解释 */
+const DOWNLOAD_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "Cross-Origin-Resource-Policy": "same-origin",
+} as const;
 
 export async function GET(
   request: Request,
@@ -22,9 +36,10 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const row = await getResourceBlob(id);
-  if (!row?.blob) {
-    return new Response("Not found", { status: 404 });
+  // 第一步：只取元信息（id / 文件名 / 类型 / 大小），不碰 blob
+  const meta = await getResourceFileMeta(id);
+  if (!meta) {
+    return new Response("Not found", { status: 404, headers: DOWNLOAD_HEADERS });
   }
 
   // 配额检查：管理员跳过
@@ -40,7 +55,10 @@ export async function GET(
       }),
       {
         status: 403,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          ...DOWNLOAD_HEADERS,
+        },
       }
     );
   }
@@ -51,7 +69,8 @@ export async function GET(
     ip: clientIp(request),
   };
 
-  const size = row.blob.data.byteLength;
+  // 用记录的 fileSize 判断，和后面记账的口径一致
+  const size = meta.fileSize;
   const quota = await checkQuota(subject, "download", size);
   if (!quota.allowed) {
     return new Response(
@@ -61,9 +80,18 @@ export async function GET(
       }),
       {
         status: 429,
-        headers: { "Content-Type": "application/json; charset=utf-8" },
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          ...DOWNLOAD_HEADERS,
+        },
       }
     );
+  }
+
+  // 第二步：通过了才把字节读出来
+  const blob = await getResourceBlobById(id);
+  if (!blob) {
+    return new Response("Not found", { status: 404, headers: DOWNLOAD_HEADERS });
   }
 
   // 计数与用量失败都不应影响下载本身
@@ -94,22 +122,23 @@ export async function GET(
    * - filename 只作 ASCII 回退：剔除非 ASCII；若正文被剔空，
    *   用 "resource" + 原扩展名兜底（避免出现只有 ".txt" 这种怪名字）
    */
-  const asciiBody = row.fileName
+  const asciiBody = meta.fileName
     .replace(/[^\x20-\x7E]/g, "")
     .replace(/["\\/\r\n]/g, "_")
     .replace(/\.[^.]*$/, "") // 去掉扩展名后判断主体是否为空
     .trim();
-  const asciiExt = (row.fileName.match(/\.[0-9A-Za-z._-]{1,12}$/)?.[0] ?? "")
+  const asciiExt = (meta.fileName.match(/\.[0-9A-Za-z._-]{1,12}$/)?.[0] ?? "")
     .replace(/["\\/\r\n]/g, "");
   const asciiFallback = (asciiBody || "resource") + asciiExt;
-  const encoded = encodeURIComponent(row.fileName);
+  const encoded = encodeURIComponent(meta.fileName);
 
-  const body = new Uint8Array(row.blob.data);
+  const body = new Uint8Array(blob.data);
 
   return new Response(body, {
     status: 200,
     headers: {
-      "Content-Type": row.fileType || "application/octet-stream",
+      ...DOWNLOAD_HEADERS,
+      "Content-Type": meta.fileType || "application/octet-stream",
       "Content-Length": String(body.byteLength),
       "Content-Disposition": `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encoded}`,
       "Cache-Control": "private, max-age=0, must-revalidate",

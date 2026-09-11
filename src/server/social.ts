@@ -181,32 +181,55 @@ export async function addComment(input: {
 
 /**
  * 评论列表：顶层评论（旧→新）每条带自己的回复。
- * 一次查完再在内存里分组，避免 N+1。
+ *
+ * 为什么分两次查而不是"一次查 200 行再在内存里分组"：
+ *
+ * 原来是一条 `findMany({ where: { resourceId }, orderBy: createdAt asc, take: 200 })`，
+ * 这 200 行是**顶层评论和回复混在一起**按时间排的。热门资源上会出现两个问题：
+ *   - 取到的是**最旧**的 200 行，新评论根本进不来（用户以为评论没发出去）
+ *   - 某条顶层评论的回复可能被截在中间，页面上就是"回复数 3、实际只显示 1 条"
+ *
+ * 现在先取顶层评论（上限 `MAX_THREADS`），再按它们的 id 取回复 ——
+ * 回复永远跟着自己的父评论走，不会出现半截线程。
  */
-export async function listComments(resourceId: string, take = 200) {
-  const rows = await prisma.resourceComment.findMany({
-    where: { resourceId },
+const MAX_THREADS = 100;
+/** 每个顶层评论最多带多少条回复（防御性上限，正常一层回复不会到这个量） */
+const MAX_REPLIES_PER_THREAD = 50;
+
+const COMMENT_SELECT = {
+  id: true,
+  userId: true,
+  authorName: true,
+  content: true,
+  parentId: true,
+  replyToName: true,
+  likeCount: true,
+  replyCount: true,
+  createdAt: true,
+} as const;
+
+export async function listComments(resourceId: string, take = MAX_THREADS) {
+  const top = await prisma.resourceComment.findMany({
+    where: { resourceId, parentId: null },
     orderBy: { createdAt: "asc" },
-    take,
-    select: {
-      id: true,
-      userId: true,
-      authorName: true,
-      content: true,
-      parentId: true,
-      replyToName: true,
-      likeCount: true,
-      replyCount: true,
-      createdAt: true,
-    },
+    take: Math.min(take, MAX_THREADS),
+    select: COMMENT_SELECT,
   });
 
-  const top = rows.filter((r) => !r.parentId);
-  const repliesByParent = new Map<string, typeof rows>();
-  for (const r of rows) {
+  if (top.length === 0) return [];
+
+  const replies = await prisma.resourceComment.findMany({
+    where: { parentId: { in: top.map((t) => t.id) } },
+    orderBy: { createdAt: "asc" },
+    select: COMMENT_SELECT,
+  });
+
+  const repliesByParent = new Map<string, typeof replies>();
+  for (const r of replies) {
     if (!r.parentId) continue;
     const list = repliesByParent.get(r.parentId) ?? [];
-    list.push(r);
+    // 上限之外的一律丢弃，避免单条评论挂上几千条回复把页面拖垮
+    if (list.length < MAX_REPLIES_PER_THREAD) list.push(r);
     repliesByParent.set(r.parentId, list);
   }
 

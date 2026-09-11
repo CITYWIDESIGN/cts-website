@@ -2,23 +2,13 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import type { CurrentUser } from "./auth";
+import { CURRENT_USER_SELECT, type CurrentUser } from "./auth";
 
-const userSelect = {
-  id: true,
-  username: true,
-  email: true,
-  emailVerifiedAt: true,
-  minecraftUuid: true,
-  minecraftUsername: true,
-  microsoftAccountId: true,
-  role: true,
-  wearFrame: true,
-  createdAt: true,
-  bannedAt: true,
-  bannedUntil: true,
-  banReason: true,
-} as const;
+/*
+  select 从 `@/server/auth` 共用 —— 不再抄第二份。
+  抄一份的代价不是"多几行"，而是两边会走偏：例如一边补了 `bannedAt`、
+  另一边忘了，route handler 里的封禁判断就会静默失效。
+*/
 
 /** API 路由专用：读取当前用户（未登录返回 null，不重定向） */
 export async function getApiUser(): Promise<CurrentUser | null> {
@@ -27,7 +17,7 @@ export async function getApiUser(): Promise<CurrentUser | null> {
 
   return prisma.user.findUnique({
     where: { id: session.userId },
-    select: userSelect,
+    select: CURRENT_USER_SELECT,
   });
 }
 

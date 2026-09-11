@@ -1,6 +1,7 @@
 import "server-only";
 
 import { headers } from "next/headers";
+import { clientIpFromHeaders } from "@/lib/request-ip";
 
 
 /**
@@ -9,6 +10,10 @@ import { headers } from "next/headers";
  * 同一 IP 10 分钟内失败 8 次就拒绝。这只是挡住最粗糙的暴力破解 ——
  * 进程重启会清零，多实例之间也不共享；要真正可靠得换成 Redis 或数据库计数。
  * 够这个规模用。
+ *
+ * 注意 IP 的取法：**必须用 @/lib/request-ip**。这里原来取
+ * `x-forwarded-for` 的第一个值，那是客户端自己写的 —— 每次请求换一个随机
+ * 值就能重置计数，限流等于没有。详见那个文件。
  *
  * 不是 "use server" 文件：这里是普通函数，被各个 action 引用，
  * 不应该被当成可以直接从客户端调用的服务端函数。
@@ -26,9 +31,7 @@ export async function throttleKey(scope: string): Promise<string> {
 
 /** 请求来源 IP（用于限流 + 写进验证码邮件里） */
 export async function requestIp(): Promise<string> {
-  const h = await headers();
-  const forwarded = h.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || h.get("x-real-ip")?.trim() || "unknown";
+  return clientIpFromHeaders(await headers());
 }
 
 export function isThrottled(key: string): boolean {

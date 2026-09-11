@@ -23,7 +23,15 @@ export type CurrentUser = Pick<
   | "banReason"
 >;
 
-const userSelect = {
+/**
+ * 当前用户的字段白名单。
+ *
+ * **导出给 `@/server/api-auth` 共用** —— 那边原来抄了一份一模一样的 select。
+ * 两份拷贝迟早会走偏，而走偏的方向通常很糟糕：一边加了 `bannedAt`、
+ * 另一边没加，于是 route handler 里 `isBanned()` 永远返回 false。
+ * 要加字段就在这一处加。
+ */
+export const CURRENT_USER_SELECT = {
   id: true,
   username: true,
   email: true,
@@ -50,7 +58,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: userSelect,
+    select: CURRENT_USER_SELECT,
   });
 
   return user;

@@ -60,6 +60,27 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
   `* { border-color: var(--border) }`，所以不带颜色的 `border-*` 不是 currentColor。
 - **公开仓库**：`.env*`、`appid表单.txt`（服务器 IP / ICP / Azure 租户 ID）
   都是 gitignored，而且历史里清过。别再把它们加回来。
+- **`x-forwarded-for` 只能取最右边那个值。** 最左边的是**客户端自己写的** ——
+  代理只会把自己看到的对端**追加**在末尾。曾经 `@/server/quota` 与
+  `lib/actions/auth/throttle` 各自取第一个值，于是每次请求换个随机 XFF
+  就能拿到全新的限流桶，**登录爆破限流和上传/下载配额全部形同虚设**。
+  现在统一走 `@/lib/request-ip`（取最右 + 校验是合法 IP + 解析不出来就
+  回退 `"unknown"` 让所有人共用一个桶）。要加新的"按 IP"逻辑，只许用那个文件。
+- **OAuth 的 state 必须和 cookie 双提交。** 签名是**无状态**的，任何一次
+  `GET /api/auth/login` 产出的 state 都永久有效，光验签名挡不住
+  **login CSRF**（攻击者走一遍授权拿到 code+state，诱导受害者点链接，
+  受害者的会话就被写成攻击者的账号）。`/api/auth/login` 把 state 同时写进
+  `oauth_state` cookie，callback 要求两者一致并即刻删除。
+- **Route Handler 没有 bodySizeLimit。** Server Action 有（`next.config.ts`
+  调到了 16MB），但 `request.formData()` 在 route handler 里会把**整个请求体**
+  收进内存。所以上传接口必须**先看 `Content-Length` 再解析**，不然一个
+  2GB 的 POST 就能把进程打爆 —— 后面那句 `file.size > maxFileMb` 是解析之后
+  才执行的，拦不住。
+- **`minecraftUuid` 允许用户自填、无人审核**，所以**不能**拿它当身份凭证去
+  自动关联账号：攻击者先注册并把 UUID 填成受害者的，等受害者用 Microsoft
+  登录就会被关联进攻击者的账号。callback 里的 `upsertUser` 现在会拒绝
+  覆盖已有的 `microsoftAccountId`、并在按 UUID 关联时写审计。
+  改那段之前先想清楚这一点。
 
 ## 四、代码结构要点
 
@@ -126,11 +147,18 @@ PUBLISHED）。用户是站长自己的账号 `ciiity`（**role = USER**，要�
 
 待办（也写在 README 的「已知待办」里）：
 
-- `listComments` 是定长 `take`，超过会静默截断，还没做分页。
 - 域名上线后要配 SPF / DKIM。
 - Minecraft AppID 审批未完成前，Microsoft 登录最后一步会 403；本地账号不受影响。
 - `package.json#prisma` 已废弃，升 Prisma 7 前要迁到 `prisma.config.ts`。
+- 邮箱验证码的**按 IP** 上限是**进程内**的（`@/server/rate-limit`），
+  重启清零、多实例不共享；参考 `lib/actions/auth/throttle.ts` 的同一个取舍。
+  哪天要多实例部署，这两处一起换成 Redis 或计数表。
+- `getActivityStats`（后台统计页）仍会把全部用户读出来再在内存里排序。
+  用户量上千以后再考虑把排序下推到 SQL。
+- 还没配 HSTS：生产是不是一定跑 HTTPS 我没法确认，贸然开 `Strict-Transport-Security`
+  会把纯 HTTP 的部署锁死。域名和证书都就绪后在 `next.config.ts` 的
+  `securityHeaders` 里加。
 
-还**没在浏览器里实测过**的（下次有机会要验）：注册 / 登录 / 换绑邮箱（双验证
-码）/ 改用户名 / 注销 / 封禁、资源分页与搜索、评论回复动画、头像下的 U 型线、
-以及几次动画修复（`layoutRoot`、主标题单行）。
+改过安全相关的几处之后**没在浏览器里实测过**，下次要验：登录（含限流）、
+Microsoft 登录（含 state 校验与账号冲突提示）、资源上传/下载的配额与体积拦截、
+邮箱验证码发送、用户资料页的资源列表截断、以及根级错误页。

@@ -181,6 +181,16 @@ export async function getActivityStats(page = 1): Promise<{
   };
 }
 
+/**
+ * 单个用户的资料 + 活跃度（公开页用，任何访客都能看）。
+ *
+ * ⚠️ 资源列表**必须有 take**。这里原来是把该用户的资源全部 `select` 回来，
+ * 页面再把它们全渲染一遍 —— 一个传了几千个资源的账号会让这个**公开页面**
+ * 一次拉出几千行、生成几千个 DOM 节点。现在只取最近的一页，
+ * 真正的总数走 `_count`（数据库里算，不搬数据）。
+ */
+export const PROFILE_RESOURCE_LIMIT = 24;
+
 /** 单个用户的资料 + 活跃度（公开页用，任何访客都能看） */
 export async function getUserProfile(id: string) {
   const user = await prisma.user.findUnique({
@@ -197,8 +207,10 @@ export async function getUserProfile(id: string) {
       bannedAt: true,
       bannedUntil: true,
       banReason: true,
+      _count: { select: { resources: true } },
       resources: {
         orderBy: { createdAt: "desc" },
+        take: PROFILE_RESOURCE_LIMIT,
         select: {
           id: true,
           title: true,
@@ -222,5 +234,15 @@ export async function getUserProfile(id: string) {
     }),
   ]);
 
-  return { ...user, comments, downloads, framed: hasAvatarFrame(user) };
+  const { _count, ...rest } = user;
+  return {
+    ...rest,
+    comments,
+    downloads,
+    /** 该用户发布的资源总数（不是列表长度） */
+    resourceCount: _count.resources,
+    /** 列表被截断了（总数比展示的多） */
+    truncated: _count.resources > user.resources.length,
+    framed: hasAvatarFrame(user),
+  };
 }

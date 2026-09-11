@@ -19,6 +19,7 @@ export type AuditAction =
   | "resource.delete"
   | "user.purge"
   | "user.anonymize"
+  | "user.link_microsoft"
   | "report.remove_content"
   | "join_config.update"
   | "limits.update"

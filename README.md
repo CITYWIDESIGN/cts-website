@@ -494,7 +494,10 @@ npm run start        # runs on :3000, put nginx/caddy in front for HTTPS
 ## Known TODOs
 
 - **Migrate Prisma seed config**: `package.json#prisma` is deprecated (warning `The configuration property package.json#prisma is deprecated`). It still works on Prisma 6 and does **not** affect authentication. Migrate to a `prisma.config.ts` before upgrading to Prisma 7.
-- **The comment list is still a fixed-size fetch** (`listComments`' `take`), so it silently truncates past that count; pagination is not implemented.
+- **The comment list is capped at 100 top-level threads per resource** (`listComments`); replies are fetched per thread so a thread is never half-rendered. Past the cap the oldest threads are not shown, and pagination is not implemented yet.
+- **HSTS is not enabled.** Whether production always runs over HTTPS is a deployment decision, so `Strict-Transport-Security` is deliberately left out of `securityHeaders` in `next.config.ts` — enabling it blindly can lock a plain-HTTP deployment out. Add it once the domain and certificate are in place.
+- **The per-IP verification-email cap is in-process** (`src/server/rate-limit.ts`), same trade-off as the sign-in throttle: it resets on restart and is not shared across instances. Move both to Redis or a counter table when the site runs multi-instance.
+- **`getActivityStats` reads every user and sorts in memory** (admin stats page). Fine at this scale; push the ordering down into SQL if the user count reaches the thousands.
 - **Configure SPF / DKIM once the domain is live**, otherwise verification emails tend to land in spam.
 - **Microsoft sign-in returns 403 on the last step until the Minecraft AppID review completes** (see above). Local accounts are unaffected.
 

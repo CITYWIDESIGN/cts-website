@@ -45,19 +45,12 @@ function dayKey(now = new Date()): string {
   return now.toISOString().slice(0, 10);
 }
 
-/** 从请求头里取客户端 IP（优先取代理链的第一个） */
-export function clientIp(request: Request): string {
-  const xff = request.headers.get("x-forwarded-for");
-  if (xff) {
-    const first = xff.split(",")[0]?.trim();
-    if (first) return first;
-  }
-  return (
-    request.headers.get("x-real-ip")?.trim() ||
-    request.headers.get("cf-connecting-ip")?.trim() ||
-    "unknown"
-  );
-}
+/*
+  客户端 IP 统一由 `@/lib/request-ip` 提供 —— 这里原来自己取
+  `x-forwarded-for` 的第一个值，而那是**客户端可以随便写的**，
+  换个随机值就能白拿一份新配额。详见那个文件的注释。
+*/
+export { clientIp } from "@/lib/request-ip";
 
 function subjectKeyFor(subject: QuotaSubject): {
   subjectType: string;
