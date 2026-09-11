@@ -438,7 +438,8 @@
     "previewStageRendering": "渲染预览图",
     "viewFront": "主视图",
     "viewSide": "侧视图",
-    "viewBack": "后视图"
+    "viewBack": "后视图",
+    "viewOther": "另一侧"
   },
   "ban": {
     "socialForever": "你已被永久封禁，无法点赞或评论",

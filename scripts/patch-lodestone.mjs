@@ -76,20 +76,16 @@ writeFileSync(TARGET, source.replace(ORIGINAL, PATCHED).replace(LEGACY, PATCHED)
  * 只动主渲染器那一次 setClearColor；另外两处（1850/1858 附近的黑/白）
  * 是**阴影贴图**的清屏色，改了会破坏阴影，不碰。
  */
-const ALPHA_PATCHES = [
-  { name: "alpha 通道", from: "alpha: false,", to: "alpha: true," },
-  { name: "清除色改为全透明", from: "setClearColor(0x000000, 1);", to: "setClearColor(0x000000, 0);" },
-  {
-    name: "跳过天空（直接绘制路径）",
-    from: "// 1. Render sky background (fullscreen quad, no depth)\n        this.renderer.render(this.skyScene, this.skyCamera);",
-    to: "// [patched] 天空已跳过：预览要透明背景",
-  },
-  {
-    name: "跳过天空（后处理路径）",
-    from: "this.renderer.render(this.skyScene, this.skyCamera);\n        this.renderer.render(this.structureScene, this.camera);",
-    to: "// [patched] 天空已跳过：预览要透明背景\n        this.renderer.render(this.structureScene, this.camera);",
-  },
-];
+/*
+ * 透明背景那一组补丁**已撤销**。
+ *
+ * 当时的想法是"透明底自动跟随明暗主题"，但站长要的是**真正渲染出来的背景**
+ * （白天/黑夜两套），所以改成按主题设置天空颜色渲染两轮，背景必须不透明。
+ * 留着"跳过天空 + 清除色透明"反而会把背景弄没。
+ *
+ * 这个常量保留成空数组，是为了让下面的 applyPatches 逻辑不用改分支。
+ */
+const ALPHA_PATCHES = [];
 
 const RENDERER = path.join(
   ROOT,

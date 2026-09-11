@@ -150,16 +150,69 @@ export function frameCamera(
 }
 
 /**
- * 三个方向上的等轴测视图。
+ * 四个方向上的等轴测视图：90° 一档，正好闭环一圈。
  *
- * 取 120° 一档：三张图拼起来正好把建筑看一圈，不会有哪一面完全没拍到。
- * （90° 一档要四张才闭环，45° 那套是八个方向，都太多。）
- *
- * 卡片缩略图用**第一张**，所以第一张的方位角保持 0（原来的默认视角），
+ * 卡片缩略图用**第一张**，所以第一个方向的方位角保持 0（原来的默认视角），
  * 老缩略图的观感不变。
  */
 export const PREVIEW_VIEWS: { key: string; yawDeg: number }[] = [
   { key: "viewFront", yawDeg: 0 },
-  { key: "viewSide", yawDeg: 120 },
-  { key: "viewBack", yawDeg: 240 },
+  { key: "viewSide", yawDeg: 90 },
+  { key: "viewBack", yawDeg: 180 },
+  { key: "viewOther", yawDeg: 270 },
 ];
+
+/**
+ * 白天 / 黑夜两套**纯色背景**。
+ *
+ * 为什么要两套：背景是渲染进 PNG 的，不是 CSS 能改的 —— 只烤一套的话，
+ * 用户切主题时底色是死的。
+ *
+ * 为什么三层颜色填一样的值：lodestone 的天空是从天顶 → 地平线 → 地面
+ * **渐变**的，三层同色就塌成一个纯色底，正好当背景用。这样不用去碰
+ * 渲染器内部（不需要"跳过天空"那种补丁），也不需要 alpha 通道。
+ *
+ * 用**纯白 / 纯黑**而不是去凑主题的灰色：前端的容器直接写
+ * \`bg-white dark:bg-black\` 就能和图片**逐像素对齐**，不存在"渲染出来的灰
+ * 和主题的灰差一点点"那种缝。
+ *
+ * 颜色是 \`[r, g, b]\`（0~1）—— lodestone 的 \`Color\` 就是这个形状。
+ */
+export const PREVIEW_THEMES: {
+  key: "light" | "dark";
+  sky: {
+    zenithColor: [number, number, number];
+    horizonColor: [number, number, number];
+    groundColor: [number, number, number];
+  };
+}[] = [
+  {
+    key: "light",
+    sky: {
+      zenithColor: [1, 1, 1],
+      horizonColor: [1, 1, 1],
+      groundColor: [1, 1, 1],
+    },
+  },
+  {
+    key: "dark",
+    sky: {
+      zenithColor: [0, 0, 0],
+      horizonColor: [0, 0, 0],
+      groundColor: [0, 0, 0],
+    },
+  },
+];
+
+/**
+ * 8 张图的索引：`方向 * 2 + 主题`。
+ *
+ * 0..7 → `/api/resources/<id>/preview?i=<n>`。
+ * 把这套映射写在服务端和客户端共用的地方，免得两边各算各的算错。
+ */
+export function previewIndex(direction: number, theme: "light" | "dark"): number {
+  return direction * PREVIEW_THEMES.length + (theme === "dark" ? 1 : 0);
+}
+
+/** 一共会生成多少张 */
+export const PREVIEW_COUNT = PREVIEW_VIEWS.length * PREVIEW_THEMES.length;

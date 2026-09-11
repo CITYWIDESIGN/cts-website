@@ -438,7 +438,8 @@
     "previewStageRendering": "Rendering",
     "viewFront": "Front",
     "viewSide": "Side",
-    "viewBack": "Back"
+    "viewBack": "Back",
+    "viewOther": "Other side"
   },
   "ban": {
     "socialForever": "You are permanently banned and cannot like or comment",

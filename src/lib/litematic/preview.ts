@@ -19,6 +19,7 @@ import {
   buildStructureFromLitematic,
   frameCamera,
   PREVIEW_VIEWS,
+  PREVIEW_THEMES,
   type LitematicPreviewMeta,
 } from "./build-structure";
 import { packBaseUrl } from "./pack-url";
@@ -32,11 +33,15 @@ export type PreviewStage = "parsing" | "loading-pack" | "merging" | "rendering";
 export type PreviewMeta = LitematicPreviewMeta;
 
 /**
- * 三张等轴测图（顺序同 PREVIEW_VIEWS）。第一张当卡片缩略图。
- * 每张都是**带 alpha 的 PNG**，页面上直接跟随明暗主题。
+ * 8 张等轴测图：4 个方向 × 白天/黑夜，顺序是 `方向 * 2 + 主题`
+ * （见 build-structure.ts 的 previewIndex）。
+ *
+ * **背景是烤进图里的**（渲染出来的天空，不是 CSS 能改的），所以两套主题
+ * 必须在上传时都渲染好 —— 前端按当前主题选对应的那张。
+ * 第 0 张当卡片缩略图。
  */
 export interface PreviewResult {
-  /** 长度 = PREVIEW_VIEWS.length 的 data URL 数组 */
+  /** 长度 = PREVIEW_COUNT（= 8）的 data URL 数组 */
   images: string[];
   meta: PreviewMeta;
 }
@@ -108,25 +113,30 @@ export async function renderLitematicPreview(
     await three.whenReady();
     three.drawStructure();
 
-    // PNG 保留 alpha —— 渲染器那边打过补丁（跳过天空、清除色透明），
-    // 所以底图是透明的，在页面上自动跟随明暗主题
     /*
-      三个方向各渲染一帧。
+      4 个方向 × 2 套主题 = 8 帧。
 
-      同一个 renderer / 同一份网格，只换相机 —— 比建三次场景快得多，
-      而且网格只需要在 whenReady 里建一次。
+      同一个 renderer、同一份网格，只换相机和天空颜色 —— 网格只在
+      whenReady 里建一次，比建八次场景快得多。
+
+      顺序必须是 `方向 * 2 + 主题`（和 previewIndex 一致）：
+      前端按主题选图时直接 +1，不用再查表。
     */
     const images: string[] = [];
     for (const view of PREVIEW_VIEWS) {
-      const frame = frameCamera(built.meta.size, 45, view.yawDeg);
-      three.setCamera({
-        position: frame.position,
-        target: frame.target,
-        up: [0, 1, 0],
-        fov: 45,
-      });
-      three.drawStructure();
-      images.push(canvas.toDataURL("image/png"));
+      for (const theme of PREVIEW_THEMES) {
+        // 背景色是按主题烤进图里的，所以每张都要重设
+        three.setSunlight({ sky: theme.sky });
+        const frame = frameCamera(built.meta.size, 45, view.yawDeg);
+        three.setCamera({
+          position: frame.position,
+          target: frame.target,
+          up: [0, 1, 0],
+          fov: 45,
+        });
+        three.drawStructure();
+        images.push(canvas.toDataURL("image/png"));
+      }
     }
     return { images, meta: built.meta };
   } catch (err) {

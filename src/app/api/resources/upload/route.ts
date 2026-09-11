@@ -172,7 +172,7 @@ export async function POST(request: Request) {
           if (
             Array.isArray(views) &&
             views.length > 0 &&
-            views.length <= 3 &&
+            views.length <= 8 &&
             views.every((v) => isAllowedCoverDataUrl(v))
           ) {
             previewUrl = JSON.stringify(views);
