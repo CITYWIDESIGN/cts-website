@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PREVIEW_VIEWS } from "@/lib/litematic/build-structure";
@@ -87,9 +88,19 @@ export function PreviewGrid({
 
         portal 把浮层挂到 body 下，彻底脱离那些祖先。
       */}
+      {/*
+        放大/缩小动画用 AnimatePresence 包住 —— 它是**退出动画**的前提：
+        没有它的话 open 一变 null 组件立刻被卸载，exit 根本来不及播。
+        浮层淡入淡出 + 图片从 0.92 弹到 1，收起来时反向。
+      */}
+      <AnimatePresence>
       {open !== null &&
         createPortal(
-          <div
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
             role="dialog"
           aria-modal="true"
           aria-label={title}
@@ -113,15 +124,20 @@ export function PreviewGrid({
             盒子撑满视口之后，object-contain 才会按比例缩放到贴合，
             同时还保持不变形。
           */}
-          <img
+          <motion.img
             src={shown(open) ?? ""}
             alt={title}
             onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.92, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.94, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 360, damping: 32, mass: 0.7 }}
             className="h-full w-full cursor-default object-contain"
           />
-          </div>,
+          </motion.div>,
           document.body
         )}
+      </AnimatePresence>
     </>
   );
 }

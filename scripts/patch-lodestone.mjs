@@ -102,6 +102,23 @@ const ALPHA_PATCHES = [
     to: "/* [patched] 天空已跳过：预览要透明背景 */",
     all: true,
   },
+  {
+    /*
+     * 主绘制前**重新断言**清除色。
+     *
+     * 症状：背景一直是黑的，透明补丁看起来没生效。
+     * 原因：阴影 pass 在主绘制之前跑，它内部会把清除色设成**不透明黑**
+     * （给深度图用的）。如果它没把 alpha 恢复回来，后面主绘制那次
+     * \`this.renderer.clear()\` 就又清成了不透明黑 —— 补丁明明打了，
+     * 效果被覆盖掉了。
+     *
+     * 与其去追阴影 pass 有没有恢复现场（那是它的实现细节，会随版本变），
+     * 不如在真正要清的那一行前面把自己要的颜色重新写一遍。
+     */
+    name: "绘制前重新断言透明清除色",
+    from: "// Fallback: direct rendering without post-processing\n        this.renderer.clear();",
+    to: "// [patched] 阴影 pass 会把清除色改成不透明黑，这里重新断言\n        this.renderer.setClearColor(0x000000, 0);\n        this.renderer.clear();",
+  },
   { name: "关掉太阳", from: "sunDisc: true", to: "sunDisc: false", all: true },
 ];
 
