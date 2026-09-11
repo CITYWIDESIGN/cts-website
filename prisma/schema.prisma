@@ -511,6 +511,40 @@ model Announcement {
   @@map("announcements")
 }
 
+/**
+ * 首页轮播图。管理员在后台维护：上传图片 + 标题 + 副标题。
+ *
+ * 图片二进制单独放 `CarouselImage`，和 `ResourceImage` 一个思路 ——
+ * 列表查询只取文字，不该把每张图几 MB 的字节拉回来。
+ *
+ * 中英分列存，英文留空时回退中文（见 @/lib/localized）。
+ */
+model CarouselSlide {
+  id         String   @id @default(cuid())
+  titleZh    String   @map("title_zh")
+  titleEn    String?  @map("title_en")
+  subtitleZh String   @map("subtitle_zh")
+  subtitleEn String?  @map("subtitle_en")
+  sortOrder  Int      @default(0) @map("sort_order")
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  image CarouselImage?
+
+  @@index([published, sortOrder])
+  @@map("carousel_slides")
+}
+
+model CarouselImage {
+  slideId  String        @id @map("slide_id")
+  data     Bytes
+  mimeType String        @map("mime_type")
+  slide    CarouselSlide @relation(fields: [slideId], references: [id], onDelete: Cascade)
+
+  @@map("carousel_images")
+}
+
 /** 举报状态：只有"待处理"和"已处理"两种，够用且不啰嗦 */enum ReportStatus {
   PENDING
   RESOLVED

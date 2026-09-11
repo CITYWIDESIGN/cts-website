@@ -23,13 +23,14 @@ export type AuditAction =
   | "join_config.update"
   | "limits.update"
   | "site_content.update"
-  | "announcement.delete";
+  | "announcement.delete"
+  | "carousel.delete";
 
 export interface AuditInput {
   action: AuditAction;
   actorId?: string | null;
   actorName?: string | null;
-  targetType: "resource" | "user" | "comment" | "setting" | "announcement";
+  targetType: "resource" | "user" | "comment" | "setting" | "announcement" | "carousel";
   targetId: string;
   targetLabel?: string | null;
   detail?: Record<string, unknown> | null;

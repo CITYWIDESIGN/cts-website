@@ -37,6 +37,24 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   // 别在响应头里 advertise 用了什么框架
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      /**
+       * Server Action 的请求体默认上限只有 **1MB**。
+       *
+       * 这个项目有两处会通过 Server Action 传二进制：
+       *   - 资源编辑时替换附件（上限由后台的 maxFileMb 决定，默认 5MB）
+       *   - 后台上传轮播图（上限 8MB）
+       * 默认值下这两个功能在文件稍大时会被框架层直接拒掉，而且报错很含糊。
+       *
+       * 16MB 是给两边留了余量的统一上限（附件 5MB + base64 封面约 1.4MB
+       * ≈ 6.4MB；轮播图 8MB）。**如果管理员把 maxFileMb 调到 14MB 以上，
+       * 资源编辑会重新撞到这个上限** —— 那时要么继续调大，要么把编辑也
+       * 改成上传接口那种 multipart 路由。
+       */
+      bodySizeLimit: "16mb",
+    },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

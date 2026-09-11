@@ -20,7 +20,19 @@ export const StatsConfigSchema = z.object({
   players: z.number().int().min(0).max(99_999_999),
   builds: z.number().int().min(0).max(99_999_999),
   members: z.number().int().min(0).max(99_999_999),
+  /**
+   * 「稳定运行天数」怎么来：
+   *   - `manual` 管理员自己填
+   *   - `auto`   按下面的起始日期算，每天自动 +1
+   */
+  daysMode: z.enum(["manual", "auto"]).default("manual"),
   days: z.number().int().min(0).max(99_999_999),
+  /** daysMode=auto 时的起始日期（YYYY-MM-DD） */
+  daysSince: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .default("2023-01-01"),
 });
 
 export type StatsConfig = z.infer<typeof StatsConfigSchema>;
@@ -29,8 +41,36 @@ export const DEFAULT_STATS: StatsConfig = {
   players: 320,
   builds: 480,
   members: 260,
+  daysMode: "auto",
   days: 720,
+  daysSince: "2023-01-01",
 };
+
+/**
+ * 把配置解析成最终要展示的四个数字。
+ *
+ * 「稳定运行天数」在 auto 模式下由起始日期算出来 —— 这类数字本质是
+ * `今天 - 开服日`，让管理员每天手改一次不现实（也一定会忘）。
+ * 按 UTC 零点算，避免因为时区在一天里来回跳 1。
+ */
+export function resolveStats(
+  config: StatsConfig,
+  now: Date = new Date()
+): { players: number; builds: number; members: number; days: number } {
+  let days = config.days;
+  if (config.daysMode === "auto") {
+    const start = Date.parse(`${config.daysSince}T00:00:00.000Z`);
+    if (Number.isFinite(start)) {
+      days = Math.max(0, Math.floor((now.getTime() - start) / 86_400_000));
+    }
+  }
+  return {
+    players: config.players,
+    builds: config.builds,
+    members: config.members,
+    days,
+  };
+}
 
 /** 一条服务器配置，例如 内存 / 64 GB */
 export const ServerSpecSchema = z.object({

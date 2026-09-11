@@ -946,7 +946,8 @@
         "join_config_update": "Changed join entry",
         "limits_update": "Changed limits",
         "site_content_update": "Changed site content",
-        "announcement_delete": "Deleted announcement"
+        "announcement_delete": "Deleted announcement",
+        "carousel_delete": "Deleted carousel slide"
       }
     },
     "join": {
@@ -1162,7 +1163,11 @@
         "players": "Players so far",
         "builds": "Builds",
         "members": "Community members",
-        "days": "Days online"
+        "days": "Days online",
+        "daysAuto": "Increase by 1 each day",
+        "daysAutoHint": "When on, the day count is derived from the launch date below — no need to update it by hand.",
+        "daysSince": "Launch date",
+        "daysPreview": "That makes today day {days}."
       },
       "serverTitle": "Server introduction & specs",
       "serverHint": "The introduction appears at the top of /server; the specs are the hardware cards below it.",
@@ -1227,6 +1232,44 @@
         "required": "Title and body both need Chinese text.",
         "invalid": "A field is empty or too long.",
         "not_found": "That announcement no longer exists.",
+        "unknown": "Something went wrong, please try again."
+      }
+    },
+    "carouselNav": "Carousel",
+    "carousel": {
+      "title": "Homepage carousel",
+      "description": "The image carousel at the top of the homepage. Upload an image with a title and subtitle; the order here is the display order.",
+      "count": "{count} slides",
+      "empty": "No slides yet — the homepage shows built-in placeholders. Start with “New slide”.",
+      "new": "New slide",
+      "createTitle": "New slide",
+      "editTitle": "Edit slide",
+      "formHint": "16:9 recommended, {max}MB max. Chinese is required; English falls back to Chinese when left empty.",
+      "fieldImage": "Image",
+      "pickImage": "Click to choose an image",
+      "imageHint": "16:9 recommended, {max}MB max. PNG / JPG / GIF / WebP only — no SVG.",
+      "imageKeepHint": "Leave empty to keep the current image.",
+      "fieldTitle": "Title",
+      "fieldSubtitle": "Subtitle",
+      "fieldPublished": "Show on the homepage",
+      "fieldPublishedHint": "Turn off to keep it as a draft, visible only here.",
+      "draft": "Draft",
+      "noImage": "No image",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "created": "Slide created",
+      "updated": "Slide updated",
+      "deleted": "Slide deleted",
+      "deleteTitle": "Delete this slide?",
+      "deleteDescription": "“{title}” and its image will be deleted. This cannot be undone.",
+      "errors": {
+        "required": "Title and subtitle both need Chinese text.",
+        "image_required": "A new slide needs an image.",
+        "image_too_large": "The image is over the {max}MB limit.",
+        "image_type": "Only PNG / JPG / GIF / WebP are supported.",
+        "too_many": "You have reached the slide limit.",
+        "invalid": "A field is empty or too long.",
+        "not_found": "That slide no longer exists.",
         "unknown": "Something went wrong, please try again."
       }
     }

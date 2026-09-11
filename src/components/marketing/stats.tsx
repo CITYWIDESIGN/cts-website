@@ -3,16 +3,20 @@ import { SectionHeading } from "./section-heading";
 import { CountUp } from "@/components/motion/count-up";
 import { Reveal } from "@/components/motion/reveal";
 import { getStats } from "@/server/settings";
+import { resolveStats } from "@/lib/validators/content";
 
 /**
  * 首页数据区块。
  *
  * 四个数字由管理员在后台「站点内容」里维护（`SiteSetting` 的 stats 键），
  * 不再写死在 src/config/site.ts —— 那些数字是运营数据，不该为改一个数发一次版。
+ *
+ * 「稳定运行天数」在自动模式下由开服日期算出来（每天 +1），所以这里先
+ * resolve 一次再展示。
  */
 export async function Stats() {
   const t = await getTranslations("home.stats");
-  const stats = await getStats();
+  const stats = resolveStats(await getStats());
 
   const items = [
     { label: t("players"), value: stats.players },

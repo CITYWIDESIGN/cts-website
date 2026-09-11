@@ -17,6 +17,7 @@ import {
   Gauge,
   Megaphone,
   PenLine,
+  Images,
   Home,
   type LucideIcon,
 } from "lucide-react";
@@ -50,6 +51,7 @@ const groups: Array<{ labelKey: string; items: NavItem[] }> = [
     labelKey: "siteGroup",
     items: [
       { href: "/admin/announcements", key: "announcementsNav", icon: Megaphone },
+      { href: "/admin/carousel", key: "carouselNav", icon: Images },
       { href: "/admin/content", key: "contentNav", icon: PenLine },
       { href: "/admin/join", key: "joinNav", icon: DoorOpen },
       { href: "/admin/limits", key: "limitsNav", icon: Gauge },

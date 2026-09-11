@@ -946,7 +946,8 @@
         "join_config_update": "修改加入入口",
         "limits_update": "修改限额设置",
         "site_content_update": "修改站点内容",
-        "announcement_delete": "删除公告"
+        "announcement_delete": "删除公告",
+        "carousel_delete": "删除轮播图"
       }
     },
     "join": {
@@ -1162,7 +1163,11 @@
         "players": "累计玩家",
         "builds": "建筑作品",
         "members": "社区成员",
-        "days": "稳定运行天数"
+        "days": "稳定运行天数",
+        "daysAuto": "每天自动 +1",
+        "daysAutoHint": "打开后按下面的开服日期自动算天数，不用每天手动改。",
+        "daysSince": "开服日期",
+        "daysPreview": "今天是第 {days} 天。"
       },
       "serverTitle": "服务器介绍与配置",
       "serverHint": "介绍显示在 /server 页顶部；配置列表就是硬件那一组卡片。",
@@ -1227,6 +1232,44 @@
         "required": "标题和正文都要填中文。",
         "invalid": "有字段为空或超出长度限制。",
         "not_found": "这条公告已经不存在了。",
+        "unknown": "操作失败，请稍后重试。"
+      }
+    },
+    "carouselNav": "轮播图",
+    "carousel": {
+      "title": "首页轮播图",
+      "description": "首页首屏的图片轮播。上传图片并填写标题与副标题，顺序就是展示顺序。",
+      "count": "共 {count} 张",
+      "empty": "还没有轮播图，首页会显示内置的占位图。点「新建轮播图」开始。",
+      "new": "新建轮播图",
+      "createTitle": "新建轮播图",
+      "editTitle": "编辑轮播图",
+      "formHint": "建议 16:9，最大 {max}MB。中文必填，英文留空时前台回退显示中文。",
+      "fieldImage": "图片",
+      "pickImage": "点击选择图片",
+      "imageHint": "建议 16:9，最大 {max}MB；支持 PNG / JPG / GIF / WebP，不支持 SVG。",
+      "imageKeepHint": "不选新图片就保留原来的那张。",
+      "fieldTitle": "标题",
+      "fieldSubtitle": "副标题",
+      "fieldPublished": "在首页展示",
+      "fieldPublishedHint": "关掉就是草稿，只保存在后台。",
+      "draft": "草稿",
+      "noImage": "没有图片",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "created": "轮播图已创建",
+      "updated": "轮播图已更新",
+      "deleted": "轮播图已删除",
+      "deleteTitle": "删除这张轮播图？",
+      "deleteDescription": "《{title}》及其图片将被删除，操作不可撤销。",
+      "errors": {
+        "required": "标题和副标题都要填中文。",
+        "image_required": "新建轮播图必须选一张图片。",
+        "image_too_large": "图片超过 {max}MB 限制。",
+        "image_type": "只支持 PNG / JPG / GIF / WebP。",
+        "too_many": "轮播图数量已达上限。",
+        "invalid": "有字段为空或超出长度限制。",
+        "not_found": "这张轮播图已经不存在了。",
         "unknown": "操作失败，请稍后重试。"
       }
     }

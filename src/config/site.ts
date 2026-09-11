@@ -16,7 +16,7 @@ export const siteConfig = {
      * **故意不在页面上展示服务器地址** —— 地址只在入服审核通过后单独告知。
      * 这里留字段是为了将来可能的后台配置，但公开页面不读它。
      */
-    version: "1.21.x",
+    version: "1.21",
     /** Fabric 服务端 → 只支持 Java 版 */
     java: true,
     bedrock: false,
@@ -29,7 +29,7 @@ export const siteConfig = {
      * 直接写 "Survival" 之类的话，中文页面上会冒出英文。
      */
     gameModes: ["survival", "technical", "building"],
-    openedAt: "2024",
+    openedAt: "2023",
   },
   links: {
     discord: "https://discord.gg/nsHa44gRP",

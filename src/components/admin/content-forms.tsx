@@ -14,12 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { LocalizedField, RepeatableList, type LocalizedText } from "./content-fields";
 import type {
   RulesConfig,
   ServerInfo,
   StatsConfig,
 } from "@/lib/validators/content";
+import { resolveStats } from "@/lib/validators/content";
 
 /** 每次都要造一个新的空对象：共用同一个引用会让几条规则串改 */
 const emptyLocalized = (): LocalizedText => ({ zh: "", en: "" });
@@ -29,12 +31,14 @@ export function StatsForm({ initial }: { initial: StatsConfig }) {
   const [form, setForm] = React.useState(initial);
   const [pending, start] = useTransition();
 
-  const fields: Array<{ key: keyof StatsConfig; label: string }> = [
+  const fields: Array<{ key: "players" | "builds" | "members"; label: string }> = [
     { key: "players", label: t("stats.players") },
     { key: "builds", label: t("stats.builds") },
     { key: "members", label: t("stats.members") },
-    { key: "days", label: t("stats.days") },
   ];
+
+  /** 自动模式下按起始日期实时算出天数，让管理员看到保存后会是多少 */
+  const previewDays = resolveStats(form).days;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,8 +53,8 @@ export function StatsForm({ initial }: { initial: StatsConfig }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <div className="grid gap-4 sm:grid-cols-3">
         {fields.map((f) => (
           <div key={f.key} className="flex flex-col gap-2">
             <Label htmlFor={`stat-${f.key}`}>{f.label}</Label>
@@ -70,6 +74,65 @@ export function StatsForm({ initial }: { initial: StatsConfig }) {
           </div>
         ))}
       </div>
+
+      {/* 稳定运行天数：可以手填，也可以按开服日自动 +1 */}
+      <div className="flex flex-col gap-3 rounded-xl border bg-muted/20 p-4">
+        <Label
+          htmlFor="stat-days-auto"
+          className="flex cursor-pointer items-start justify-between gap-4"
+        >
+          <span className="flex flex-col gap-1">
+            <span className="text-sm font-medium">{t("stats.daysAuto")}</span>
+            <span className="text-xs leading-relaxed text-muted-foreground">
+              {t("stats.daysAutoHint")}
+            </span>
+          </span>
+          <Switch
+            id="stat-days-auto"
+            checked={form.daysMode === "auto"}
+            onCheckedChange={(v) =>
+              setForm((s) => ({ ...s, daysMode: v ? "auto" : "manual" }))
+            }
+            className="mt-0.5"
+          />
+        </Label>
+
+        {form.daysMode === "auto" ? (
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="stat-days-since">{t("stats.daysSince")}</Label>
+              <Input
+                id="stat-days-since"
+                type="date"
+                value={form.daysSince}
+                onChange={(e) => setForm((s) => ({ ...s, daysSince: e.target.value }))}
+                className="w-48"
+              />
+            </div>
+            <p className="pb-2 text-sm text-muted-foreground">
+              {t("stats.daysPreview", { days: previewDays })}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="stat-days">{t("stats.days")}</Label>
+            <Input
+              id="stat-days"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              value={String(form.days)}
+              onChange={(e) => {
+                const n = e.target.value.trim() === "" ? 0 : Number(e.target.value);
+                setForm((s) => ({ ...s, days: Number.isFinite(n) ? n : 0 }));
+              }}
+              className="w-40 tabular-nums"
+            />
+          </div>
+        )}
+      </div>
+
       <SaveRow pending={pending} label={t("save")} saving={t("saving")} />
     </form>
   );

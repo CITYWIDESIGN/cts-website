@@ -70,8 +70,17 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
 - **管理员可编辑的内容分两种存法**，选错了以后要返工：
   - **单例内容**（首页数字、服务器介绍与配置、规则）→ `SiteSetting` 的 Json。
     只有一份、整体覆盖式保存。
-  - **会不断新增的**（公告）→ 独立表 `Announcement`。需要排序、草稿态、
-    稳定 id 来编辑删除，这些是数据库该干的活。
+  - **会不断新增的**（公告、轮播图）→ 独立表（`Announcement` / `CarouselSlide`）。
+    需要排序、草稿态、稳定 id 来编辑删除，这些是数据库该干的活。
+- **二进制一律进数据库**，不依赖共享文件系统或对象存储：资源附件
+  `ResourceBlob`、资源封面 `ResourceImage`、轮播图 `CarouselImage`。列表查询
+  必须 `select` 掉字节列，只有图片/下载接口才读。
+- **Server Action 的请求体默认只有 1MB**。这个项目有两处会通过 action 传二进制
+  （资源编辑换附件、后台上传轮播图），所以 `next.config.ts` 把
+  `experimental.serverActions.bodySizeLimit` 调到了 16MB。
+  调整后台的 `maxFileMb` 时要顺带看一眼这个上限。
+- **Prisma 6 的 Bytes 字段要 `Uint8Array<ArrayBuffer>`**，而 `Buffer` / 从 File
+  读出来的字节是 `ArrayBufferLike`，直接传类型不过。包一层 `new Uint8Array(x)`。
 - **后台填的内容不能放 `messages/*.json`**（那是构建产物）。用 `{ zh, en }`
   结构（见 `src/lib/localized.ts`）：**中文必填、英文可选、缺省回退中文**，
   所以管理员可以只用中文先写起来。公告那张表是中英分列存放。

@@ -1,10 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { SplitHeading } from "@/components/motion/split-heading";
-import { Carousel } from "./carousel";
+import { Carousel, type CarouselItem } from "./carousel";
 import { ServerStatus } from "./server-status";
 import { HeroActions } from "./join-button";
 import { carouselSlides, carouselIntervalMs } from "@/config/carousel";
+import { listPublishedSlides, toSlideView } from "@/server/carousel";
 
 /**
  * 首页首屏。
@@ -15,6 +16,28 @@ import { carouselSlides, carouselIntervalMs } from "@/config/carousel";
  */
 export async function Hero() {
   const t = await getTranslations("home.hero");
+  const tc = await getTranslations("home.carousel");
+  const locale = await getLocale();
+
+  /*
+    轮播图优先用管理员在后台传的（/admin/carousel）。一条都没有时回退到
+    src/config/carousel.ts 里那组内置占位图 —— 这样全新部署也不会出现
+    一块空白，管理员上传第一张之后自动切成真实内容。
+  */
+  const rows = await listPublishedSlides();
+  const items: CarouselItem[] =
+    rows.length > 0
+      ? rows.map((row) => {
+          const v = toSlideView(locale, row);
+          return { key: v.id, src: v.src, title: v.title, subtitle: v.subtitle };
+        })
+      : carouselSlides.map((slide) => ({
+          key: slide.key,
+          src: slide.src,
+          title: tc(`items.${slide.key}.title`),
+          subtitle: tc(`items.${slide.key}.description`),
+          overlay: slide.overlay,
+        }));
 
   return (
     <section className="relative overflow-hidden">
@@ -80,7 +103,7 @@ export async function Hero() {
 
         {/* 图片轮播（封面流 + 鼠标倾斜） */}
         <StaggerItem index={2}>
-          <Carousel slides={carouselSlides} intervalMs={carouselIntervalMs} />
+          <Carousel items={items} intervalMs={carouselIntervalMs} />
         </StaggerItem>
 
         {/* 服务器状态 */}

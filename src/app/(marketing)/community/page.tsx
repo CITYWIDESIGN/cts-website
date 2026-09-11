@@ -96,12 +96,14 @@ export default async function CommunityPage() {
                           <Image
                             src={links.qqQrImage}
                             alt={t("channels.qq.qrAlt")}
-                            width={148}
-                            height={148}
-                            className="size-[148px] rounded-md object-contain"
+                            width={197}
+                            height={197}
+                            className="size-[197px] rounded-md object-contain"
                           />
                         ) : (
-                          <QqQrCode className="size-[148px]" />
+                          /* 197px = 148 × 4/3。二维码是矢量图，放大不掉画质，
+                             而且模块变大之后圆角样式的识别余量也更大 */
+                          <QqQrCode className="size-[197px]" />
                         )}
                       </div>
                       <p className="text-center text-xs text-muted-foreground">

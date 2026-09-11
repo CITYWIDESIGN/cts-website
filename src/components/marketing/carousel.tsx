@@ -5,7 +5,6 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { CarouselSlide } from "@/config/carousel";
 import { EASE_OUT } from "@/components/motion/transitions";
 import { cn } from "@/lib/utils";
 
@@ -21,8 +20,25 @@ import { cn } from "@/lib/utils";
  * 尺寸用固定高度而不是 aspect 容器：让左右两张能真正"露出来"，
  * 而不会被外框裁掉。图片用 object-cover 填满，比例不一致也不会变形。
  *
- * 换图与文案见 src/config/carousel.ts 与 messages 的 home.carousel。
+ * 文案与图片来自数据库（管理员在 /admin/carousel 维护），在服务端已经按
+ * 当前语言取好，所以这里不需要 useTranslations 去查 items.*。
  */
+
+/**
+ * 渲染一张轮播卡所需的最小信息。
+ *
+ * 刻意不复用 `@/config/carousel` 的 `CarouselSlide`（那个带 `key` 且指向
+ * 静态文件），因为现在有两个来源：数据库里的管理员上传图，以及没有配置
+ * 任何轮播时的内置占位图。
+ */
+export interface CarouselItem {
+  /** 稳定 key：数据库条目用 id，内置占位图用 slideN */
+  key: string;
+  src: string;
+  title: string;
+  subtitle: string;
+  overlay?: boolean;
+}
 
 /** 单张卡片的宽度（像素），随容器宽度自适应 */
 const SIDE_OFFSET = 0.62; // 相邻张水平偏移 = 卡宽 × 该系数
@@ -39,10 +55,10 @@ const TILT_MAX_Y = 3.5; // 横向（绕 Y 轴）
 const TILT_MAX_X = 2; // 纵向（绕 X 轴）
 
 export function Carousel({
-  slides,
+  items,
   intervalMs = 6000,
 }: {
-  slides: CarouselSlide[];
+  items: CarouselItem[];
   intervalMs?: number;
 }) {
   const t = useTranslations("home.carousel");
@@ -53,7 +69,7 @@ export function Carousel({
   const reduce = useReducedMotion();
   const rootRef = React.useRef<HTMLDivElement>(null);
 
-  const count = slides.length;
+  const count = items.length;
 
   // 观测容器尺寸，算出卡片宽高（用于左右偏移与高度）
   React.useEffect(() => {
@@ -146,17 +162,17 @@ export function Carousel({
             style={{ transformStyle: "preserve-3d", height: dims.height || 320 }}
             className="relative"
           >
-            {slides.map((slide, i) => {
+            {items.map((item, i) => {
               const o = offsetOf(i);
               if (Math.abs(o) > VISIBLE_RANGE) return null;
               const active = o === 0;
 
               return (
                 <motion.button
-                  key={slide.key}
+                  key={item.key}
                   type="button"
                   tabIndex={active ? 0 : -1}
-                  aria-label={t(`items.${slide.key}.title`)}
+                  aria-label={item.title}
                   aria-hidden={Math.abs(o) > 1}
                   onClick={() => !active && go(i)}
                   className={cn(
@@ -204,14 +220,14 @@ export function Carousel({
                   }
                 >
                   <Image
-                    src={slide.src}
+                    src={item.src}
                     alt=""
                     fill
                     sizes="(max-width: 768px) 90vw, 880px"
                     priority={i === 0}
                     className="object-cover"
                   />
-                  {slide.overlay !== false && (
+                  {item.overlay !== false && (
                     <span
                       aria-hidden
                       className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
@@ -228,10 +244,10 @@ export function Carousel({
                         className="block max-w-xl"
                       >
                         <span className="block text-lg font-semibold text-white sm:text-2xl">
-                          {t(`items.${slide.key}.title`)}
+                          {item.title}
                         </span>
                         <span className="mt-1.5 block text-sm text-white/80 sm:text-base">
-                          {t(`items.${slide.key}.description`)}
+                          {item.subtitle}
                         </span>
                       </motion.span>
                     </span>
@@ -267,7 +283,7 @@ export function Carousel({
         {/* 指示圆点 */}
         {count > 1 && (
           <div className="mt-4 flex items-center justify-center gap-2">
-            {slides.map((s, i) => {
+            {items.map((s, i) => {
               const active = i === index;
               return (
                 <button
