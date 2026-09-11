@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PREVIEW_VIEWS } from "@/lib/litematic/build-structure";
@@ -76,9 +77,20 @@ export function PreviewGrid({
         })}
       </div>
 
-      {open !== null && (
-        <div
-          role="dialog"
+      {/*
+        ⚠️ 必须用 portal 挂到 <body>。
+
+        `fixed inset-0` 是相对**视口**定位的 —— 但只要祖先里有任何元素带
+        transform / filter / will-change，它就会退化成"相对那个祖先"。
+        详情页外面包着 Motion 的 Stagger / StaggerItem（动画会留下 transform），
+        所以浮层被关在了卡片里（站长："不是铺满卡片屏幕，是铺满显示器屏幕"）。
+
+        portal 把浮层挂到 body 下，彻底脱离那些祖先。
+      */}
+      {open !== null &&
+        createPortal(
+          <div
+            role="dialog"
           aria-modal="true"
           aria-label={title}
           // 点浮层任意处退出；stopPropagation 保证点图片本身不会误关
@@ -107,8 +119,9 @@ export function PreviewGrid({
             onClick={(e) => e.stopPropagation()}
             className="h-full w-full cursor-default object-contain"
           />
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }
