@@ -20,8 +20,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "lodestone-pack": "node scripts/copy-lodestone-pack.mjs",
-    "prebuild": "node scripts/patch-lodestone.mjs && node scripts/copy-lodestone-pack.mjs",
-    "postinstall": "node scripts/patch-lodestone.mjs"
+    "prebuild": "node scripts/patch-lodestone.mjs && node scripts/copy-lodestone-pack.mjs"
   },
   "prisma": {
     "seed": "node --import tsx prisma/seed.ts"
