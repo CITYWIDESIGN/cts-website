@@ -15,53 +15,30 @@
  * 所以调用方（上传对话框）必须用 `await import(...)` 动态加载，
  * 别让 three.js 进首页的包。
  */
+import {
+  buildStructureFromLitematic,
+  frameCamera,
+  PREVIEW_VIEWS,
+  type LitematicPreviewMeta,
+} from "./build-structure";
+import { packBaseUrl } from "./pack-url";
 
 /** 预览图默认尺寸。够看清形体，又不至于让 data URL 太大。 */
-const DEFAULT_WIDTH = 960;
-const DEFAULT_HEIGHT = 640;
-
-/**
- * 只导入**类型**（编译后会被擦掉，不会把 nbt 模块拉进产物）。
- * NbtFile 本体在函数里动态 import。
- */
-type NbtCompound = import("@mattzh72/lodestone/nbt").NbtCompound;
-
-/**
- * 原版材质包的位置。
- *
- * ⚠️ **必须是绝对地址。** lodestone 内部是 `new URL('assets.json', base)`，
- * 而 URL 构造器**不接受相对路径当 base** —— 传 `/lodestone-pack/` 会抛
- * `Failed to construct 'URL': Invalid base URL`。所以补上 origin。
- *
- * 放在函数里算：模块顶层在 SSR 阶段也可能被求值，那时没有 window。
- */
-function packBaseUrl(): string {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  return `${origin}/lodestone-pack/`;
-}
-
-/** 和服务端 MAX_PREVIEW_VOLUME 保持一致：超了就不生成，别把浏览器卡死 */
-const MAX_VOLUME = 20_000_000;
-
-export interface PreviewMeta {
-  name: string;
-  author: string;
-  size: { x: number; y: number; z: number };
-  totalBlocks: number;
-  regionCount: number;
-}
-
-export interface PreviewResult {
-  dataUrl: string;
-  meta: PreviewMeta;
-}
+const DEFAULT_WIDTH = 720;
+const DEFAULT_HEIGHT = 480;
 
 export type PreviewStage = "parsing" | "loading-pack" | "merging" | "rendering";
 
-/** 把向量归一化 */
-function normalize(v: [number, number, number]): [number, number, number] {
-  const len = Math.hypot(v[0], v[1], v[2]) || 1;
-  return [v[0] / len, v[1] / len, v[2] / len];
+export type PreviewMeta = LitematicPreviewMeta;
+
+/**
+ * 三张等轴测图（顺序同 PREVIEW_VIEWS）。第一张当卡片缩略图。
+ * 每张都是**带 alpha 的 PNG**，页面上直接跟随明暗主题。
+ */
+export interface PreviewResult {
+  /** 长度 = PREVIEW_VIEWS.length 的 data URL 数组 */
+  images: string[];
+  meta: PreviewMeta;
 }
 
 /**
@@ -89,77 +66,14 @@ export async function renderLitematicPreview(
     const bytes = new Uint8Array(await file.arrayBuffer());
 
     // 动态引入：three.js 只在上传投影时才加载
-    const { LitematicLoader, Structure, ThreeStructureRenderer, loadDefaultPackResources } =
-      await import("@mattzh72/lodestone");
-    const { NbtFile } = await import("@mattzh72/lodestone/nbt");
+    const { ThreeStructureRenderer, loadDefaultPackResources } = await import(
+      "@mattzh72/lodestone"
+    );
 
-    const raw = LitematicLoader.getMetadata(bytes);
-    const size = {
-      x: Math.abs(Number(raw.size?.x ?? 0)),
-      y: Math.abs(Number(raw.size?.y ?? 0)),
-      z: Math.abs(Number(raw.size?.z ?? 0)),
-    };
-    if (!size.x || !size.y || !size.z) return null;
-    if (size.x * size.y * size.z > MAX_VOLUME) return null;
-
-    const meta: PreviewMeta = {
-      name: String(raw.name ?? "").slice(0, 200),
-      author: String(raw.author ?? "").slice(0, 100),
-      size,
-      totalBlocks: Math.max(0, Number(raw.totalBlocks ?? 0)),
-      regionCount: Math.max(1, Number(raw.regionCount ?? 1)),
-    };
-
+    // 解析 + 多区域合并（和 3D 查看器共用同一份实现）
     stage("merging");
-    /*
-      多区域合并。
-
-      lodestone 的 `LitematicLoader.load(bytes, name)` 只加载**一个区域**，
-      且坐标是以该区域自己为原点的。而真实文件（尤其 RedenMC 生成的那些）
-      常常把一栋建筑切成好几块分别存放 —— 只画第一块会得到一个几乎空白
-      的预览。所以这里按 Metadata.EnclosingSize 建一张大网格，
-      逐区域读出来、按 Position 偏移后填进去。
-
-      Position 可能是负数，所以先求所有区域的最小角，整体平移到 0 起点。
-    */
-    const nbt = NbtFile.read(bytes);
-    const regionsTag = nbt.root.getCompound("Regions");
-
-    const regionNames: string[] = [];
-    let minX = Infinity;
-    let minY = Infinity;
-    let minZ = Infinity;
-    regionsTag.forEach((name, tag) => {
-      regionNames.push(name);
-      const pos = (tag as NbtCompound).getCompound("Position");
-      minX = Math.min(minX, pos.getNumber("x"));
-      minY = Math.min(minY, pos.getNumber("y"));
-      minZ = Math.min(minZ, pos.getNumber("z"));
-    });
-    if (regionNames.length === 0) return null;
-    if (!Number.isFinite(minX)) {
-      minX = 0;
-      minY = 0;
-      minZ = 0;
-    }
-
-    const merged = new Structure([size.x, size.y, size.z]);
-    for (const name of regionNames) {
-      const tag = regionsTag.getCompound(name);
-      const pos = (tag as NbtCompound).getCompound("Position");
-      const ox = pos.getNumber("x") - minX;
-      const oy = pos.getNumber("y") - minY;
-      const oz = pos.getNumber("z") - minZ;
-
-      const region = LitematicLoader.load(bytes, name);
-      for (const placed of region.getBlocks()) {
-        merged.addBlock(
-          [placed.pos[0] + ox, placed.pos[1] + oy, placed.pos[2] + oz],
-          placed.state.getName(),
-          placed.state.getProperties()
-        );
-      }
-    }
+    const built = await buildStructureFromLitematic(bytes);
+    if (!built) return null;
 
     stage("loading-pack");
     const { resources } = await loadDefaultPackResources({ baseUrl: packBaseUrl() });
@@ -169,7 +83,7 @@ export async function renderLitematicPreview(
     canvas.width = width;
     canvas.height = height;
 
-    const three = new ThreeStructureRenderer(canvas, merged, resources, {
+    const three = new ThreeStructureRenderer(canvas, built.structure, resources, {
       antialias: true,
       // 不设这个的话 drawStructure 之后读 canvas 可能是空白
       preserveDrawingBuffer: true,
@@ -185,33 +99,36 @@ export async function renderLitematicPreview(
       对"又长又扁"的建筑（例如 106×32×404 的机器）这意味着正对着 106×32
       那一面、而且退到 727 格外 —— 整个建筑在画面里只有一小条。
 
-      这里改成从**右上前方**看，距离按**包围球**算：
-        distance = radius / sin(fov/2)
-      这样不管建筑是方是长，整个结构都恰好落在视锥里。
+      改成从右上前方看、距离按包围球算，任何长宽比都恰好入镜。
     */
-    const [sx, sy, sz] = [size.x, size.y, size.z];
-    const center: [number, number, number] = [sx / 2, sy / 2, sz / 2];
-    const radius = 0.5 * Math.hypot(sx, sy, sz);
-    const fov = 45;
-    const distance = (radius / Math.sin(((fov / 2) * Math.PI) / 180)) * 1.08;
-    const dir = normalize([1, 0.72, 1]);
-    three.setCamera({
-      position: [
-        center[0] + dir[0] * distance,
-        center[1] + dir[1] * distance,
-        center[2] + dir[2] * distance,
-      ],
-      target: center,
-      up: [0, 1, 0],
-      fov,
-    });
+    const frame = frameCamera(built.meta.size, 45);
+    three.setCamera({ position: frame.position, target: frame.target, up: [0, 1, 0], fov: 45 });
 
     // 分块网格是异步建的，不等它画出来是空的
     await three.whenReady();
     three.drawStructure();
 
-    const dataUrl = canvas.toDataURL("image/png");
-    return { dataUrl, meta };
+    // PNG 保留 alpha —— 渲染器那边打过补丁（跳过天空、清除色透明），
+    // 所以底图是透明的，在页面上自动跟随明暗主题
+    /*
+      三个方向各渲染一帧。
+
+      同一个 renderer / 同一份网格，只换相机 —— 比建三次场景快得多，
+      而且网格只需要在 whenReady 里建一次。
+    */
+    const images: string[] = [];
+    for (const view of PREVIEW_VIEWS) {
+      const frame = frameCamera(built.meta.size, 45, view.yawDeg);
+      three.setCamera({
+        position: frame.position,
+        target: frame.target,
+        up: [0, 1, 0],
+        fov: 45,
+      });
+      three.drawStructure();
+      images.push(canvas.toDataURL("image/png"));
+    }
+    return { images, meta: built.meta };
   } catch (err) {
     console.warn("[litematic] 预览生成失败，跳过：", err);
     return null;

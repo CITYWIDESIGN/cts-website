@@ -118,7 +118,8 @@ export function UploadResourceDialog() {
         try {
           const { renderLitematicPreview } = await import("@/lib/litematic/preview");
           const preview = await renderLitematicPreview(file, { onStage: setPreviewStage });
-          if (preview) body.set("preview", preview.dataUrl);
+          // 三张图打包成一个 JSON 数组提交（multipart 里塞三个同名字段反而更难校验）
+          if (preview) body.set("preview", JSON.stringify(preview.images));
         } catch (err) {
           console.warn("[resources] 投影预览生成失败，继续上传：", err);
         } finally {

@@ -435,7 +435,10 @@
     "previewStageParsing": "解析投影文件",
     "previewStageMerging": "合并区域",
     "previewStagePack": "加载材质包",
-    "previewStageRendering": "渲染预览图"
+    "previewStageRendering": "渲染预览图",
+    "viewFront": "主视图",
+    "viewSide": "侧视图",
+    "viewBack": "后视图"
   },
   "ban": {
     "socialForever": "你已被永久封禁，无法点赞或评论",

@@ -28,8 +28,11 @@ export interface LitematicMeta {
   regionCount: number;
 }
 
-/** 预览图的体积上限（data URL 字符数，约合 1.4MB 的 PNG） */
-export const MAX_PREVIEW_CHARS = 2_000_000;
+/**
+ * 预览的总体积上限（三张图的 data URL 拼成 JSON 之后的字符数）。
+ * 约合 3MB 的 PNG。渲染尺寸是 720×480，正常一张 100~300KB，够用。
+ */
+export const MAX_PREVIEW_CHARS = 4_000_000;
 
 /**
  * 体积上限：超过就不生成预览。

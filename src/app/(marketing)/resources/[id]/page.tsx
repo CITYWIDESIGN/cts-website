@@ -249,14 +249,19 @@ export default async function ResourceDetailPage({
                 <CardTitle className="text-base">{t("previewLabel")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="overflow-hidden rounded-lg border bg-muted">
-                  {/* 图由上传时的浏览器渲染后存库，尺寸由容器控制 */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/resources/${resource.id}/preview`}
-                    alt={resource.title}
-                    className="max-h-[480px] w-full object-contain"
-                  />
+                {/* 三个方向的等轴测图。都是带 alpha 的 PNG，底色跟着明暗主题走 */}
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="overflow-hidden rounded-lg border bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/resources/${resource.id}/preview?i=${i}`}
+                        alt={resource.title}
+                        className="aspect-[3/2] w-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
                 </div>
                 <PreviewMetaList meta={resource.preview.meta} />
               </CardContent>

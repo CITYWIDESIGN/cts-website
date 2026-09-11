@@ -163,10 +163,23 @@ export async function POST(request: Request) {
         previewMeta &&
         typeof previewField === "string" &&
         previewField.length > 0 &&
-        previewField.length <= MAX_PREVIEW_CHARS &&
-        isAllowedCoverDataUrl(previewField)
+        previewField.length <= MAX_PREVIEW_CHARS
       ) {
-        previewUrl = previewField;
+        // 三张等轴测图打包成 JSON 数组。逐张过类型白名单 ——
+        // 挡掉 SVG 之类能内嵌脚本的矢量图（见 @/lib/image-types）
+        try {
+          const views = JSON.parse(previewField) as unknown;
+          if (
+            Array.isArray(views) &&
+            views.length > 0 &&
+            views.length <= 3 &&
+            views.every((v) => isAllowedCoverDataUrl(v))
+          ) {
+            previewUrl = JSON.stringify(views);
+          }
+        } catch {
+          /* 格式不对就当没有预览，不影响上传 */
+        }
       }
     }
 
