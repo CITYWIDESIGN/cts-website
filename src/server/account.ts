@@ -32,6 +32,30 @@ export class AccountError extends Error {
     this.name = "AccountError";
   }
 }
+
+/**
+ * 这个 Prisma 报错是不是"唯一约束被撞了"，且撞的是不是指定字段。
+ *
+ * 每个写唯一列的地方都会**先查一遍**，为的是给用户"哪个字段重了"这种能
+ * 看懂的提示。但先查后写之间存在竞态，两个并发请求可能都通过检查 ——
+ * 最终仍由唯一索引兜底。若不在这一层把 P2002 翻译回来，用户看到的会是
+ * 一句没头没尾的 UNKNOWN，而不是"该邮箱已被注册"。
+ *
+ * 注意 `meta.target` 里是**数据库列名**，带 `@map` 的字段要用列名匹配
+ * （例如 `minecraftUuid` → `minecraft_uuid`）。
+ */
+function isUniqueViolation(err: unknown, ...columns: string[]): boolean {
+  if (
+    !(err instanceof Prisma.PrismaClientKnownRequestError) ||
+    err.code !== "P2002"
+  ) {
+    return false;
+  }
+  const hit = Array.isArray(err.meta?.target)
+    ? (err.meta.target as unknown[])
+    : [];
+  return hit.some((c) => typeof c === "string" && columns.includes(c));
+}
 /* ------------------------------------------------------------------ 注册 */
 
 /**
@@ -70,16 +94,10 @@ export async function registerLocalAccount(input: {
     });
   } catch (err) {
     // 并发下上面的检查可能落空，最终仍由唯一索引兜底
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
-      const target = Array.isArray(err.meta?.target)
-        ? (err.meta.target as string[])
-        : [];
-      if (target.includes("email")) {
-        throw new AccountError("Email already registered.", "EMAIL_TAKEN");
-      }
+    if (isUniqueViolation(err, "email")) {
+      throw new AccountError("Email already registered.", "EMAIL_TAKEN");
+    }
+    if (isUniqueViolation(err, "username")) {
       throw new AccountError("Username already taken.", "USERNAME_TAKEN");
     }
     throw err;
@@ -149,10 +167,18 @@ export async function setMinecraftIdentity(
     }
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { minecraftUsername: name, minecraftUuid: uuid },
-  });
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { minecraftUsername: name, minecraftUuid: uuid },
+    });
+  } catch (err) {
+    // 同上：唯一索引兜底时要把错误翻译回可读的提示
+    if (isUniqueViolation(err, "minecraft_uuid")) {
+      throw new AccountError("UUID already bound.", "UUID_TAKEN");
+    }
+    throw err;
+  }
 }
 
 /** 解除 Microsoft 绑定（Minecraft 身份保留，头像框会随之消失） */
@@ -207,6 +233,8 @@ export async function changeUsername(
  * 换绑邮箱。
  * **调用方必须先用 verifyEmailCode 校验过新邮箱的验证码** —— 这里只落库，
  * 顺手把 emailVerifiedAt 打上（刚验过就是已验证）。
+ *
+ * 一个邮箱只能属于一个账号：这里再查一次给出可读提示，唯一索引做最终兜底。
  */
 export async function changeEmail(
   userId: string,
@@ -222,10 +250,17 @@ export async function changeEmail(
     throw new AccountError("Email already registered.", "EMAIL_TAKEN");
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { email, emailVerifiedAt: new Date() },
-  });
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { email, emailVerifiedAt: new Date() },
+    });
+  } catch (err) {
+    if (isUniqueViolation(err, "email")) {
+      throw new AccountError("Email already registered.", "EMAIL_TAKEN");
+    }
+    throw err;
+  }
   return { email };
 }
 

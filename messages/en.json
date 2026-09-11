@@ -635,6 +635,7 @@
       "PASSWORD_MISMATCH": "The two passwords do not match",
       "EMAIL_INVALID": "That email address is not valid",
       "EMAIL_TAKEN": "That email is already registered",
+      "EMAIL_NOT_FOUND": "No account is registered with that email — please check for typos",
       "USERNAME_TAKEN": "That username is already taken",
       "INVALID_CREDENTIALS": "Incorrect username or password",
       "UUID_TAKEN": "That UUID is already linked to another account",

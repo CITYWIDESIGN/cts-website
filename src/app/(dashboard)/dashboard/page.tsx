@@ -292,11 +292,17 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* 5. 快捷入口（原顶栏下拉菜单的功能） */}
+      {/* 5. 快捷入口（原顶栏下拉菜单的功能）。
+          列数跟着入口数量走：非管理员没有「管理后台」这一项，
+          写死 sm:grid-cols-3 会让第三列空着，右边缺一块。 */}
       <Stagger
         inView
         stagger={0.07}
-        className="mt-6 grid gap-3 sm:grid-cols-3"
+        className={
+          quickLinks.length === 2
+            ? "mt-6 grid gap-3 sm:grid-cols-2"
+            : "mt-6 grid gap-3 sm:grid-cols-3"
+        }
       >
         {quickLinks.map((link, i) => {
           const Icon = link.icon;

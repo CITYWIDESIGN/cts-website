@@ -61,10 +61,15 @@ export async function sendEmailCodeAction(input: {
     }
   }
 
-  // reset：无论邮箱是否存在都回 ok，避免被用来枚举账号
+  // reset：**邮箱必须已经注册**，否则直接告诉用户。
+  //
+  // 这里本来是按"防账号枚举"做的：无论邮箱存不存在都回 ok。但那样用户把
+  // 邮箱打错一个字母时，会一直等一封永远不会来的邮件 —— 求助成本远高于
+  // 枚举风险（这是个社区站，知道"某邮箱注册过"没什么可利用价值）。
+  // 真要枚举也得先过 issueEmailCode 的频率限制，不是无成本的。
   if (input.purpose === "reset") {
     const target = await findUserByEmail(email);
-    if (!target) return { ok: true, codeSent: true };
+    if (!target) return { ok: false, error: "EMAIL_NOT_FOUND" };
 
     try {
       const res = await issueEmailCode({

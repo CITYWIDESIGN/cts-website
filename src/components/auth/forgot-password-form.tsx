@@ -31,8 +31,7 @@ import { CODE_LENGTH } from "@/lib/code";
  * 这里**不用自动提交**：第二步除了验证码还要填两次新密码，
  * 填满 6 位就提交会打断输入。所以是一个正常的表单。
  *
- * 请求验证码时**无论邮箱是否存在都提示"已发送"** —— 否则这个页面会变成
- * 一个账号枚举接口。
+ * 第一步会**校验邮箱是否注册过**并直接提示（见 sendEmailCodeAction）。
  */
 export function ForgotPasswordForm() {
   const t = useTranslations("auth.forgot");

@@ -29,11 +29,11 @@ export const siteConfig = {
     days: 1240,
   },
   links: {
-    discord: "https://discord.gg/example",
-    /** OOPZ 语音频道邀请链接（换成真实的即可） */
-    oopz: "https://oopz.cn/",
+    discord: "https://discord.gg/nsHa44gRP",
+    /** OOPZ 语音频道邀请链接 */
+    oopz: "https://oopz.cn/i/TxvBKI",
     /** QQ 群号，展示在社区页 */
-    qqGroup: "000000000",
+    qqGroup: "1020898782",
     /**
      * QQ 群二维码图片。
      * 留空时社区页会渲染一个"占位二维码"（纯装饰、不可扫）。
