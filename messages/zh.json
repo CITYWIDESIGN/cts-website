@@ -422,7 +422,20 @@
       "limitReached": "今日资源发布数量已达上限（每天 {limit} 个）。",
       "quotaExceeded": "今日上传额度（{limit}）已用完，请明日再试。",
       "unknown": "上传失败，请稍后重试"
-    }
+    },
+    "previewLabel": "投影预览",
+    "previewName": "投影名称",
+    "previewAuthor": "作者",
+    "previewSize": "尺寸",
+    "previewBlocks": "方块数",
+    "previewBlocksValue": "{count} 个",
+    "previewRegions": "区域",
+    "previewRegionsValue": "{count} 个",
+    "previewGenerating": "正在生成投影预览…",
+    "previewStageParsing": "解析投影文件",
+    "previewStageMerging": "合并区域",
+    "previewStagePack": "加载材质包",
+    "previewStageRendering": "渲染预览图"
   },
   "ban": {
     "socialForever": "你已被永久封禁，无法点赞或评论",

@@ -37,6 +37,8 @@ export type ResourceCardItem = {
   createdAt: string;
   version: number;
   hasImage: boolean;
+  /** 有没有投影自动预览（没有封面时拿它当缩略图） */
+  hasPreview: boolean;
   uploaderName: string | null;
   uploaderId: string;
   /** 上传者 Minecraft UUID（渲染可点进资料页的头像） */
@@ -55,6 +57,20 @@ const VIEW_KEY = "resources-view";
 
 /** 登录用户 id（为 null 表示未登录）—— 互动按钮据此提示登录 */
 const ViewerIdContext = React.createContext<string | null>(null);
+/**
+ * 缩略图地址。
+ *
+ * 优先用上传者自己传的封面；没有就退回 .litematic 自动生成的投影预览。
+ * 两者都没有才显示占位图标 —— 投影预览是白送的，不该抢用户显式选的封面。
+ *
+ * 两个接口都是同源、可缓存的静态响应，列表里几十张图不会拖慢首屏。
+ */
+function thumbSrc(r: { id: string; hasImage: boolean; hasPreview: boolean }): string | null {
+  if (r.hasImage) return `/api/resources/${r.id}/image`;
+  if (r.hasPreview) return `/api/resources/${r.id}/preview`;
+  return null;
+}
+
 export function ResourceViewerProvider({
   viewerId,
   children,
@@ -295,11 +311,11 @@ function GridView({ items }: { items: ResourceCardItem[] }) {
                 href={`/resources/${r.id}`}
                 className="relative block aspect-video w-full overflow-hidden bg-muted"
               >
-                {r.hasImage ? (
+                {thumbSrc(r) ? (
                   // 封面走独立接口，避免 data URL 内联进列表
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={`/api/resources/${r.id}/image`}
+                    src={thumbSrc(r) ?? undefined}
                     alt=""
                     loading="lazy"
                     className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
@@ -426,14 +442,14 @@ function FeedView({ items }: { items: ResourceCardItem[] }) {
             </div>
 
             {/* 封面：通栏，不套卡片 */}
-            {r.hasImage && (
+            {thumbSrc(r) && (
               <Link
                 href={`/resources/${r.id}`}
                 className="mt-3 block overflow-hidden rounded-xl bg-muted"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/resources/${r.id}/image`}
+                  src={thumbSrc(r) ?? undefined}
                   alt=""
                   loading="lazy"
                   className="max-h-96 w-full object-cover transition-transform duration-500 group-hover:scale-[1.01]"
@@ -479,10 +495,10 @@ function ListView({ items }: { items: ResourceCardItem[] }) {
             className="group flex items-center gap-4 rounded-xl border bg-card px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
           >
             <span className="hidden size-12 shrink-0 overflow-hidden rounded-lg border bg-muted sm:block">
-              {r.hasImage ? (
+              {thumbSrc(r) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`/api/resources/${r.id}/image`}
+                  src={thumbSrc(r) ?? undefined}
                   alt=""
                   loading="lazy"
                   className="size-full object-cover"

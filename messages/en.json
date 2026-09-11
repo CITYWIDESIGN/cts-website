@@ -422,7 +422,20 @@
       "limitReached": "You have reached today’s publishing limit ({limit} per day).",
       "quotaExceeded": "Today’s upload quota ({limit}) has been used up. Please try again tomorrow.",
       "unknown": "Upload failed, please try again later"
-    }
+    },
+    "previewLabel": "Schematic preview",
+    "previewName": "Name",
+    "previewAuthor": "Author",
+    "previewSize": "Size",
+    "previewBlocks": "Blocks",
+    "previewBlocksValue": "{count}",
+    "previewRegions": "Regions",
+    "previewRegionsValue": "{count}",
+    "previewGenerating": "Generating preview…",
+    "previewStageParsing": "Parsing file",
+    "previewStageMerging": "Merging regions",
+    "previewStagePack": "Loading textures",
+    "previewStageRendering": "Rendering"
   },
   "ban": {
     "socialForever": "You are permanently banned and cannot like or comment",

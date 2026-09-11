@@ -21,6 +21,8 @@ import { ResourceFields } from "./resource-fields";
 import { formatBytes } from "@/lib/format";
 import { MB } from "@/lib/validators/limits";
 import { useLimits } from "@/components/limits-provider";
+import { isLitematicFileName } from "@/lib/litematic/file-name";
+import type { PreviewStage } from "@/lib/litematic/preview";
 import { useBanNotice } from "@/components/ban-notice";
 
 /**
@@ -44,6 +46,8 @@ export function UploadResourceDialog() {
   const [file, setFile] = React.useState<File | null>(null);
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
+  /** 投影预览的进度阶段（不是投影、或已生成完就是 null） */
+  const [previewStage, setPreviewStage] = React.useState<PreviewStage | null>(null);
 
   function reset() {
     setTitle("");
@@ -51,6 +55,7 @@ export function UploadResourceDialog() {
     setFile(null);
     setImagePreview(null);
     setSubmitting(false);
+    setPreviewStage(null);
   }
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -96,6 +101,30 @@ export function UploadResourceDialog() {
       body.set("description", description.trim());
       body.set("file", file);
       if (imagePreview) body.set("image", imagePreview);
+
+      /*
+        .litematic 的投影预览：在浏览器里渲染一帧，和文件一起提交。
+
+        为什么在客户端算：渲染要 WebGL，服务端跑就得装 headless WebGL
+        （见 src/lib/litematic/preview.ts 的说明）。用户本来就在浏览器里，
+        顺手渲染掉。
+
+        **失败不影响上传** —— 渲染不出来（文件不合法、显存不够、浏览器太老）
+        就当没有预览，资源照常传上去。动态 import 也是这个考虑：
+        three.js 有几百 KB，只在上传投影时才加载。
+      */
+      if (isLitematicFileName(file.name)) {
+        setPreviewStage("parsing");
+        try {
+          const { renderLitematicPreview } = await import("@/lib/litematic/preview");
+          const preview = await renderLitematicPreview(file, { onStage: setPreviewStage });
+          if (preview) body.set("preview", preview.dataUrl);
+        } catch (err) {
+          console.warn("[resources] 投影预览生成失败，继续上传：", err);
+        } finally {
+          setPreviewStage(null);
+        }
+      }
 
       const res = await fetch("/api/resources/upload", { method: "POST", body });
       const data = (await res.json()) as {
@@ -212,6 +241,24 @@ export function UploadResourceDialog() {
               <p className="text-xs text-muted-foreground">
                 {t("fields.fileHint", { max: limits.maxFileMb })}
               </p>
+              {/*
+                投影预览是在浏览器里现渲染的（three.js + WebGL），
+                大投影要好几秒 —— 没有提示的话用户会以为卡死了。
+              */}
+              {previewStage && (
+                <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="size-3.5 animate-spin" />
+                  {t(`previewStage${
+                    previewStage === "parsing"
+                      ? "Parsing"
+                      : previewStage === "merging"
+                        ? "Merging"
+                        : previewStage === "loading-pack"
+                          ? "Pack"
+                          : "Rendering"
+                  }`)}
+                </p>
+              )}
             </div>
           </div>
 

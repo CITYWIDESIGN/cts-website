@@ -68,3 +68,9 @@ Desktop.ini
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 本地测试用的真实投影文件（玩家作品，不进仓库）
+tmp-lmtest/
+
+# lodestone 的原版材质包（构建前从 node_modules 拷到 public/，版权归 Mojang，不进仓库）
+public/lodestone-pack/

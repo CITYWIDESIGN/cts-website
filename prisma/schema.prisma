@@ -204,6 +204,8 @@ model Resource {
   blob      ResourceBlob?
   /** 封面图。**单独一张表**，不要在 Resource 上放 data URL（见 ResourceImage） */
   image     ResourceImage?
+  /** .litematic 自动生成的预览图（没有 = 非投影资源，或生成失败） */
+  preview   ResourcePreview?
   revisions ResourceRevision[]
   likes     ResourceLike[]
   comments  ResourceComment[]
@@ -237,6 +239,29 @@ model ResourceImage {
   resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@map("resource_images")
+}
+
+/**
+ * .litematic 投影的自动预览。
+ *
+ * 和 ResourceImage 一样单独一张表、一样存 data URL —— 列表页只需要知道
+ * "有没有"，真正的内容由 /api/resources/[id]/preview 按需取、浏览器缓存。
+ * 放在 Resource 行上的话，一次列表查询就会把所有预览的 base64 全捞出来。
+ *
+ * `meta` 是**服务端自己从文件里解出来的**（尺寸 / 作者 / 方块数 / 区域数），
+ * 不采信客户端提交的值 —— 客户端只负责渲染那张图。
+ */
+model ResourcePreview {
+  resourceId String   @id @map("resource_id")
+  /** data URL，例如 data:image/png;base64,... */
+  data       String   @db.Text
+  /** { name, author, size{x,y,z}, totalBlocks, regionCount } */
+  meta       Json?
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@map("resource_previews")
 }
 
 /**

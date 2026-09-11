@@ -5,6 +5,7 @@ import { hasAvatarFrame } from "@/lib/frame";
 import { displayName } from "@/lib/display-name";
 import { isAllowedCoverDataUrl } from "@/lib/image-types";
 import { getLimits } from "@/server/settings";
+import type { LitematicMeta } from "@/server/litematic";
 import { limitsToBytes } from "@/lib/validators/limits";
 import { Prisma, type Resource } from "@prisma/client";
 
@@ -52,6 +53,8 @@ export type ResourceListItem = Pick<
   | "commentCount"
 > & {
   hasImage: boolean;
+  /** 有没有 .litematic 自动预览（列表只判"有没有"，图由接口按需取） */
+  hasPreview: boolean;
   uploaderName: string | null;
   /** 上传者的 Minecraft UUID（动态视图用它拉皮肤头像） */
   uploaderUuid: string | null;
@@ -81,6 +84,7 @@ const RESOURCE_LIST_SELECT = {
   createdAt: true,
   uploaderId: true,
   image: { select: { resourceId: true } },
+  preview: { select: { resourceId: true } },
   uploader: {
     select: {
       username: true,
@@ -112,6 +116,7 @@ function toListItem(r: ResourceListRow): ResourceListItem {
     createdAt: r.createdAt,
     uploaderId: r.uploaderId,
     hasImage: Boolean(r.image),
+    hasPreview: Boolean(r.preview),
     // 没填游戏 ID 就退回账号名，不然列表里一片「—」
     uploaderName: displayName(r.uploader),
     uploaderUuid: r.uploader.minecraftUuid,
@@ -216,6 +221,8 @@ export async function getResource(id: string) {
       blob: { select: { resourceId: true } },
       // 同样只取主键：详情页只需要知道"有没有封面"
       image: { select: { resourceId: true } },
+      // 预览只要元数据（尺寸/作者/方块数），图本体走接口按需取
+      preview: { select: { meta: true } },
     },
   });
 }
@@ -226,6 +233,19 @@ export async function getResource(id: string) {
  */
 export async function getResourceImage(id: string) {
   return prisma.resourceImage.findUnique({
+    where: { resourceId: id },
+    select: { data: true },
+  });
+}
+
+/**
+ * 只取投影预览本体。
+ *
+ * 和封面一样，列表页**不能**顺带把它捞出来 —— 一张预览的 base64 也是几百 KB，
+ * 列表一次几十条就是几十 MB。列表只判断"有没有"（见 RESOURCE_LIST_SELECT）。
+ */
+export async function getResourcePreview(id: string) {
+  return prisma.resourcePreview.findUnique({
     where: { resourceId: id },
     select: { data: true },
   });
@@ -270,6 +290,10 @@ export async function createResource(input: {
   title: string;
   description: string;
   imageUrl?: string | null;
+  /** .litematic 的自动预览图（客户端渲染好的 data URL PNG） */
+  previewUrl?: string | null;
+  /** 服务端从文件里解出来的投影元数据；没有就不是投影 */
+  previewMeta?: LitematicMeta | null;
   fileName: string;
   fileType: string;
   data: Buffer;
@@ -315,6 +339,19 @@ export async function createResource(input: {
       // 封面写进独立的表（有才建）
       ...(input.imageUrl
         ? { image: { create: { data: input.imageUrl } } }
+        : {}),
+      // 投影预览同理。图是客户端渲染的、元数据是服务端解的，两者都齐才写
+      ...(input.previewUrl
+        ? {
+            preview: {
+              create: {
+                data: input.previewUrl,
+                // Prisma 的 InputJsonValue 要求索引签名，而 LitematicMeta 是个具名接口、
+                // 给不出索引签名，所以显式过一道 unknown
+                meta: (input.previewMeta ?? null) as unknown as Prisma.InputJsonValue,
+              },
+            },
+          }
         : {}),
     },
   });

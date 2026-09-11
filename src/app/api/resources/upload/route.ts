@@ -7,6 +7,11 @@ import { getLimits } from "@/server/settings";
 import { limitsToBytes } from "@/lib/validators/limits";
 import { isBanned } from "@/server/ban";
 import { isAllowedCoverDataUrl } from "@/lib/image-types";
+import {
+  describeLitematic,
+  isLitematicFileName,
+  MAX_PREVIEW_CHARS,
+} from "@/server/litematic";
 import { ResourceMetaSchema } from "@/lib/validators/questionnaire";
 
 /**
@@ -58,7 +63,8 @@ export async function POST(request: Request) {
   const limits = await getLimits();
   const { maxFileBytes, maxImageBytes } = limitsToBytes(limits);
   // multipart 会带边界、字段名和一小段开销；封面是 data URL 文本（base64 约 1.37 倍）
-  const roughLimit = maxFileBytes + Math.ceil(maxImageBytes * 1.4) + 64 * 1024;
+  const roughLimit =
+    maxFileBytes + Math.ceil(maxImageBytes * 1.4) + MAX_PREVIEW_CHARS + 64 * 1024;
   const declared = Number(request.headers.get("content-length") ?? "");
   if (Number.isFinite(declared) && declared > roughLimit) {
     return NextResponse.json(
@@ -136,10 +142,40 @@ export async function POST(request: Request) {
 
   try {
     const data = Buffer.from(await file.arrayBuffer());
+
+    /*
+      投影预览。
+
+      图是**客户端**用 lodestone + three.js 渲染好、截成 PNG 传上来的 ——
+      服务端不跑 WebGL（见 src/server/litematic.ts 的说明）。
+
+      但元数据**必须服务端自己解**：客户端提交的东西一律不可信，
+      它填个"尺寸 1×1×1"我们也没法分辨。所以这里重新解析一遍文件，
+      顺便确认这个文件确实是合法的 .litematic —— 解不出来就不存预览，
+      但**不影响资源本身**（投影预览是附加品，不能让它拖垮上传）。
+    */
+    let previewUrl: string | null = null;
+    let previewMeta: ReturnType<typeof describeLitematic> = null;
+    if (isLitematicFileName(file.name)) {
+      previewMeta = describeLitematic(data);
+      const previewField = form.get("preview");
+      if (
+        previewMeta &&
+        typeof previewField === "string" &&
+        previewField.length > 0 &&
+        previewField.length <= MAX_PREVIEW_CHARS &&
+        isAllowedCoverDataUrl(previewField)
+      ) {
+        previewUrl = previewField;
+      }
+    }
+
     const created = await createResource({
       title: parsed.data.title,
       description: parsed.data.description,
       imageUrl,
+      previewUrl,
+      previewMeta,
       fileName: file.name,
       fileType: file.type,
       data,

@@ -111,6 +111,7 @@ export default async function ResourcesPage({
               version: r.version,
               createdAt: r.createdAt.toISOString(),
               hasImage: r.hasImage,
+              hasPreview: r.hasPreview,
               uploaderName: r.uploaderName,
               uploaderId: r.uploaderId,
               uploaderUuid: r.uploaderUuid,

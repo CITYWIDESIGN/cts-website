@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageEnter, Stagger, StaggerItem } from "@/components/motion/stagger";
 import { ResourceEditActions } from "@/components/resources/resource-edit-actions";
 import { RevisionHistory } from "@/components/resources/revision-history";
+import { PreviewMetaList } from "@/components/resources/preview-meta";
 import { formatBytes, formatDateTime } from "@/lib/format";
 
 export async function generateMetadata({
@@ -239,6 +240,29 @@ export default async function ResourceDetailPage({
             )}
           </div>
         </StaggerItem>
+
+        {/* 投影预览：.litematic 上传时自动生成的等轴测图 + 元信息 */}
+        {resource.preview && (
+          <StaggerItem index={4}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("previewLabel")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="overflow-hidden rounded-lg border bg-muted">
+                  {/* 图由上传时的浏览器渲染后存库，尺寸由容器控制 */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/resources/${resource.id}/preview`}
+                    alt={resource.title}
+                    className="max-h-[480px] w-full object-contain"
+                  />
+                </div>
+                <PreviewMetaList meta={resource.preview.meta} />
+              </CardContent>
+            </Card>
+          </StaggerItem>
+        )}
 
         {/* 介绍 */}
         <StaggerItem index={4}>
