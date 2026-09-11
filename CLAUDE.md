@@ -83,6 +83,9 @@ node scripts/dev.mjs cleanup [--dry-run]
   就能拿到全新的限流桶，**登录爆破限流和上传/下载配额全部形同虚设**。
   现在统一走 `@/lib/request-ip`（取最右 + 校验是合法 IP + 解析不出来就
   回退 `"unknown"` 让所有人共用一个桶）。要加新的"按 IP"逻辑，只许用那个文件。
+  **走 Cloudflare 时**（隧道或橙云）改用它强制覆写的 `cf-connecting-ip`：
+  设 `TRUST_CF_CONNECTING_IP=1`。**但只有源站没有别的入站路径时才能开** ——
+  应用端口能被公网直连的话，谁都能自己塞这个头，限流和配额又变回摆设。
 - **OAuth 的 state 必须和 cookie 双提交。** 签名是**无状态**的，任何一次
   `GET /api/auth/login` 产出的 state 都永久有效，光验签名挡不住
   **login CSRF**（攻击者走一遍授权拿到 code+state，诱导受害者点链接，

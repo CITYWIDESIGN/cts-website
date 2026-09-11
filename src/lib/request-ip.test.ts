@@ -78,3 +78,69 @@ test("同一个来源的不同写法必须落成同一个键", () => {
   ]);
   assert.equal(keys.size, 1);
 });
+
+/** 开关类用例统一用它，免得污染后面的测试 */
+function withEnv(name: string, value: string, fn: () => void) {
+  const previous = process.env[name];
+  process.env[name] = value;
+  try {
+    fn();
+  } finally {
+    if (previous === undefined) delete process.env[name];
+    else process.env[name] = previous;
+  }
+}
+
+test("默认不信任 cf-connecting-ip（直连部署下它能被伪造）", () => {
+  assert.equal(
+    clientIpFromHeaders(h({ "cf-connecting-ip": "9.9.9.9" })),
+    "unknown"
+  );
+});
+
+test("开了 TRUST_CF_CONNECTING_IP 才用它", () => {
+  withEnv("TRUST_CF_CONNECTING_IP", "1", () => {
+    assert.equal(
+      clientIpFromHeaders(h({ "cf-connecting-ip": "9.9.9.9" })),
+      "9.9.9.9"
+    );
+  });
+});
+
+test("走 Cloudflare 时它优先于 x-forwarded-for", () => {
+  withEnv("TRUST_CF_CONNECTING_IP", "1", () => {
+    // 客户端自己塞的 XFF 再离谱也不影响
+    assert.equal(
+      clientIpFromHeaders(
+        h({ "cf-connecting-ip": "1.2.3.4", "x-forwarded-for": "8.8.8.8" })
+      ),
+      "1.2.3.4"
+    );
+  });
+});
+
+test("cf-connecting-ip 是垃圾或缺失时回退到 XFF 逻辑", () => {
+  withEnv("TRUST_CF_CONNECTING_IP", "1", () => {
+    assert.equal(
+      clientIpFromHeaders(
+        h({ "cf-connecting-ip": "garbage", "x-forwarded-for": "1.2.3.4" })
+      ),
+      "1.2.3.4"
+    );
+    assert.equal(
+      clientIpFromHeaders(h({ "x-forwarded-for": "1.2.3.4" })),
+      "1.2.3.4"
+    );
+  });
+});
+
+test("TRUST_PROXY=0 时连 cf-connecting-ip 也一律不看", () => {
+  withEnv("TRUST_PROXY", "0", () => {
+    withEnv("TRUST_CF_CONNECTING_IP", "1", () => {
+      assert.equal(
+        clientIpFromHeaders(h({ "cf-connecting-ip": "9.9.9.9" })),
+        "unknown"
+      );
+    });
+  });
+});

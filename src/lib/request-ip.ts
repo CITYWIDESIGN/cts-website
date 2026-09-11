@@ -22,6 +22,16 @@
 /** 由最近一层代理追加的地址：它亲眼看到的对端，改不了 */
 const FORWARDED_FOR = "x-forwarded-for";
 const REAL_IP = "x-real-ip";
+/**
+ * Cloudflare 专属头。
+ *
+ * Cloudflare 的边缘**强制覆写**这个头（客户端发什么都不算数），所以它是最可靠
+ * 的来源 —— 前提是**源站除了 Cloudflare 没有别的入站路径**。
+ *
+ * 直连部署（别人能直接打你的 3000 端口）时它完全可以被伪造，所以做成显式开关，
+ * 默认不信。见 {@link isTrustingCloudflare}。
+ */
+const CF_CONNECTING_IP = "cf-connecting-ip";
 
 const IPV4 =
   /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
@@ -66,6 +76,22 @@ export function normalizeIp(raw: string | null | undefined): string | null {
 }
 
 /**
+ * 是否信任 `cf-connecting-ip`。
+ *
+ * 什么时候该开（`TRUST_CF_CONNECTING_IP=1`）：
+ *   - 站点通过 **Cloudflare Tunnel** 暴露（cloudflared 出站连接，源站一个端口都没开）
+ *   - 或者源站只接受 Cloudflare 回源（防火墙只放行 CF 的 IP 段）
+ * 这两种情况下外部根本打不到应用，`cf-connecting-ip` 只可能来自 Cloudflare。
+ *
+ * 什么时候**不能**开：
+ *   - 应用端口能被公网直接访问 —— 那时任何人都能自己塞一个 `cf-connecting-ip`
+ *     进来，按 IP 的限流和配额又变成摆设（和当年直接取 XFF 最左值是同一类错误）。
+ */
+function isTrustingCloudflare(): boolean {
+  return process.env.TRUST_CF_CONNECTING_IP === "1";
+}
+
+/**
  * 从请求头里取客户端 IP。
  *
  * 传入的是 `Headers`（`Request.headers` 或 `next/headers` 的 `headers()`），
@@ -73,6 +99,12 @@ export function normalizeIp(raw: string | null | undefined): string | null {
  */
 export function clientIpFromHeaders(headers: Headers): string {
   if (process.env.TRUST_PROXY === "0") return "unknown";
+
+  // 走 Cloudflare 时优先用它：边缘会覆写，客户端伪造不了
+  if (isTrustingCloudflare()) {
+    const cf = normalizeIp(headers.get(CF_CONNECTING_IP));
+    if (cf) return cf;
+  }
 
   const forwarded = headers.get(FORWARDED_FOR);
   if (forwarded) {
