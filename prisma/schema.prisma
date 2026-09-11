@@ -481,6 +481,36 @@ model SiteSetting {
   @@map("site_settings")
 }
 
+/**
+ * 首页公告。管理员在后台维护（新增 / 编辑 / 删除 / 上下架）。
+ *
+ * 为什么单开一张表而不是塞进 SiteSetting 的 Json：公告会不断新增，需要按
+ * 发布时间排序、需要"草稿 / 已发布"状态、也需要稳定的 id 用来编辑和删除。
+ * 这些都是数据库该干的事，放 Json 数组里迟早要自己重写一遍。
+ *
+ * 中英分列而不是各存一个 Json：按语言取值就是普通列读取，英文留空时
+ * 由 @/lib/localized 回退到中文。
+ */
+model Announcement {
+  id          String   @id @default(cuid())
+  titleZh     String   @map("title_zh")
+  titleEn     String?  @map("title_en")
+  bodyZh      String   @map("body_zh") @db.Text
+  bodyEn      String?  @map("body_en") @db.Text
+  /// 分类标签，例如「公告」「活动」「更新」。可选
+  tagZh       String?  @map("tag_zh")
+  tagEn       String?  @map("tag_en")
+  /// 草稿态：写好先存着，不发到首页
+  published   Boolean  @default(true)
+  /// 展示用的发布日期，可以和创建时间不同（比如补录旧公告）
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([published, publishedAt])
+  @@map("announcements")
+}
+
 /** 举报状态：只有"待处理"和"已处理"两种，够用且不啰嗦 */enum ReportStatus {
   PENDING
   RESOLVED

@@ -77,19 +77,18 @@
   "home": {
     "hero": {
       "eyebrow": "CTS Server",
-      "title": "CTS 原版生电服务器",
-      "subtitle": "Fabric 服务端，不改动原版机制。以红石生电与建筑为主要玩法，没有经济系统，也没有插件。",
+      "title": "CTS 原版生存服务器",
+      "subtitle": "Fabric 服务端，以红石与建筑为主要玩法。",
       "ctaPrimary": "加入服务器",
       "ctaSecondary": "了解服务器"
     },
     "status": {
       "eyebrow": "服务器状态",
-      "address": "服务器地址",
-      "copyAddress": "复制地址",
       "playersOnline": "在线玩家",
       "maxPlayers": "最大玩家数",
       "java": "Java 版",
-      "bedrock": "基岩版"
+      "bedrock": "基岩版",
+      "platform": "支持平台"
     },
     "features": {
       "eyebrow": "服务器特色",
@@ -463,7 +462,6 @@
     "eyebrow": "服务器",
     "title": "CTS 服务器",
     "description": "申请加入前需要了解的信息。",
-    "address": "服务器地址",
     "version": "Minecraft 版本",
     "platform": "支持平台",
     "mode": "游戏模式",
@@ -477,7 +475,8 @@
       "survival": "原版生存",
       "technical": "生电",
       "building": "建筑"
-    }
+    },
+    "introTitle": "服务器介绍"
   },
   "rules": {
     "eyebrow": "规则",
@@ -502,7 +501,8 @@
     "redstone": {
       "title": "红石与机械",
       "content": "允许建造机械与自动化设施；禁止以消耗服务器性能为目的的装置，例如超大量实体堆叠或高频红石卡服。"
-    }
+    },
+    "empty": "管理员还没有添加规则。"
   },
   "auth": {
     "title": "登录",
@@ -944,7 +944,9 @@
         "user_anonymize": "注销账号",
         "report_remove_content": "按举报删除内容",
         "join_config_update": "修改加入入口",
-        "limits_update": "修改限额设置"
+        "limits_update": "修改限额设置",
+        "site_content_update": "修改站点内容",
+        "announcement_delete": "删除公告"
       }
     },
     "join": {
@@ -1147,7 +1149,87 @@
         "back": "返回结果列表"
       }
     },
-    "denied": "你没有权限访问此页面。"
+    "denied": "你没有权限访问此页面。",
+    "siteGroup": "站点",
+    "announcementsNav": "公告",
+    "contentNav": "站点内容",
+    "content": {
+      "title": "站点内容",
+      "description": "首页数据、服务器介绍与配置、服务器规则。中英文分开填，英文留空时前台回退显示中文。",
+      "statsTitle": "首页数据",
+      "statsHint": "首页「服务器数据」那一块的四个数字。",
+      "stats": {
+        "players": "累计玩家",
+        "builds": "建筑作品",
+        "members": "社区成员",
+        "days": "稳定运行天数"
+      },
+      "serverTitle": "服务器介绍与配置",
+      "serverHint": "介绍显示在 /server 页顶部；配置列表就是硬件那一组卡片。",
+      "serverIntro": "服务器介绍",
+      "specsTitle": "服务器配置",
+      "specsHint": "一行一项，数值部分不分语言（例如 Debian 13、64 GB）。",
+      "addSpec": "添加一项",
+      "specsEmpty": "还没有配置项，点下面的按钮添加。",
+      "specLabel": "名称",
+      "specValue": "数值",
+      "rulesTitle": "服务器规则",
+      "rulesSectionHint": "展示在 /rules 页，并作为 /server 页的规则速览。",
+      "rulesHint": "顺序就是展示顺序，用每条的 ↑ ↓ 调整。",
+      "addRule": "添加一条规则",
+      "rulesEmpty": "还没有规则，点下面的按钮添加。",
+      "ruleTitle": "规则标题",
+      "ruleContent": "规则内容",
+      "save": "保存",
+      "saving": "保存中…",
+      "saved": "已保存，前台立即生效。",
+      "errors": {
+        "invalid": "有字段为空或超出长度限制。",
+        "rules_empty": "至少要保留一条规则。",
+        "ruleIncomplete": "每条规则的标题和内容都要填中文。",
+        "specIncomplete": "每一项配置的名称和数值都要填。",
+        "unknown": "保存失败，请稍后重试。"
+      }
+    },
+    "contentEditor": {
+      "langZh": "中文",
+      "langEn": "English",
+      "langEnOptional": "留空则显示中文",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "remove": "删除"
+    },
+    "announcements": {
+      "title": "公告管理",
+      "description": "发布在首页「最新公告」那一块，按发布日期倒序显示最新的三条。",
+      "count": "共 {count} 条",
+      "empty": "还没有公告，点「新建公告」开始。",
+      "new": "新建公告",
+      "createTitle": "新建公告",
+      "editTitle": "编辑公告",
+      "formHint": "中文必填，英文留空时前台回退显示中文。",
+      "fieldTitle": "标题",
+      "fieldBody": "正文",
+      "fieldTag": "分类标签",
+      "fieldTagPlaceholder": "公告 / 活动 / 更新",
+      "fieldDate": "发布日期",
+      "fieldPublished": "发布到首页",
+      "fieldPublishedHint": "关掉就是草稿，只保存在后台。",
+      "draft": "草稿",
+      "hasEnglish": "有英文",
+      "publishedOn": "发布于 {date}",
+      "created": "公告已创建",
+      "updated": "公告已更新",
+      "deleted": "公告已删除",
+      "deleteTitle": "删除这条公告？",
+      "deleteDescription": "《{title}》将从首页与后台一并删除，操作不可撤销。",
+      "errors": {
+        "required": "标题和正文都要填中文。",
+        "invalid": "有字段为空或超出长度限制。",
+        "not_found": "这条公告已经不存在了。",
+        "unknown": "操作失败，请稍后重试。"
+      }
+    }
   },
   "footer": {
     "tagline": "CTS服务器 —— 原版机制下的生电与建筑。",

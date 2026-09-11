@@ -13,6 +13,17 @@ import {
   LimitsConfigSchema,
   type LimitsConfig,
 } from "@/lib/validators/limits";
+import {
+  DEFAULT_RULES,
+  DEFAULT_SERVER_INFO,
+  DEFAULT_STATS,
+  RulesConfigSchema,
+  ServerInfoSchema,
+  StatsConfigSchema,
+  type RulesConfig,
+  type ServerInfo,
+  type StatsConfig,
+} from "@/lib/validators/content";
 
 /**
  * 站点级配置的读写。
@@ -20,12 +31,21 @@ import {
  * 存储：`SiteSetting` 键值表（value 是 Json）。之所以不每种配置建一张表，
  * 是因为配置项会零散地增加；类型安全由这里的 zod 校验保证 —— 数据库
  * 只负责"存住"，不负责"存对"。
+ *
+ * 注意：**公告**不在这里 —— 它会不断新增、需要排序与草稿态，单独建了
+ * `Announcement` 表（见 @/server/announcement）。
  */
 
 /** 「加入我们」配置在 SiteSetting 里的键 */
 export const JOIN_CONFIG_KEY = "join";
 /** 用量限额配置在 SiteSetting 里的键 */
 export const LIMITS_KEY = "limits";
+/** 首页统计数字 */
+export const STATS_KEY = "stats";
+/** 服务器介绍与硬件配置 */
+export const SERVER_INFO_KEY = "server-info";
+/** 服务器规则 */
+export const RULES_KEY = "rules";
 
 /**
  * 读一条配置，用给定的 schema 校验。
@@ -90,6 +110,35 @@ export const getLimits = cache(() =>
 /** 写用量限额配置 */
 export async function setLimits(config: LimitsConfig): Promise<void> {
   await writeSetting(LIMITS_KEY, config);
+}
+
+/* ------------------------------------------ 管理员可编辑的站点内容 */
+
+/** 首页数据区块的四个数字 */
+export const getStats = cache(() =>
+  readSetting<StatsConfig>(STATS_KEY, StatsConfigSchema, DEFAULT_STATS)
+);
+
+export async function setStats(config: StatsConfig): Promise<void> {
+  await writeSetting(STATS_KEY, config);
+}
+
+/** 服务器介绍与硬件配置 */
+export const getServerInfo = cache(() =>
+  readSetting<ServerInfo>(SERVER_INFO_KEY, ServerInfoSchema, DEFAULT_SERVER_INFO)
+);
+
+export async function setServerInfo(info: ServerInfo): Promise<void> {
+  await writeSetting(SERVER_INFO_KEY, info);
+}
+
+/** 服务器规则 */
+export const getRules = cache(() =>
+  readSetting<RulesConfig>(RULES_KEY, RulesConfigSchema, DEFAULT_RULES)
+);
+
+export async function setRules(rules: RulesConfig): Promise<void> {
+  await writeSetting(RULES_KEY, rules);
 }
 
 /**

@@ -77,19 +77,18 @@
   "home": {
     "hero": {
       "eyebrow": "CTS Server",
-      "title": "CTS vanilla technical server",
-      "subtitle": "A Fabric server with untouched vanilla mechanics, focused on technical redstone and building. No economy, no plugins.",
+      "title": "CTS vanilla survival server",
+      "subtitle": "A Fabric server focused on redstone and building.",
       "ctaPrimary": "Join the server",
       "ctaSecondary": "Learn more"
     },
     "status": {
       "eyebrow": "Server status",
-      "address": "Server address",
-      "copyAddress": "Copy address",
       "playersOnline": "players online",
       "maxPlayers": "max players",
       "java": "Java Edition",
-      "bedrock": "Bedrock Edition"
+      "bedrock": "Bedrock Edition",
+      "platform": "Platform"
     },
     "features": {
       "eyebrow": "What sets it apart",
@@ -463,7 +462,6 @@
     "eyebrow": "Server",
     "title": "CTS Server",
     "description": "What you need to know before applying.",
-    "address": "Server address",
     "version": "Minecraft version",
     "platform": "Platform",
     "mode": "Game modes",
@@ -477,7 +475,8 @@
       "survival": "Vanilla survival",
       "technical": "Technical",
       "building": "Building"
-    }
+    },
+    "introTitle": "About the server"
   },
   "rules": {
     "eyebrow": "Rules",
@@ -502,7 +501,8 @@
     "redstone": {
       "title": "Redstone and machines",
       "content": "Machines and automation are welcome. Devices whose only purpose is to consume server performance — huge entity stacks, fast clocks used to lag the server — are not."
-    }
+    },
+    "empty": "No rules have been added yet."
   },
   "auth": {
     "title": "Sign in",
@@ -944,7 +944,9 @@
         "user_anonymize": "Closed account",
         "report_remove_content": "Removed reported content",
         "join_config_update": "Changed join entry",
-        "limits_update": "Changed limits"
+        "limits_update": "Changed limits",
+        "site_content_update": "Changed site content",
+        "announcement_delete": "Deleted announcement"
       }
     },
     "join": {
@@ -1147,7 +1149,87 @@
         "back": "Back to results"
       }
     },
-    "denied": "You do not have permission to access this page."
+    "denied": "You do not have permission to access this page.",
+    "siteGroup": "Site",
+    "announcementsNav": "Announcements",
+    "contentNav": "Site content",
+    "content": {
+      "title": "Site content",
+      "description": "Homepage figures, the server introduction and specs, and the server rules. Fill in Chinese and English separately — the site falls back to Chinese when English is empty.",
+      "statsTitle": "Homepage figures",
+      "statsHint": "The four numbers in the “Server figures” block on the homepage.",
+      "stats": {
+        "players": "Players so far",
+        "builds": "Builds",
+        "members": "Community members",
+        "days": "Days online"
+      },
+      "serverTitle": "Server introduction & specs",
+      "serverHint": "The introduction appears at the top of /server; the specs are the hardware cards below it.",
+      "serverIntro": "Server introduction",
+      "specsTitle": "Server specs",
+      "specsHint": "One row per item. The value itself is not translated (e.g. Debian 13, 64 GB).",
+      "addSpec": "Add a row",
+      "specsEmpty": "No specs yet — add one below.",
+      "specLabel": "Label",
+      "specValue": "Value",
+      "rulesTitle": "Server rules",
+      "rulesSectionHint": "Shown on /rules and summarised on /server.",
+      "rulesHint": "The order here is the display order — use ↑ ↓ on each row to rearrange.",
+      "addRule": "Add a rule",
+      "rulesEmpty": "No rules yet — add one below.",
+      "ruleTitle": "Rule title",
+      "ruleContent": "Rule content",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved — live on the site right away.",
+      "errors": {
+        "invalid": "A field is empty or too long.",
+        "rules_empty": "Keep at least one rule.",
+        "ruleIncomplete": "Every rule needs a Chinese title and content.",
+        "specIncomplete": "Every spec row needs both a label and a value.",
+        "unknown": "Save failed, please try again later."
+      }
+    },
+    "contentEditor": {
+      "langZh": "Chinese",
+      "langEn": "English",
+      "langEnOptional": "falls back to Chinese",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove"
+    },
+    "announcements": {
+      "title": "Announcements",
+      "description": "Published in the “Announcements” block on the homepage — the three most recent by date.",
+      "count": "{count} total",
+      "empty": "No announcements yet — start with “New announcement”.",
+      "new": "New announcement",
+      "createTitle": "New announcement",
+      "editTitle": "Edit announcement",
+      "formHint": "Chinese is required; English falls back to Chinese when left empty.",
+      "fieldTitle": "Title",
+      "fieldBody": "Body",
+      "fieldTag": "Tag",
+      "fieldTagPlaceholder": "Announcement / Event / Update",
+      "fieldDate": "Publish date",
+      "fieldPublished": "Show on homepage",
+      "fieldPublishedHint": "Turn off to keep it as a draft, visible only here.",
+      "draft": "Draft",
+      "hasEnglish": "has English",
+      "publishedOn": "Published {date}",
+      "created": "Announcement created",
+      "updated": "Announcement updated",
+      "deleted": "Announcement deleted",
+      "deleteTitle": "Delete this announcement?",
+      "deleteDescription": "“{title}” will be removed from the homepage and the backend. This cannot be undone.",
+      "errors": {
+        "required": "Title and body both need Chinese text.",
+        "invalid": "A field is empty or too long.",
+        "not_found": "That announcement no longer exists.",
+        "unknown": "Something went wrong, please try again."
+      }
+    }
   },
   "footer": {
     "tagline": "CTS Server — vanilla technical play and building.",

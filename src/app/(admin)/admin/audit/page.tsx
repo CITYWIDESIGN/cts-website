@@ -55,14 +55,20 @@ export default async function AdminAuditPage() {
                 const Icon =
                   log.action === "user.purge" || log.action === "user.anonymize"
                     ? UserX
-                    : log.action === "resource.delete"
+                    : log.action === "resource.delete" ||
+                        log.action === "announcement.delete"
                       ? FileArchive
-                      : log.action === "join_config.update"
+                      : log.action.startsWith("join_config") ||
+                          log.action.startsWith("limits") ||
+                          log.action.startsWith("site_content")
                         ? Settings2
                         : Trash2;
                 const danger = log.action === "user.purge";
-                /** 配置变更不算"破坏性"，用中性色，免得每次改配置都弹一条警告色 */
-                const neutral = log.action === "join_config.update";
+                /** 配置/内容变更不是破坏性操作，用中性色，免得每次改设置都弹一条警告色 */
+                const neutral =
+                  log.action.startsWith("join_config") ||
+                  log.action.startsWith("limits") ||
+                  log.action.startsWith("site_content");
 
                 return (
                   <RowReveal

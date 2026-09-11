@@ -2,16 +2,23 @@ import { getTranslations } from "next-intl/server";
 import { SectionHeading } from "./section-heading";
 import { CountUp } from "@/components/motion/count-up";
 import { Reveal } from "@/components/motion/reveal";
-import { siteConfig } from "@/config/site";
+import { getStats } from "@/server/settings";
 
+/**
+ * 首页数据区块。
+ *
+ * 四个数字由管理员在后台「站点内容」里维护（`SiteSetting` 的 stats 键），
+ * 不再写死在 src/config/site.ts —— 那些数字是运营数据，不该为改一个数发一次版。
+ */
 export async function Stats() {
   const t = await getTranslations("home.stats");
+  const stats = await getStats();
 
-  const stats = [
-    { label: t("players"), value: siteConfig.stats.players },
-    { label: t("builds"), value: siteConfig.stats.builds },
-    { label: t("members"), value: siteConfig.stats.members },
-    { label: t("days"), value: siteConfig.stats.days },
+  const items = [
+    { label: t("players"), value: stats.players },
+    { label: t("builds"), value: stats.builds },
+    { label: t("members"), value: stats.members },
+    { label: t("days"), value: stats.days },
   ];
 
   return (
@@ -20,7 +27,7 @@ export async function Stats() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading eyebrow={t("eyebrow")} title={t("title")} />
         <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {stats.map((stat, i) => (
+          {items.map((stat, i) => (
             <Reveal key={stat.label} delay={i * 0.06}>
               <div className="group relative flex flex-col items-center overflow-hidden rounded-xl border bg-card px-4 py-8 text-center shadow-sm transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-md">
                 {/* 底部一道极淡的品牌色，悬停时变亮：不加元素也能有细节 */}

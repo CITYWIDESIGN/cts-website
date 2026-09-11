@@ -64,8 +64,19 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
 ## 四、代码结构要点
 
 - **站点配置**：`SiteSetting` 键值表（`key` + Json `value`），读写在
-  `src/server/settings.ts` 里用 zod 校验，目前有 `join` / `limits` 两个键。
-  读取失败一律回退默认值 —— 配置问题不能让首页挂掉。
+  `src/server/settings.ts` 里用 zod 校验，目前有 `join` / `limits` / `stats` /
+  `server-info` / `rules` 五个键。读取失败一律回退默认值 —— 配置问题不能让
+  首页挂掉。
+- **管理员可编辑的内容分两种存法**，选错了以后要返工：
+  - **单例内容**（首页数字、服务器介绍与配置、规则）→ `SiteSetting` 的 Json。
+    只有一份、整体覆盖式保存。
+  - **会不断新增的**（公告）→ 独立表 `Announcement`。需要排序、草稿态、
+    稳定 id 来编辑删除，这些是数据库该干的活。
+- **后台填的内容不能放 `messages/*.json`**（那是构建产物）。用 `{ zh, en }`
+  结构（见 `src/lib/localized.ts`）：**中文必填、英文可选、缺省回退中文**，
+  所以管理员可以只用中文先写起来。公告那张表是中英分列存放。
+  表单控件是 `src/components/admin/content-fields.tsx` 里的 `LocalizedField`
+  与 `RepeatableList`，后台三个内容表单共用。
 - **判定层不要持有数字**：`src/server/limit.ts`（次数）与 `src/server/quota.ts`
   （流量）都从 `getLimits()` 取，前端通过 `LimitsProvider` 拿同一份配置
   （只用于显示 N MB 和即时反馈，**服务端那份才是准的**）。

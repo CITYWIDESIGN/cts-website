@@ -21,13 +21,15 @@ export type AuditAction =
   | "user.anonymize"
   | "report.remove_content"
   | "join_config.update"
-  | "limits.update";
+  | "limits.update"
+  | "site_content.update"
+  | "announcement.delete";
 
 export interface AuditInput {
   action: AuditAction;
   actorId?: string | null;
   actorName?: string | null;
-  targetType: "resource" | "user" | "comment" | "setting";
+  targetType: "resource" | "user" | "comment" | "setting" | "announcement";
   targetId: string;
   targetLabel?: string | null;
   detail?: Record<string, unknown> | null;

@@ -1,14 +1,17 @@
 import { getTranslations } from "next-intl/server";
-import { Users, Server as ServerIcon, Globe } from "lucide-react";
+import { Users, Server as ServerIcon, Gamepad2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { CopyAddress } from "./copy-address";
 import { Reveal } from "@/components/motion/reveal";
 import { CountUp } from "@/components/motion/count-up";
 import { siteConfig } from "@/config/site";
 
 /**
  * 服务器状态卡片。
- * 当前使用 siteConfig 中的 mock 数据，未来可替换为
+ *
+ * **故意不显示服务器地址** —— 地址只在入服审核通过后单独告知。
+ * 第三列改成支持平台，保持三栏结构不变。
+ *
+ * 在线人数当前是 siteConfig 里的 mock 值，未来可换成
  * Minecraft Server Status API（如 mcsrvstat.us）的实时数据。
  */
 export async function ServerStatus() {
@@ -17,6 +20,9 @@ export async function ServerStatus() {
   const server = siteConfig.server;
 
   const statusLabel = server.online ? common("online") : common("offline");
+  const platform = [server.java ? t("java") : null, "Fabric"]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <section className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -55,11 +61,11 @@ export async function ServerStatus() {
             </div>
 
             <div className="flex flex-col items-start gap-2 sm:items-end">
-              <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Globe className="size-3.5" />
-                {t("address")}
+              <span className="text-xs text-muted-foreground">{t("platform")}</span>
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <Gamepad2 className="size-4 text-muted-foreground" />
+                {platform}
               </span>
-              <CopyAddress address={server.address} />
             </div>
           </CardContent>
         </Card>

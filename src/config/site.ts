@@ -6,13 +6,16 @@
  */
 
 export const siteConfig = {
-  name: "CTS服务器",
+  name: "CTS 服务器",
   shortName: "CTServer",
   description:
-    "Fabric 服务端，原版机制，以生电（红石与自动化）和建筑为主要玩法。没有经济系统，也没有插件。",
+    "Fabric 服务端，原版机制，以生红石生电与建筑为主要玩法。没有经济系统，也没有插件。",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   server: {
-    address: "ctserver.top",
+    /**
+     * **故意不在页面上展示服务器地址** —— 地址只在入服审核通过后单独告知。
+     * 这里留字段是为了将来可能的后台配置，但公开页面不读它。
+     */
     version: "1.21.x",
     /** Fabric 服务端 → 只支持 Java 版 */
     java: true,
@@ -27,13 +30,6 @@ export const siteConfig = {
      */
     gameModes: ["survival", "technical", "building"],
     openedAt: "2024",
-  },
-  /** 首页数据区块。目前是 mock 值，接入真实统计后替换 */
-  stats: {
-    players: 320,
-    builds: 480,
-    members: 260,
-    days: 720,
   },
   links: {
     discord: "https://discord.gg/nsHa44gRP",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   Accordion,
   AccordionContent,
@@ -8,22 +8,24 @@ import {
 } from "@/components/ui/accordion";
 import { Stagger, StaggerItem, PageEnter } from "@/components/motion/stagger";
 import { SplitHeading } from "@/components/motion/split-heading";
+import { getRules } from "@/server/settings";
+import { pickLocalized, localizedKey } from "@/lib/localized";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("rules");
   return { title: t("title"), description: t("description") };
 }
 
-const ruleSections = [
-  "behavior",
-  "gameplay",
-  "building",
-  "redstone",
-  "punishment",
-] as const;
-
+/**
+ * 服务器规则。
+ *
+ * 条目由管理员在后台 /admin/content 维护（`SiteSetting` 的 rules 键），
+ * 不再是写死的五条 —— 规则会随运营调整，不该为改一条发一次版。
+ */
 export default async function RulesPage() {
   const t = await getTranslations("rules");
+  const locale = await getLocale();
+  const rules = await getRules();
 
   return (
     <PageEnter className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
@@ -50,28 +52,34 @@ export default async function RulesPage() {
         </StaggerItem>
       </Stagger>
 
-      {/* 每条规则逐项展开入场 */}
-      <Stagger inView stagger={0.08} className="mt-8 flex flex-col">
-        <Accordion type="single" collapsible className="w-full">
-          {ruleSections.map((section, i) => (
-            <StaggerItem key={section} index={i}>
-              <AccordionItem value={section}>
-                <AccordionTrigger className="text-base transition-colors duration-200 hover:text-primary">
-                  <span className="flex items-center gap-3">
-                    <span className="font-mono text-sm text-muted-foreground transition-colors duration-200">
-                      {String(i + 1).padStart(2, "0")}
+      {rules.length === 0 ? (
+        <p className="mt-8 rounded-xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
+          {t("empty")}
+        </p>
+      ) : (
+        /* 每条规则逐项展开入场 */
+        <Stagger inView stagger={0.08} className="mt-8 flex flex-col">
+          <Accordion type="single" collapsible className="w-full">
+            {rules.map((rule, i) => (
+              <StaggerItem key={localizedKey(rule.title, i)} index={i}>
+                <AccordionItem value={String(i)}>
+                  <AccordionTrigger className="text-base transition-colors duration-200 hover:text-primary">
+                    <span className="flex items-center gap-3">
+                      <span className="font-mono text-sm text-muted-foreground transition-colors duration-200">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {pickLocalized(locale, rule.title)}
                     </span>
-                    {t(`${section}.title`)}
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="pl-10 text-muted-foreground">
-                  {t(`${section}.content`)}
-                </AccordionContent>
-              </AccordionItem>
-            </StaggerItem>
-          ))}
-        </Accordion>
-      </Stagger>
+                  </AccordionTrigger>
+                  <AccordionContent className="whitespace-pre-wrap pl-10 text-muted-foreground">
+                    {pickLocalized(locale, rule.content)}
+                  </AccordionContent>
+                </AccordionItem>
+              </StaggerItem>
+            ))}
+          </Accordion>
+        </Stagger>
+      )}
     </PageEnter>
   );
 }

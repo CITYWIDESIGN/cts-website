@@ -15,6 +15,8 @@ import {
   History,
   DoorOpen,
   Gauge,
+  Megaphone,
+  PenLine,
   Home,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +43,14 @@ const groups: Array<{ labelKey: string; items: NavItem[] }> = [
       { href: "/admin/questionnaires", key: "questionnaires", icon: FileText },
       { href: "/admin/resources", key: "resourcesNav", icon: FolderArchive },
       { href: "/admin/reports", key: "reportsNav", icon: Flag },
+    ],
+  },
+  {
+    // 面向访客的站点内容与入口，和「管理用户产生的东西」分开
+    labelKey: "siteGroup",
+    items: [
+      { href: "/admin/announcements", key: "announcementsNav", icon: Megaphone },
+      { href: "/admin/content", key: "contentNav", icon: PenLine },
       { href: "/admin/join", key: "joinNav", icon: DoorOpen },
       { href: "/admin/limits", key: "limitsNav", icon: Gauge },
     ],

@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { Server as ServerIcon, Monitor, Users, CalendarDays, Gamepad2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CopyAddress } from "@/components/marketing/copy-address";
+import { getLocale, getTranslations } from "next-intl/server";
+import {
+  Server as ServerIcon,
+  Monitor,
+  Users,
+  CalendarDays,
+  Gamepad2,
+  Cpu,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stagger, StaggerItem, MotionCard } from "@/components/motion/stagger";
 import { SplitHeading } from "@/components/motion/split-heading";
 import { siteConfig } from "@/config/site";
+import { getRules, getServerInfo } from "@/server/settings";
+import { pickLocalized, localizedKey } from "@/lib/localized";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("server");
@@ -15,19 +22,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ServerPage() {
   const t = await getTranslations("server");
-  const common = await getTranslations("common");
-  const rules = await getTranslations("rules");
   const statusT = await getTranslations("home.status");
+  const locale = await getLocale();
   const server = siteConfig.server;
+
+  const [serverInfo, rules] = await Promise.all([getServerInfo(), getRules()]);
 
   const info = [
     {
       icon: Monitor,
       label: t("platform"),
-      value: [
-        server.java ? statusT("java") : null,
-        server.bedrock ? statusT("bedrock") : null,
-      ]
+      value: [server.java ? statusT("java") : null, "Fabric"]
         .filter(Boolean)
         .join(" · "),
     },
@@ -39,20 +44,8 @@ export default async function ServerPage() {
       value: server.gameModes.map((m) => t(`modes.${m}`)).join(" · "),
     },
     { icon: Users, label: t("maxPlayers"), value: String(server.maxPlayers) },
-    {
-      icon: CalendarDays,
-      label: t("opened"),
-      value: server.openedAt,
-    },
+    { icon: CalendarDays, label: t("opened"), value: server.openedAt },
   ];
-
-  const ruleKeys = [
-    "behavior",
-    "gameplay",
-    "building",
-    "redstone",
-    "punishment",
-  ] as const;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
@@ -74,35 +67,48 @@ export default async function ServerPage() {
         </StaggerItem>
       </Stagger>
 
-      {/* 地址卡：头部 / 徽标 / 内容分三层入场 */}
+      {/*
+        服务器介绍。
+        **故意不显示服务器地址** —— 地址只在入服审核通过后单独告知，
+        不放在公开页面上。
+      */}
       <Stagger inView stagger={0.09} delay={0.1} className="mt-10">
         <StaggerItem index={0}>
           <Card className="transition-all duration-300 hover:border-primary/25 hover:shadow-md">
-            <CardHeader className="flex-row items-center justify-between">
-              <div>
-                <CardTitle>{t("address")}</CardTitle>
-                <CardDescription>{server.address}</CardDescription>
-              </div>
-              <Badge
-                variant={server.online ? "success" : "secondary"}
-                className="shrink-0"
-              >
-                {server.online ? common("online") : common("offline")}
-              </Badge>
+            <CardHeader>
+              <CardTitle>{t("introTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                <CopyAddress address={server.address} />
-                <span className="text-sm text-muted-foreground">
-                  {t("onlinePlayers")}: {server.onlinePlayers} / {server.maxPlayers}
-                </span>
-              </div>
+              <p className="whitespace-pre-wrap text-muted-foreground">
+                {pickLocalized(locale, serverInfo.intro)}
+              </p>
             </CardContent>
           </Card>
         </StaggerItem>
       </Stagger>
 
-      {/* 信息卡：逐张入场 + 悬停抬升，图标独立放大 */}
+      {/* 硬件/系统配置：管理员在后台维护 */}
+      {serverInfo.specs.length > 0 && (
+        <Stagger inView stagger={0.07} className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {serverInfo.specs.map((spec, i) => (
+            <MotionCard key={localizedKey(spec.label, i)} index={i} className="h-full">
+              <Card className="group h-full gap-3 py-5">
+                <div className="flex items-start gap-3 px-6">
+                  <Cpu className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {pickLocalized(locale, spec.label)}
+                    </p>
+                    <p className="mt-0.5 font-medium">{spec.value}</p>
+                  </div>
+                </div>
+              </Card>
+            </MotionCard>
+          ))}
+        </Stagger>
+      )}
+
+      {/* 基本信息 */}
       <Stagger inView stagger={0.07} className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {info.map((item, i) => {
           const Icon = item.icon;
@@ -128,17 +134,17 @@ export default async function ServerPage() {
           <StaggerItem index={0}>
             <h2 className="text-xl font-semibold">{t("rulesSummary")}</h2>
           </StaggerItem>
-          {ruleKeys.map((key, i) => (
+          {rules.map((rule, i) => (
             <StaggerItem
-              key={key}
+              key={localizedKey(rule.title, i)}
               index={i + 1}
               className="flex items-start gap-3 rounded-lg border px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-sm"
             >
               <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-primary" />
               <div>
-                <p className="font-medium">{rules(`${key}.title`)}</p>
+                <p className="font-medium">{pickLocalized(locale, rule.title)}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  {rules(`${key}.content`)}
+                  {pickLocalized(locale, rule.content)}
                 </p>
               </div>
             </StaggerItem>
