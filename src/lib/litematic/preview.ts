@@ -153,9 +153,21 @@ export async function renderLitematicPreview(
         // 同时把太阳和星星关掉：我们要的是**纯色底**，天空里挂个发光的球
         // 或者一片星点都是噪音。lodestone 的 SunDiscOptions 没有 enabled
         // 开关，但强度归零就等于不可见（叠加渲染，乘 0 什么都不加）。
+        /*
+          要的是**干净纯色底**，所以要关三样东西 —— 它们是三套独立的机制，
+          光关太阳球没用（站长就是发现"莫名其妙的光源还在"）：
+            1. sunDisc      天空里那个发光的球（已在补丁里关掉可见性）
+            2. sunGlowIntensity  天空着色器自带的辉光，**默认 0.6**，
+                                 和太阳球无关，是背景上那片亮斑的来源
+            3. postProcess  后处理里的 bloom + godRays（丁达尔光），
+                             "莫名其妙的光源"多半就是它 —— 一片斜射的光柱
+          整个 postProcess 关掉最省事，而且能省下 SSAO/bloom/godRays 好几遍
+          全屏 pass，渲染更快。
+        */
         three.setSunlight({
-          sky: { ...theme.sky, stars: { enabled: false } },
+          sky: { ...theme.sky, stars: { enabled: false }, sunGlowIntensity: 0 },
           disc: { coreIntensity: 0, glowIntensity: 0 },
+          postProcess: { enabled: false },
         });
         const frame = frameCamera(built.meta.size, 45, view.yawDeg);
         three.setCamera({
