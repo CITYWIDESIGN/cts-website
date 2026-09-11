@@ -246,7 +246,13 @@ export default async function ResourceDetailPage({
         {(resource.preview || isLitematicFileName(resource.fileName)) && (
           <StaggerItem index={4}>
             <Card>
-              <CardContent className="pt-6">
+              {/*
+                不要在这里加 pt-*：Card 自己已经有 py-6（24px），
+                再叠一层就是 48px 的"高额头"（站长报的）。
+                正常情况下这里跟着 CardHeader 走，是 CardHeader 自带内边距；
+                我们没有标题头，直接让 CardContent 顶上去即可。
+              */}
+              <CardContent>
                 <PreviewSection
                   resourceId={resource.id}
                   title={resource.title}
