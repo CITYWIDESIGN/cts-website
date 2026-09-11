@@ -165,6 +165,36 @@ export async function renderLitematicPreviews(
           sky: { ...theme.sky, stars: { enabled: false }, sunGlowIntensity: 0 },
           disc: { coreIntensity: 0, glowIntensity: 0 },
           postProcess: { enabled: false },
+
+          /*
+            中性平光。
+
+            lodestone 的默认光照是一套**黄昏配色**，四个方向的观感差很多 ——
+            站长报"另一侧普遍发黄"就是这个：
+              color(直射)   [1.0, 0.75, 0.45]  暖橙
+              rimColor(轮廓) [1.0, 0.55, 0.25]  更橙
+              fillColor(补光) [0.35, 0.28, 0.5] 紫
+              fog.color      [0.85, 0.6, 0.4]   暖雾
+
+            相机转到暖光正对镜头的那一面，整张图就偏黄。预览是给人看形体的，
+            不该带上"黄昏"这层滤镜，所以四路光全部改成纯白，
+            并把权重压到"以环境光为主"—— 保留一点点方向感让方块之间有
+            明暗区分（全平的话方块会糊成一片），但四个方向的差异几乎看不出来。
+          */
+          color: [1, 1, 1],
+          ambientColor: [1, 1, 1],
+          fillColor: [1, 1, 1],
+          rimColor: [1, 1, 1],
+          intensity: 0.85,
+          ambientIntensity: 0.9,
+          fillIntensity: 0.35,
+          rimIntensity: 0,
+
+          // 雾会把远处染成暖色，直接关掉
+          fog: { density: 0 },
+
+          // 阴影会让背光面明显变暗 —— 预览不需要这层戏剧性，也省一遍渲染
+          shadow: { enabled: false },
         });
         const frame = frameCamera(built.meta.size, 45, view.yawDeg);
         three.setCamera({
