@@ -18,7 +18,10 @@
  *   node scripts/dev.mjs db:seed          # 填充种子数据
  *   node scripts/dev.mjs db:studio        # 打开 Prisma Studio
  *   node scripts/dev.mjs check            # 环境检查（doctor）
- *   node scripts/dev.mjs preflight        # typecheck + eslint + i18n
+ *   node scripts/dev.mjs preflight        # typecheck + eslint + i18n + 单元测试
+ *   node scripts/dev.mjs test             # 只跑单元测试
+ *   node scripts/dev.mjs backup           # 备份数据库（pg_dump，带轮转）
+ *   node scripts/dev.mjs cleanup          # 清理过期数据（见 server/retention.ts）
  *   node scripts/dev.mjs info             # 显示项目 / 环境信息
  *   node scripts/dev.mjs mail:test [邮箱]  # SMTP 自检（不带邮箱只测连接）
  *   node scripts/dev.mjs mail:preview <邮箱>  # 发一封真实模板的验证码邮件预览
@@ -474,8 +477,59 @@ async function doPreflight() {
   // 缺键不会让构建失败，只在浏览器里抛 MISSING_MESSAGE，所以单独查一遍
   log.step("i18n 键一致性…");
   const t2 = await run([NODE, path.join(ROOT, "scripts", "i18n-check.mjs")]);
-  if (t0 === 0 && t1 === 0 && t2 === 0) log.ok("preflight 全部通过");
-  else log.err("preflight 存在错误");
+  // 类型对不等于逻辑对（IP 取错边那种 bug 完全通得过 tsc），所以纯函数也跑一遍
+  log.step("单元测试…");
+  const t3 = await run(testArgs());
+
+  // ⚠️ 必须**返回**退出码：main() 是 `const code = (await fn()) ?? 0`，
+  // 不返回就等于永远 exit 0 —— CI 和 `debug.bat preflight && ...` 都会误判成功。
+  const failed = [t0, t1, t2, t3].filter((c) => c !== 0).length;
+  if (failed === 0) log.ok("preflight 全部通过");
+  else log.err(`preflight 存在错误（${failed} 项未通过）`);
+  return failed === 0 ? 0 : 1;
+}
+
+/** 单元测试的命令行。测试文件里有 server-only 模块，所以要 react-server 条件 */
+function testArgs() {
+  return [
+    NODE,
+    "--conditions=react-server",
+    "--import",
+    "tsx",
+    "--test",
+    "src/**/*.test.ts",
+  ];
+}
+
+async function doTest() {
+  loadEnv();
+  log.step("单元测试…");
+  const code = await run(testArgs());
+  if (code === 0) log.ok("测试通过");
+  else log.err("测试失败");
+  return code;
+}
+
+/**
+ * 备份数据库。
+ * 逻辑都在 scripts/backup.mjs 里（纯 Node，不依赖 tsx），这里只是转发参数 ——
+ * `debug.bat backup --keep 30` 这种写法能直接用。
+ */
+async function doBackup(rest = []) {
+  loadEnv();
+  const script = path.join(ROOT, "scripts", "backup.mjs");
+  // 成败由 backup.mjs 自己汇报（它会打出文件、大小、轮转结果），这里不再重复
+  return run([NODE, script, ...rest], { env: { NODE_OPTIONS: "" } });
+}
+
+/** 清理过期数据（逻辑在 src/server/retention.ts，借 tsx 跑） */
+async function doCleanup(rest = []) {
+  loadEnv();
+  const script = path.join(ROOT, "scripts", "cleanup.mts");
+  return run(
+    [NODE, "--conditions=react-server", "--import", "tsx", script, ...rest],
+    { env: { NODE_OPTIONS: "" } }
+  );
 }
 
 /**
@@ -939,7 +993,10 @@ function help() {
   console.log("");
   console.log(c.bold("  检查 / 信息"));
   console.log("    check             环境检查（doctor）");
-  console.log("    preflight         typecheck + eslint + i18n");
+  console.log("    preflight         typecheck + eslint + i18n + 单元测试");
+  console.log("    test              只跑单元测试");
+  console.log("    backup            备份数据库（pg_dump，带轮转）");
+  console.log("    cleanup           清理过期数据（验证码 / 下载明细 / 每日计数）");
   console.log("    info              项目 / 环境信息");
   console.log("    mail:test [邮箱]  SMTP 自检（不带邮箱只测连接）");
   console.log("    mail:preview <邮箱>  发送真实模板的验证码邮件预览");
@@ -1115,6 +1172,9 @@ async function main() {
     "db:studio": doStudio,
     check: doCheck,
     preflight: doPreflight,
+    test: doTest,
+    backup: () => doBackup(args),
+    cleanup: () => doCleanup(args),
     info: doInfo,
     "mail:test": () => doMailTest(args[0]),
     "mail:preview": () => doMailPreview(args[0]),

@@ -41,6 +41,7 @@ export const CURRENT_USER_SELECT = {
   microsoftAccountId: true,
   role: true,
   wearFrame: true,
+  sessionVersion: true,
   createdAt: true,
   bannedAt: true,
   bannedUntil: true,
@@ -48,10 +49,16 @@ export const CURRENT_USER_SELECT = {
 } as const;
 
 /**
- * 读取当前登录用户。每次请求都会从数据库读取，确保角色等信息是实时的。
- * 使用 React `cache` 在同一渲染中复用，避免重复查询。
+ * 按会话读取用户，并校验会话版本。
+ *
+ * 这是**唯一**该读 `session.userId` 的地方 —— Route Handler（`getApiUser`）
+ * 和页面（`getCurrentUser`）都从这儿走，免得某一条路径漏掉版本校验。
+ *
+ * 会话失效的两种情况都返回 null（调用方一视同仁地当作未登录）：
+ *   - cookie 里没有版本号（本次改动之前签发的老 cookie）
+ *   - 版本号和数据库里的对不上（改过密码）
  */
-export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
+export async function getSessionUser(): Promise<CurrentUser | null> {
   const session = await getSession();
   const userId = session.userId;
   if (!userId) return null;
@@ -60,9 +67,18 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     where: { id: userId },
     select: CURRENT_USER_SELECT,
   });
+  if (!user) return null;
+
+  if (session.sessionVersion !== user.sessionVersion) return null;
 
   return user;
-});
+}
+
+/**
+ * 读取当前登录用户。每次请求都会从数据库读取，确保角色等信息是实时的。
+ * 使用 React `cache` 在同一渲染中复用，避免重复查询。
+ */
+export const getCurrentUser = cache(getSessionUser);
 
 /** 要求已登录，否则跳转到登录页 */
 export const requireUser = cache(async (): Promise<CurrentUser> => {

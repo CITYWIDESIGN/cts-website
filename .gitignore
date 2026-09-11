@@ -46,6 +46,8 @@ docker-compose.override.yml
 *.log
 *.sql.gz
 *.dump
+# 数据库备份目录（`debug.bat backup` 的默认输出位置）
+/backups/
 
 # 编辑器 / 助手工具的本地配置：每个开发者机器上都不一样，
 # 提交进来只会给审阅的人增加噪音

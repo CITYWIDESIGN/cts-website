@@ -1,0 +1,38 @@
+name: preflight
+
+# 每次 push 和 PR 都跑一遍"改完必跑"的那套。
+# 这里**不需要数据库**：tsc / eslint / i18n / 单元测试都是纯静态的，
+# 所以 CI 上没有 service container，跑得很快。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # 允许在 Actions 页面手动点一下重跑
+  workflow_dispatch:
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      # tsc 要读 @prisma/client 生成的类型，不生成的话类型检查会整片报错。
+      # 这一步只读 schema，不连数据库。
+      - name: 生成 Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
+
+      # typecheck + eslint + i18n 键一致性 + 单元测试
+      - name: preflight
+        run: npm run preflight
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci

@@ -249,6 +249,42 @@ npm run debug makeadmin <玩家名>   # 将用户提升为管理员并打印会�
 
 `adduser` 支持 `--admin`（直接给管理员）与 `--uuid <UUID>`（绑定 Minecraft UUID，用于皮肤头像与 3D 模型）；`updateuser` 支持 `--uuid` / `--name` / `--role ADMIN|USER`。UUID 缺连字符的 32 位写法也能识别，会补成标准格式。
 
+#### 校验与运维
+
+```bash
+npm run preflight                  # tsc + eslint + i18n + 单元测试（提交前的唯一闸门）
+npm test                           # 只跑单元测试（node:test，不引测试框架）
+npm run debug backup               # pg_dump + gzip 到 backups/，只留最近 14 份
+npm run debug backup --keep 30 --out /mnt/backup
+npm run debug backup --list        # 列出现有备份
+npm run debug cleanup              # 清理过期验证码 / 每日计数 / 已读消息
+npm run debug cleanup --dry-run    # 只报告会删什么
+```
+
+**一定要做备份。** 站点的全部用户内容都在 Postgres 里 —— 资源附件、封面、
+轮播图、账号。审计日志能告诉你**是谁删的**，但救不回数据。恢复方式：
+
+```bash
+gunzip -c backups/cts-YYYYMMDD-HHMM.sql.gz | psql "$DATABASE_URL"
+```
+
+把 `backup` 挂到 cron 上，并且 `--out` 要指到**另一块盘或另一台机器**：
+和数据库躺在同一块盘上的转储不算备份。
+
+#### 真实在线人数（可选）
+
+首页的状态卡可以直接对服务器说一遍原版 **Server List Ping** 协议来显示真实人数
+（`src/server/mc-ping.ts`）—— 不需要插件，也不经过第三方 API。
+**不配置就不启用**：
+
+```bash
+MC_PING_HOST="127.0.0.1"     # 打开探测
+MC_PING_PORT="25565"
+```
+
+结果有缓存（30 秒）并且会去重，所以首页不会每个请求都开一次 socket。
+关掉时会回退到 `src/config/site.ts` 里的静态值。
+
 #### 用户管理 / 强制登录（独立脚本）
 
 `scripts/users.mjs` 是一个循环式交互菜单，专门用来管理用户并在没有 Microsoft 登录的情况下**强制登录**：
@@ -498,6 +534,8 @@ npm run start       # 监听 :3000，前置 nginx/caddy 处理 HTTPS
 - **未开启 HSTS**：生产是否一定跑 HTTPS 属于部署决定，所以 `next.config.ts` 的 `securityHeaders` 里**故意没加** `Strict-Transport-Security` —— 盲目开启会把纯 HTTP 的部署锁死。域名与证书就绪后再加。
 - **验证码的按 IP 上限是进程内的**（`src/server/rate-limit.ts`），和登录限流同一个取舍：重启清零、多实例不共享。多实例部署时这两处一起换成 Redis 或计数表。
 - **`getActivityStats` 会读出全部用户再在内存里排序**（后台统计页）。当前规模没问题，用户量上千后再把排序下推到 SQL。
+- **备份与清理目前只是手动命令，没有挂定时任务。** `npm run debug backup` 能出真的 `pg_dump`、`cleanup` 能清过期数据，但生产上仍要自己写 cron，并且把 `--out` 指到第二块盘。
+- **`User.sessionVersion` 这一列需要跑一次 schema 同步。** 部署这个版本要先 `npm run db:push`，而且它会把所有人登出一次 —— 之前签发的 cookie 里没有版本号。
 - **域名上线后配置 SPF / DKIM**，否则验证码邮件容易进垃圾箱。
 - **Minecraft AppID 审批**未完成前，Microsoft 登录会在最后一步 403（见上文），本地账号不受影响。
 

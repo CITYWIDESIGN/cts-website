@@ -2,7 +2,7 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { dummyVerify, hashPassword, verifyPassword } from "./password";
+import { dummyVerify, hashPassword, needsRehash, verifyPassword } from "./password";
 
 /**
  * 本地账号（用户名 + 邮箱 + 密码）。
@@ -68,7 +68,7 @@ export async function registerLocalAccount(input: {
   username: string;
   email: string;
   password: string;
-}): Promise<{ id: string }> {
+}): Promise<{ id: string; sessionVersion: number }> {
   const username = input.username.trim().toLowerCase();
   const email = input.email.trim().toLowerCase();
 
@@ -90,7 +90,7 @@ export async function registerLocalAccount(input: {
         emailVerifiedAt: new Date(),
         passwordHash,
       },
-      select: { id: true },
+      select: { id: true, sessionVersion: true },
     });
   } catch (err) {
     // 并发下上面的检查可能落空，最终仍由唯一索引兜底
@@ -110,13 +110,13 @@ export async function registerLocalAccount(input: {
 export async function authenticateLocal(
   identifier: string,
   password: string
-): Promise<{ id: string }> {
+): Promise<{ id: string; sessionVersion: number }> {
   const raw = identifier.trim();
   const lower = raw.toLowerCase();
 
   const user = await prisma.user.findFirst({
     where: { OR: [{ username: lower }, { email: lower }] },
-    select: { id: true, passwordHash: true },
+    select: { id: true, passwordHash: true, sessionVersion: true },
   });
 
   if (!user) {
@@ -129,7 +129,24 @@ export async function authenticateLocal(
     throw new AccountError("Invalid credentials.", "INVALID_CREDENTIALS");
   }
 
-  return { id: user.id };
+  /*
+    登录成功是唯一能拿到明文密码的时刻，也是唯一能把老哈希无声升级的时机。
+    提高 scrypt 参数后，老用户的哈希仍是旧参数写的 —— 校验得通过（哈希串自带
+    N/r/p），但强度还停在旧水平。这里顺手重算一次，用户完全无感。
+    升级失败不影响登录（最多就是下次再试）。
+  */
+  if (needsRehash(user.passwordHash)) {
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: await hashPassword(password) },
+      });
+    } catch (err) {
+      console.error("[authenticateLocal] 密码哈希升级失败（已忽略）", err);
+    }
+  }
+
+  return { id: user.id, sessionVersion: user.sessionVersion };
 }
 
 /* -------------------------------------------------- 手动填 Minecraft 身份 */
@@ -272,14 +289,24 @@ export async function findUserByEmail(email: string) {
   });
 }
 
-/** 重置密码（调用方负责先验验证码） */
+/**
+ * 重置密码（调用方负责先验验证码）。
+ *
+ * **顺带把 `sessionVersion` +1** —— 这是"改密后旧会话立刻失效"的开关。
+ * 密码泄露之后用户改密码，攻击者手里那份 cookie 必须同时作废，
+ * 否则改密这个动作只挡住了"下次登录"，挡不住已经进来的那个人。
+ */
 export async function setPassword(
   userId: string,
   newPassword: string
 ): Promise<void> {
   await prisma.user.update({
     where: { id: userId },
-    data: { passwordHash: await hashPassword(newPassword) },
+    data: {
+      passwordHash: await hashPassword(newPassword),
+      // 用户自己的其他设备也会被登出，这是预期行为
+      sessionVersion: { increment: 1 },
+    },
   });
 }
 

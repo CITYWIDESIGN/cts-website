@@ -249,6 +249,44 @@ npm run debug makeadmin <username> # promote a user to admin + print a session c
 
 `adduser` accepts `--admin` (grant admin immediately) and `--uuid <UUID>` (bind a Minecraft UUID, used for the skin head and the 3D model); `updateuser` accepts `--uuid` / `--name` / `--role ADMIN|USER`. A 32-character UUID without dashes is also accepted and normalized.
 
+#### Verification and operations
+
+```bash
+npm run preflight                  # tsc + eslint + i18n + unit tests (the gate before any commit)
+npm test                           # unit tests only (node:test — no test framework dependency)
+npm run debug backup               # pg_dump + gzip into backups/, keeping the last 14 files
+npm run debug backup --keep 30 --out /mnt/backup
+npm run debug backup --list        # list existing dumps
+npm run debug cleanup              # prune expired verification codes / counters / read notifications
+npm run debug cleanup --dry-run    # report what would be deleted
+```
+
+**Back up the database.** Every piece of user content lives in Postgres — resource
+attachments, cover images, carousel images, accounts. The audit log tells you *who*
+deleted something, but it cannot bring data back. Restore with:
+
+```bash
+gunzip -c backups/cts-YYYYMMDD-HHMM.sql.gz | psql "$DATABASE_URL"
+```
+
+Put `backup` on a cron and point `--out` at a **different disk or machine**: a dump
+sitting next to the database it protects is not a backup.
+
+#### Real player count (optional)
+
+The homepage status card can show the live player count by speaking the vanilla
+**Server List Ping** protocol to your server (`src/server/mc-ping.ts`) — no plugin,
+no third-party API. It is **off unless configured**:
+
+```bash
+MC_PING_HOST="127.0.0.1"     # turn it on
+MC_PING_PORT="25565"
+```
+
+Results are cached (30s) and de-duplicated, so the homepage does not open a socket
+per request. With it off, the card falls back to the static values in
+`src/config/site.ts`.
+
 #### User management / force login (separate script)
 
 `scripts/users.mjs` is a looped interactive menu for managing users and — crucially — for **forcing a login** without Microsoft sign-in:
@@ -498,6 +536,8 @@ npm run start        # runs on :3000, put nginx/caddy in front for HTTPS
 - **HSTS is not enabled.** Whether production always runs over HTTPS is a deployment decision, so `Strict-Transport-Security` is deliberately left out of `securityHeaders` in `next.config.ts` — enabling it blindly can lock a plain-HTTP deployment out. Add it once the domain and certificate are in place.
 - **The per-IP verification-email cap is in-process** (`src/server/rate-limit.ts`), same trade-off as the sign-in throttle: it resets on restart and is not shared across instances. Move both to Redis or a counter table when the site runs multi-instance.
 - **`getActivityStats` reads every user and sorts in memory** (admin stats page). Fine at this scale; push the ordering down into SQL if the user count reaches the thousands.
+- **Backups and cleanup are manual commands, not scheduled jobs.** `npm run debug backup` produces a real `pg_dump` and `cleanup` prunes expired rows, but you still have to wire both into cron on the server, and point `--out` at a second disk.
+- **`User.sessionVersion` requires a schema push.** Deploying this version needs `npm run db:push` once, and it signs everyone out — cookies issued before it carry no version number.
 - **Configure SPF / DKIM once the domain is live**, otherwise verification emails tend to land in spam.
 - **Microsoft sign-in returns 403 on the last step until the Minecraft AppID review completes** (see above). Local accounts are unaffected.
 

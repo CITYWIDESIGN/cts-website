@@ -19,7 +19,24 @@
 ## 二、验证方式
 
 ```bash
-node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
+node scripts/dev.mjs preflight   # tsc + eslint + i18n + 单元测试，改完必跑
+node scripts/dev.mjs test        # 只跑单元测试
+```
+
+**单元测试用 Node 内置的 `node:test`，不引任何依赖**（`tsx` 已经有了）。
+测试文件与源码同目录、`*.test.ts` 后缀，`preflight` 会自动带上。
+跑法里必须带 `--conditions=react-server`：`src/server/*` 有 `server-only`，
+不带这个条件会直接抛错（和冒烟脚本是同一个原因）。
+
+`preflight` 现在是**四个**步骤，而且函数**必须返回退出码** ——
+`main()` 是 `const code = (await fn()) ?? 0`，不返回就等于永远 exit 0，
+CI 和 `debug.bat preflight && ...` 都会误判成功。加新步骤时别忘这一条。
+
+运维命令（也需要环境的，本地跑）：
+
+```bash
+node scripts/dev.mjs backup [--keep 30] [--out D:\bak] [--list]
+node scripts/dev.mjs cleanup [--dry-run]
 ```
 
 沙箱里 **`next dev` 起不来**，所以浏览器行为我验证不了 —— 涉及布局、动画、
@@ -81,6 +98,20 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
   登录就会被关联进攻击者的账号。callback 里的 `upsertUser` 现在会拒绝
   覆盖已有的 `microsoftAccountId`、并在按 UUID 关联时写审计。
   改那段之前先想清楚这一点。
+- **加 `User.sessionVersion` 那一列之后必须跑一次 `db push`。** 会话 cookie 是
+  无状态的（iron-session 只密封了 userId），服务端没法主动作废它 —— 改密码后
+  偷到 cookie 的人照样能用。`sessionVersion` 就是用来堵这个的：登录时写进
+  cookie，`getSessionUser()` 每次比对，改密时 +1。
+  **副作用：升级后所有人（包括站长）都需要重新登录一次**，
+  因为老 cookie 里没有这个字段。
+  读会话只许走 `getSessionUser()`（`getCurrentUser` 是它的 React cache 包装，
+  `getApiUser` 也调它）—— 别在别处直接读 `session.userId`，那样会漏掉版本校验。
+- **`getActivityStats` / 任何"公开页面"的查询都必须有上界。** 已经踩过两次：
+  资源列表的 `take: 100` 静默截断、用户资料页把该用户的全部资源捞回来。
+  现在的规矩是：列表一定带 `take`，需要"总数"就用 `_count` 让数据库去数，
+  不要靠 `array.length`。
+- **`preflight` 的每个步骤函数必须 return 退出码。** `main()` 里是
+  `const code = (await fn()) ?? 0`，不 return 就是永远 exit 0。
 
 ## 四、代码结构要点
 
@@ -123,6 +154,21 @@ node scripts/dev.mjs preflight   # tsc + eslint + i18n，改完必跑
   是从 QQ 导出的那张截图**还原**出来的（不是直接贴图）。要换二维码得重新提取，
   别手改那串 path。两个坑写在组件头注释里：定位图案必须按规范写死（QQ 画的是
   圆角，照抄会得到坏图案）、中间留空不能比原图 logo 更大（那块靠纠错码兜底）。
+- **运维三件套**（都在 `scripts/` 下，也挂在 `debug.bat` 上）：
+  - `backup.mjs` —— pg_dump + gzip + 轮转。**站点的全部用户内容都在 Postgres 里**
+    （附件、封面、轮播图、账号），审计日志只能查"是谁删的"，救不回数据。
+    优先用本机 `pg_dump`，没有就退回 `docker compose exec db pg_dump`。
+    默认写到仓库下的 `backups/`（已 gitignore）——**生产要用 `--out` 指到另一块盘**。
+  - `cleanup.mts` + `src/server/retention.ts` —— 清 `EmailCode` /
+    `ResourceDownload` / `TransferUsage` / `DailyAction` / 已读 `Notification` /
+    `AuditLog`。这几张表原先**只增不减**，保留期写在 `RETENTION_DAYS` 里。
+  - 单元测试 —— `node:test`，见第二节。
+- **`src/server/mc-ping.ts` 是自己实现的 Server List Ping**（不调第三方 API、
+  不需要服务端插件）：站点和 MC 服务器同机时直接对 `127.0.0.1:25565` 说协议，
+  拿到真实在线人数。**默认关闭**，要 `MC_PING_HOST` 或 `MC_PING=1` 才启用 ——
+  否则没有本地 MC 服务的部署会平白多出一次必然超时的探测。
+  返回 `null` 表示"没开启"（回退静态配置），`online: false` 才是"真的离线"，
+  这两个别混。
 
 ## 五、文案规范
 
@@ -158,7 +204,14 @@ PUBLISHED）。用户是站长自己的账号 `ciiity`（**role = USER**，要�
 - 还没配 HSTS：生产是不是一定跑 HTTPS 我没法确认，贸然开 `Strict-Transport-Security`
   会把纯 HTTP 的部署锁死。域名和证书都就绪后在 `next.config.ts` 的
   `securityHeaders` 里加。
+- **备份还没挂到定时任务上**。`debug.bat backup` 手动跑得通（已验证能出真 SQL），
+  但生产要自己加 cron，而且 `--out` 要指到**另一块盘** ——
+  备份和数据库在同一块盘上不算备份。
+- `cleanup` 同样只是手动命令，生产要自己加 cron（每天一次足够）。
+- 首页在线人数要真正显示出来，需要在 `.env` 里设 `MC_PING_HOST`（本机就是
+  `127.0.0.1`）；没设的时候卡片回退到 `src/config/site.ts` 的静态值。
 
 改过安全相关的几处之后**没在浏览器里实测过**，下次要验：登录（含限流）、
 Microsoft 登录（含 state 校验与账号冲突提示）、资源上传/下载的配额与体积拦截、
-邮箱验证码发送、用户资料页的资源列表截断、以及根级错误页。
+邮箱验证码发送、用户资料页的资源列表截断、根级错误页、
+以及各页面的 loading 骨架屏。

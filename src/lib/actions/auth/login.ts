@@ -27,12 +27,14 @@ export async function loginAction(input: {
   if (!parsed.success) return { ok: false, error: "INVALID_CREDENTIALS" };
 
   try {
-    const { id } = await authenticateLocal(
+    const { id, sessionVersion } = await authenticateLocal(
       parsed.data.identifier,
       parsed.data.password
     );
     const session = await getSession();
     session.userId = id;
+    // cookie 是无状态的，版本号是服务端唯一能"作废"它的手段（改密时 +1）
+    session.sessionVersion = sessionVersion;
     await session.save();
     clearFails(key);
     return { ok: true, redirectTo: "/dashboard" };

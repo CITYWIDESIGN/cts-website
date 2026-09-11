@@ -57,6 +57,22 @@ model User {
   role      Role     @default(USER)
 
   /**
+   * 会话版本。
+   *
+   * 会话 cookie 是**无状态**的（iron-session 只是把 userId 密封进去），
+   * 所以服务端没有任何办法"作废"一个已经发出去的 cookie。后果是：
+   * **改密码之后，之前偷到 cookie 的人照样能继续用。**
+   *
+   * 解法就是在用户上放一个版本号，写进 cookie 里；`getCurrentUser` 每次都会
+   * 比对，不一致就当作未登录。改密码时把这个值 +1，所有旧会话立刻失效
+   * （包括攻击者那份，也包括用户自己的其他设备）。
+   *
+   * ⚠️ 加了这一列之后必须跑一次 `debug.bat` → `db push`，
+   * 否则所有查询都会因为"列不存在"直接报错。
+   */
+  sessionVersion Int @default(1) @map("session_version")
+
+  /**
    * 是否佩戴头像框。
    * 头像框是**绑定 Microsoft 的奖励**：只填了 ID/UUID 的人没有。
    * 是否真的有框 = microsoftAccountId 非空 && wearFrame。

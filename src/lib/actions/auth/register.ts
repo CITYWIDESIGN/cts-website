@@ -142,9 +142,10 @@ export async function completeRegistrationAction(input: {
 
   // 2. 再查一次占用（第一步到现在可能被别人抢先）
   try {
-    const { id } = await registerLocalAccount(parsed.data);
+    const { id, sessionVersion } = await registerLocalAccount(parsed.data);
     const session = await getSession();
     session.userId = id;
+    session.sessionVersion = sessionVersion;
     await session.save();
     clearFails(key);
     return { ok: true, redirectTo: "/dashboard/settings" };

@@ -15,7 +15,10 @@ rem     debug.bat up --seed            same, plus seed data
 rem     debug.bat dev                  dev server only
 rem     debug.bat build / start        production build / serve
 rem     debug.bat check                environment doctor
-rem     debug.bat preflight            tsc + eslint + i18n
+rem     debug.bat preflight            tsc + eslint + i18n + unit tests
+rem     debug.bat test                 unit tests only
+rem     debug.bat backup               back up the database (pg_dump + rotation)
+rem     debug.bat cleanup              prune expired rows (codes / counters)
 rem     debug.bat info                 project / environment info
 rem     debug.bat mail:test [email]    SMTP self-check
 rem     debug.bat mail:preview <email> preview the verification-code email

@@ -10,6 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test": "node --conditions=react-server --import tsx --test \"src/**/*.test.ts\"",
+    "preflight": "node scripts/dev.mjs preflight",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
     "db:generate": "prisma generate",

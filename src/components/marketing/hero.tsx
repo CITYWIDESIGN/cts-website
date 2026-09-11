@@ -1,11 +1,38 @@
+import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { SplitHeading } from "@/components/motion/split-heading";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Carousel, type CarouselItem } from "./carousel";
 import { ServerStatus } from "./server-status";
 import { HeroActions } from "./join-button";
 import { carouselSlides, carouselIntervalMs } from "@/config/carousel";
 import { listPublishedSlides, toSlideView } from "@/server/carousel";
+
+/** 服务器状态卡片的占位。高度与真实卡片一致，数据到达时不会跳 */
+function ServerStatusFallback() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 sm:px-6">
+      <Card className="mx-auto max-w-3xl">
+        <CardContent className="grid gap-5 p-5 sm:grid-cols-3 sm:p-6">
+          <div className="flex flex-col gap-1">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="mt-2 h-4 w-16" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
 
 /**
  * 首页首屏。
@@ -106,9 +133,14 @@ export async function Hero() {
           <Carousel items={items} intervalMs={carouselIntervalMs} />
         </StaggerItem>
 
-        {/* 服务器状态 */}
+        {/* 服务器状态。
+            包一层 Suspense：探测要连一次 TCP，正常情况下是缓存命中（0ms），
+            但服务器那边如果是"丢包"而不是"拒绝连接"，冷缓存时就得等满超时。
+            那样也不该把整个首屏卡住 —— 先流式送出其余部分。 */}
         <StaggerItem index={3}>
-          <ServerStatus />
+          <Suspense fallback={<ServerStatusFallback />}>
+            <ServerStatus />
+          </Suspense>
         </StaggerItem>
 
         {/* 行动按钮（首屏为居中版式，按钮同样居中于页面容器） */}

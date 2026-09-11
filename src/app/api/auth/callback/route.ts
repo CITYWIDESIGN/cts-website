@@ -55,6 +55,8 @@ export async function GET(request: Request) {
 
     const session = await getSession();
     session.userId = user.id;
+    // cookie 是无状态的，版本号是服务端唯一能"作废"它的手段（改密时 +1）
+    session.sessionVersion = user.sessionVersion;
     await session.save();
 
     // 清除临时 OAuth cookie
