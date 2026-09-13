@@ -96,6 +96,10 @@ services:
       # 不指定 target 的话 `docker compose build app` 会构建成那个 ——
       # app 镜像的 CMD 变成 `prisma db push`，跑完就退出、无限重启。
       target: runner
+      # 构建时也要有这个变量：NEXT_PUBLIC_* 会被内联进产物，
+      # sitemap.xml / robots.txt 是构建期生成的（见 Dockerfile 里的说明）
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.ctserver.top}
     image: cts-website:latest
     container_name: cts-web-app
     restart: unless-stopped

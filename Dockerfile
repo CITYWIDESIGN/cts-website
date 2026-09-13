@@ -22,6 +22,15 @@ COPY . .
 RUN npx prisma generate
 
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# ⚠️ NEXT_PUBLIC_* 是**构建时内联**的，运行时的 env 对它没用。
+# app/sitemap.ts 和 app/robots.ts 在 next build 阶段就被求值，
+# 那时容器里没有这个变量，回退成 src/config/site.ts 的默认值
+# http://localhost:3000 —— 线上 sitemap.xml 里 5 条链接全指向 localhost，
+# 搜索引擎取到等于"这站不存在"。
+# 所以必须作为构建参数传进来（compose 里配 build.args）。
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN npm run build
 
 # ---------- Runner ----------
