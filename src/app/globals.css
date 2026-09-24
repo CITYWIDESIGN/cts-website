@@ -392,3 +392,28 @@
     animation: deco-pulse 6s ease-in-out infinite;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * 圆形主题切换（View Transitions）
+ *
+ * 默认的 View Transition 会给**新旧两层**都做一次默认的淡入淡出，
+ * 叠在圆形揭示上就是"又淡又裁"，很脏。所以要：
+ *   - 关掉两层的默认动画
+ *   - 旧层留在下面（z-index 低），新层盖在上面由 JS 裁成圆
+ *   - 混色模式设回 normal：默认是 plus-lighter，会让交界处发白
+ *
+ * 只裁切上层、不缩放页面内容 —— 缩放会让整页文字抽动。
+ * ------------------------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
