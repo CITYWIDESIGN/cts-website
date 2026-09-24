@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Progress } from "@/components/ui/progress";
 import { Stagger, StaggerItem } from "@/components/motion/stagger";
 import { EASE_OUT } from "@/components/motion/transitions";
 import {
@@ -183,7 +182,23 @@ export function QuestionnaireForm({
             {progress}%
           </motion.span>
         </div>
-        <Progress value={progress} className="mt-2" />
+        {/*
+          进度条：先到目标位置、再回弹一点（spring），而不是线性爬过去。
+          回弹是"这一步真的完成了"的触觉暗示，比匀速增长更清楚。
+          damping 调到偏小才有可见的回弹，但别小到晃。
+        */}
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            initial={false}
+            animate={{ width: `${progress}%` }}
+            transition={
+              reduce
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 210, damping: 17, mass: 0.9 }
+            }
+          />
+        </div>
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -248,7 +263,17 @@ export function QuestionnaireForm({
             )}
 
             {current.type === "MULTIPLE_CHOICE" && (
-              <Stagger inView={false} stagger={0.05} className="flex flex-col gap-2">
+              /*
+                换行标签网格，而不是竖排列表。
+
+                第 2 题有 11 个选项（模组名都很短），竖排要占掉一整屏还得滚。
+                改成 chips 之后一屏能看全，勾选也更快。
+
+                ⚠️ 选中反馈只用 `scale`（transform），**绝不改宽度/内边距** ——
+                那会触发重排，邻座会"跳"一下。用 scale 的话浏览器只做合成，
+                邻座自然让位且纹丝不动。
+              */
+              <Stagger inView={false} stagger={0.03} className="flex flex-wrap gap-2">
                 {current.options.map((opt, i) => {
                   const values = (currentValue as string[]) ?? [];
                   const checked = values.includes(opt.text);
@@ -256,8 +281,8 @@ export function QuestionnaireForm({
                     <StaggerItem key={opt.id} index={i}>
                       <label
                         className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all duration-300 hover:bg-accent",
-                          checked && "border-primary bg-accent shadow-xs"
+                          "inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-sm transition-colors duration-200 hover:bg-accent",
+                          checked && "border-primary bg-accent text-foreground"
                         )}
                       >
                         <Checkbox
@@ -269,8 +294,20 @@ export function QuestionnaireForm({
                             setValue(current.id, next);
                           }}
                           id={opt.id}
+                          className="size-3.5"
                         />
-                        <span className="text-sm">{opt.text}</span>
+                        {/* 文字外面包一层：缩放只作用在视觉层，不影响命中区域 */}
+                        <motion.span
+                          initial={false}
+                          animate={{ scale: checked ? 1.04 : 1 }}
+                          transition={
+                            reduce
+                              ? { duration: 0 }
+                              : { type: "spring", stiffness: 520, damping: 22, mass: 0.5 }
+                          }
+                        >
+                          {opt.text}
+                        </motion.span>
                       </label>
                     </StaggerItem>
                   );
